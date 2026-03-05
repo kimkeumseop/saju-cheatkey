@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Noto Serif KR", serif;
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  --color-gold-50: #fdfbe9;
+  --color-gold-100: #fbf7c7;
+  --color-gold-200: #f7ed90;
+  --color-gold-300: #f1db4f;
+  --color-gold-400: #ebc523;
+  --color-gold-500: #d9ad19;
+  --color-gold-600: #bc8613;
+  --color-gold-700: #966112;
+  --color-gold-800: #7d4d16;
+  --color-gold-900: #6a4019;
+  --color-gold-950: #3e210a;
+
+  --color-primary-50: #f5f7ff;
+  --color-primary-100: #ebf0fe;
+  --color-primary-200: #dce5fe;
+  --color-primary-300: #c2d1fd;
+  --color-primary-400: #9db4fb;
+  --color-primary-500: #758ef7;
+  --color-primary-600: #5466f0;
+  --color-primary-700: #434ee1;
+  --color-primary-800: #3941b6;
+  --color-primary-900: #323a91;
+  --color-primary-950: #212555;
+}
+
+:root {
+  --background: #0a0c1a;
+  --foreground: #f8fafc;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.text-serif {
+  font-family: var(--font-serif);
+}
+
+/* 프리미엄 텍스트 그림자 - 가독성 강화 */
+.text-shadow-sm {
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.text-shadow-md {
+  text-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.bg-texture {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+/* 어두운 배경에 최적화된 글래스 패널 */
+.glass-panel {
+  background: rgba(0, 0, 0, 0.4); 
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
