@@ -18,6 +18,14 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap"
           rel="stylesheet"
         />
+        {/* Google AdSense */}
+        <script 
+          async 
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1059415497859090"
+          crossOrigin="anonymous"
+        ></script>
+        <meta name="google-adsense-account" content="ca-pub-1059415497859090" />
+        
         <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" integrity="sha384-TiCmbV6A3JiR00k/T0AixA1A7yMceX+sUo0DtcX2mRzIfq0tN2A5Y+Z4B5B4j+u" crossOrigin="anonymous" async></script>
       </head>
       <body className="antialiased min-h-screen relative">
