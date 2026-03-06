@@ -12,6 +12,11 @@ export default function Navbar() {
               명리커넥트
             </Link>
           </div>
+          
+          <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-400">
+            <Link href="/" className="hover:text-gold-400 transition-colors">사주분석</Link>
+            <Link href="/privacy" className="hover:text-gold-400 transition-colors">개인정보처리방침</Link>
+          </div>
         </div>
       </div>
     </nav>
