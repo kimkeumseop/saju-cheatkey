@@ -15,7 +15,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.575.0",
     "lunar-javascript": "^1.7.7",
-    "next": "15.1.6",
+    "next": "^15.1.8",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-is": "^19.0.0",
