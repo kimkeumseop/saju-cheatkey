@@ -47,7 +47,7 @@ body {
   font-family: var(--font-serif);
 }
 
-/* 프리미엄 텍스트 그림자 - 가독성 강화 */
+/* 프리미엄 텍shadow - 가독성 강화 */
 .text-shadow-sm {
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
@@ -76,17 +76,4 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
 }

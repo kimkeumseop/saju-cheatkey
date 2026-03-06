@@ -29,7 +29,7 @@ export const SAJU_MEANING: Record<string, { sound: string, color: string, desc: 
 };
 
 export const OHAENG_COLORS: Record<string, string> = {
-  '목': '#22c55e', '화': '#ef4444', '토': '#eab308', '금': '#94a3b8', '수': '#1e293b'
+  '목': '#22c55e', '화': '#ef4444', '토': '#eab308', '금': '#94a3b8', '수': '#3b82f6'
 };
 
 function calculateOhaeng(saju: any) {
@@ -38,8 +38,10 @@ function calculateOhaeng(saju: any) {
   const zhiOhaeng: Record<string, string> = { '寅':'목', '卯':'목', '巳':'화', '午':'화', '辰':'토', '戌':'토', '丑':'토', '未':'토', '申':'금', '酉':'금', '亥':'수', '子':'수' };
 
   Object.values(saju).forEach((pair: any) => {
-    if (ganOhaeng[pair[0]]) counts[ganOhaeng[pair[0]]]++;
-    if (zhiOhaeng[pair[1]]) counts[zhiOhaeng[pair[1]]]++;
+    if (Array.isArray(pair)) {
+      if (ganOhaeng[pair[0]]) counts[ganOhaeng[pair[0]]]++;
+      if (zhiOhaeng[pair[1]]) counts[zhiOhaeng[pair[1]]]++;
+    }
   });
   return counts;
 }
@@ -59,14 +61,6 @@ export function calculateSaju(birthDate: string, birthTime: string, calendarType
   const lunarDate = solar.getLunar();
   const eightChar = lunarDate.getEightChar();
   
-  const genderCode = gender === 'male' ? 1 : 0;
-  const yun = eightChar.getYun(genderCode);
-  
-  const daeunList = yun.getDaYun().map(d => ({ 
-    age: d.getStartAge(), 
-    ganZhi: d.getGanZhi() 
-  }));
-
   const rawSaju = {
     year: [eightChar.getYearGan(), eightChar.getYearZhi()],
     month: [eightChar.getMonthGan(), eightChar.getMonthZhi()],
@@ -76,15 +70,12 @@ export function calculateSaju(birthDate: string, birthTime: string, calendarType
 
   const ohaengCount = calculateOhaeng(rawSaju);
   
-  // 🔥 화면 렌더링을 위해 데이터를 자연물 뜻풀이를 포함한 구조로 변환합니다.
-  const sajuBreakdown = Object.entries(rawSaju).map(([key, value]) => ({
-    title: key === 'year' ? '년주' : key === 'month' ? '월주' : key === 'day' ? '일주' : '시주',
-    items: value.map(char => ({
-      char,
-      ...SAJU_MEANING[char],
-      isGan: SAJU_MEANING[char].desc.includes('하늘') || !SAJU_MEANING[char].desc.includes('(')
-    }))
-  }));
+  const sajuBreakdown = [
+    { title: '년주', items: rawSaju.year.map(char => ({ char, ...SAJU_MEANING[char] })) },
+    { title: '월주', items: rawSaju.month.map(char => ({ char, ...SAJU_MEANING[char] })) },
+    { title: '일주', items: rawSaju.day.map(char => ({ char, ...SAJU_MEANING[char] })) },
+    { title: '시주', items: rawSaju.hour.map(char => ({ char, ...SAJU_MEANING[char] })) },
+  ];
 
-  return { sajuBreakdown, ohaengCount, daeunList, rawSaju };
+  return { sajuBreakdown, ohaengCount, rawSaju };
 }
