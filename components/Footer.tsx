@@ -12,10 +12,10 @@ export default function Footer() {
               <div className="w-8 h-8 bg-[#FEE500] rounded-xl flex items-center justify-center shadow-sm">
                 <Sparkles className="w-4 h-4 text-[#3C1E1E]" />
               </div>
-              <span className="text-xl font-black text-[#3C1E1E] tracking-tight">명리커넥트</span>
+              <span className="text-xl font-black text-[#3C1E1E] tracking-tight">인생치트키</span>
             </div>
             <p className="text-gray-500 text-sm font-medium leading-relaxed max-w-sm break-keep">
-              명리커넥트는 2030 세대를 위한 트렌디하고 직관적인 AI 사주 분석 서비스입니다. 
+              인생치트키는 2030 세대를 위한 트렌디하고 직관적인 AI 사주 분석 서비스입니다. 
               어려운 명리학 용어 대신 당신의 삶에 바로 와닿는 뼈 때리는 조언을 제공합니다.
             </p>
           </div>
@@ -42,7 +42,7 @@ export default function Footer() {
 
         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-gray-400 font-medium">
-            © 2026 MyeongriConnect. All rights reserved.
+            © 2026 LifeCheatKey. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <span className="text-[10px] text-gray-300 font-black tracking-widest uppercase">Trendy Life Coaching AI</span>

@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "명리커넥트 | 현대적 명리학 & AI 심리 분석 리포트",
+  title: "인생치트키 | 현대적 명리학 & AI 심리 분석 리포트",
   description: "데이터 기반 명리학 엔진과 Gemini AI가 제공하는 프리미엄 사주 분석. 당신의 고유한 기질과 2026년 운명의 흐름을 심리학적 통찰로 풀어드립니다.",
   keywords: ["사주", "명리학", "신년운세", "AI운세", "심리분석", "2026년운세", "무료사주"],
   openGraph: {
-    title: "명리커넥트 - 현대적 명리학 심리 분석",
+    title: "인생치트키 - 현대적 명리학 심리 분석",
     description: "AI가 그려주는 당신의 인생 지도, 지금 바로 확인하세요.",
     url: "https://saju-cheatkey.vercel.app",
-    siteName: "명리커넥트",
+    siteName: "인생치트키",
     locale: "ko_KR",
     type: "website",
   },

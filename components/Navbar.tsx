@@ -11,7 +11,7 @@ export default function Navbar() {
               <Sparkles className="w-6 h-6 text-[#3C1E1E]" />
             </div>
             <Link href="/" className="text-2xl font-black tracking-tight text-[#3C1E1E]">
-              명리커넥트
+              인생치트키
             </Link>
           </div>
           
