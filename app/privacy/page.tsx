@@ -38,7 +38,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold text-gray-100">3. 데이터 보안 및 제3자 제공</h2>
             <p>
               사용자가 입력한 정보는 사주 분석 엔진(lunar-javascript) 및 AI 모델(Google Gemini)에 전달되어 처리가 이루어집니다. 
-              명리커넥트는 사용자의 개인정보를 외부에 판매하거나 무단으로 공유하지 않습니다.
+              인생치트키는 사용자의 개인정보를 외부에 판매하거나 무단으로 공유하지 않습니다.
             </p>
           </section>
 

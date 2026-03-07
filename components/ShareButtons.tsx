@@ -114,7 +114,7 @@ export default function ShareButtons({ name }: ShareButtonsProps) {
             onClick={() => {
               if (navigator.share) {
                 navigator.share({
-                  title: '명리커넥트 분석 결과',
+                  title: '인생치트키 분석 결과',
                   text: `${name}님의 인생 분석 결과입니다.`,
                   url: window.location.href,
                 });
