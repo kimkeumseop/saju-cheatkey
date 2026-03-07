@@ -17,22 +17,25 @@ export default function Home() {
             </p>
             <h1 className="font-black text-gray-900 leading-[1.1] tracking-tight break-keep">
               <span className="block text-[8vw] sm:text-5xl md:text-6xl lg:text-7xl text-[#3C1E1E]">
-                지루한 사주는 끝,
+                조선시대 MBTI로
               </span>
               <span className="block text-[10vw] sm:text-6xl md:text-7xl lg:text-8xl mt-2">
-                내 인생 <span className="text-[#FEE500] drop-shadow-[0_4px_0_rgba(60,30,30,1)]">팩폭 리포트</span>
+                <span className="text-[#FEE500] drop-shadow-[0_4px_0_rgba(60,30,30,1)]">팩폭 당할 준비</span> 됐나요?
               </span>
             </h1>
           </div>
 
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0 leading-[1.7] font-medium break-keep">
-            어려운 한자, 고리타분한 설명은 이제 그만! <br className="hidden md:block"/>
-            MZ세대를 위한 <span className="text-gray-900 font-bold underline decoration-[#FEE500] decoration-8 underline-offset-[-4px]">직관적인 비유</span>와 <br className="hidden md:block"/>
-            <span className="text-gray-900 font-bold underline decoration-[#FEE500] decoration-8 underline-offset-[-4px]">뼈 때리는 현실 조언</span>으로 당신의 운명을 읽어드립니다.
+            어려운 한자는 싹 빼고, 요즘 언어로 소름 돋게 풀어주는 AI 사주 풀이. <br className="hidden md:block"/>
+            답답한 인생의 <span className="text-gray-900 font-bold underline decoration-[#FEE500] decoration-8 underline-offset-[-4px]">'치트키'</span>를 켜 드립니다.
           </p>
           
           <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-2">
-            {['#팩폭주의', '#MBTI보다_정확', '#2026운세'].map((item) => (
+            {[
+              '#소름돋는_팩폭_성격', 
+              '#답답할_때_고민_해결소', 
+              '#2026_버티기_가이드'
+            ].map((item) => (
               <span key={item} className="px-5 py-2.5 bg-white rounded-2xl border border-gray-100 text-sm font-black text-[#3C1E1E] shadow-sm">{item}</span>
             ))}
           </div>
@@ -55,9 +58,9 @@ export default function Home() {
               <div className="w-14 h-14 rounded-2xl bg-[#FEE500] flex items-center justify-center shadow-sm">
                 <BookOpen className="w-7 h-7 text-[#3C1E1E]" />
               </div>
-              <h3 className="text-2xl font-black text-gray-900">MZ 맞춤형 풀이</h3>
+              <h3 className="text-2xl font-black text-gray-900 text-serif tracking-tight">소름 돋는 팩폭 성격</h3>
               <p className="text-gray-500 font-medium leading-relaxed text-sm break-keep">
-                '비견', '상관' 같은 외계어는 이제 그만! '팩폭기', '강강약약' 같은 유행어로 당신의 성격을 MBTI보다 더 정확하게 꿰뚫어 드립니다.
+                내 안의 또 다른 나를 스캔 (feat. Gemini AI). 겉바속촉 기질부터 숨겨진 똘끼까지 가차 없이 털어드립니다.
               </p>
             </div>
 
@@ -66,9 +69,9 @@ export default function Home() {
               <div className="w-14 h-14 rounded-2xl bg-[#FEE500] flex items-center justify-center shadow-sm">
                 <BarChart3 className="w-7 h-7 text-[#3C1E1E]" />
               </div>
-              <h3 className="text-2xl font-black text-gray-900">현실 밀착형 조언</h3>
+              <h3 className="text-2xl font-black text-gray-900 text-serif tracking-tight">답답할 때 고민 해결소</h3>
               <p className="text-gray-500 font-medium leading-relaxed text-sm break-keep">
-                "성실히 살면 복이 와요" 같은 뻔한 소리는 사절입니다. "지금은 존버할 때", "문서를 잡아라" 같은 현실적이고 실질적인 가이드를 제공합니다.
+                Gemini AI랑 1:1 심야 상담. 연애 고민부터 퇴사 타이밍까지, 밤잠 설치게 하는 고민들을 명쾌하게 풀어보세요.
               </p>
             </div>
 
@@ -77,9 +80,9 @@ export default function Home() {
               <div className="w-14 h-14 rounded-2xl bg-[#FEE500] flex items-center justify-center shadow-sm">
                 <Shield className="w-7 h-7 text-[#3C1E1E]" />
               </div>
-              <h3 className="text-2xl font-black text-gray-900">데이터 기반 AI 통찰</h3>
+              <h3 className="text-2xl font-black text-gray-900 text-serif tracking-tight">2026 버티기 가이드</h3>
               <p className="text-gray-500 font-medium leading-relaxed text-sm break-keep">
-                고도화된 Gemini AI가 수천 권의 명리학 데이터를 분석하여 당신의 생년월일시에 숨겨진 고유한 에너지를 과학적으로 추출합니다.
+                통장을 스쳐 지나가는 월급, 어떻게 묶어둘까? 2026년 병오년의 흐름을 타고 돈과 운을 끌어당기는 치트키를 확인하세요.
               </p>
             </div>
 

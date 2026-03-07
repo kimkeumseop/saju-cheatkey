@@ -41,7 +41,7 @@ export default function SajuForm() {
         <div className="text-center space-y-2 mb-4">
           <h3 className="text-2xl font-black text-gray-900 flex items-center justify-center gap-2">
             <Sparkles className="w-6 h-6 text-[#FEE500]" />
-            정보 입력하기
+            인생 치트키 키려면 정보 입력 필수!
           </h3>
           <p className="text-sm text-gray-500 font-medium">나의 숨겨진 성격과 운명을 확인하세요!</p>
         </div>
@@ -149,7 +149,7 @@ export default function SajuForm() {
         type="submit" 
         className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-5 rounded-2xl font-black text-xl transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-3 relative z-10 group"
       >
-        분석 리포트 보기
+        소름 돋는 결과 확인하기 💥
         <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
       </button>
 
