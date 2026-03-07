@@ -18,32 +18,44 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
     const prompt = `
-    당신은 20년 경력의 친절하고 통찰력 있는 사주 명리학 전문가입니다.
-    현재 연도는 2026년(병오년, 丙午年)입니다. 모든 운세와 조언은 반드시 2026년을 기준으로 작성하세요.
+    당신은 2030 세대의 언어로 사주를 분석해주는 트렌디한 라이프스타일 코치입니다.
+    현재 연도는 2026년(병오년)입니다.
+
+    [절대 금기 사항]
+    - '비견', '겁재', '식신', '상관', '편재', '정재', '편관', '정관', '편인', '정인' 등 십성 용어 절대 사용 금지
+    - '목화토금수', '오행', '형충파해' 등 명리학 전문 용어 절대 사용 금지
+    - 한자 사용 금지
+
+    [분석 스타일 가이드]
+    - MBTI 분석처럼 쉽고 직관적으로 설명하세요.
+    - '거대한 태산', '다이아몬드 칼날', '한여름의 소나기' 같은 비유를 사용하여 성격을 설명하세요.
+    - "현금은 스치고 지나갈 뿐, 문서를 잡아라", "지금은 존버가 답이다" 같은 뼈 때리는 현실 밀착형 조언을 포함하세요.
+    - 친근한 반말과 존댓말을 섞어 'MZ세대' 감성으로 작성하세요.
+
+    [결과 구성]
+    결과는 반드시 아래 5가지 섹션으로 나누고, 각 섹션의 소제목은 '팩폭기', '겉바속촉', '프로 N잡러', '강강약약' 같은 유행어를 섞어 후킹하게 뽑으세요.
+
+    [출력 형식]
+    반드시 아래와 같은 JSON 배열 형태로만 응답하세요. 다른 설명은 생략하세요.
+    [
+      { "title": "소제목1", "content": "상세 내용1" },
+      { "title": "소제목2", "content": "상세 내용2" },
+      { "title": "소제목3", "content": "상세 내용3" },
+      { "title": "소제목4", "content": "상세 내용4" },
+      { "title": "소제목5", "content": "상세 내용5" }
+    ]
+
     이름: ${body.userName || '방문자'}
-    사주(데이터): ${JSON.stringify(body.sajuData)}
-    
-    [지시사항]
-    - 사주 명식의 한자를 언급할 때는 반드시 한글 발음을 함께 적어주세요. (예: 戊(무)토, 寅(인)목)
-    - 일반인이 이해하기 쉬운 자연물 비유(나무, 태양, 바다 등)를 듬뿍 넣어 다정하고 깊이 있게 설명하세요.
-    - 아래 5가지 항목을 JSON 형식으로만 반환하세요. (다른 텍스트 없이 오직 JSON만 반환)
-    {
-      "basic": "이 사주의 8글자가 전체적으로 어떤 조화를 이루고 무슨 의미를 가지는지 아주 상세하게 쫙 풀어주는 원국 뜻풀이 (500자 이상)",
-      "overall": "타고난 기질과 성향에 대한 심층 분석 (400자 이상)",
-      "career": "직업적 강점, 적성 및 재물운 흐름 (400자 이상)",
-      "love": "대인관계 특성 및 연애운 (400자 이상)",
-      "advice": "올해(2026년)의 운세 흐름과 구체적인 행동 가이드 (400자 이상)"
-    }`;
+    사주 데이터: ${JSON.stringify(body.sajuData)}
+    `;
 
     const result = await model.generateContent(prompt);
     let text = result.response.text();
     
-    // JSON 추출 (마크다운 기호 제거 등)
-    text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const startIndex = text.indexOf('{');
-    const endIndex = text.lastIndexOf('}');
-    if (startIndex !== -1 && endIndex !== -1) {
-      text = text.substring(startIndex, endIndex + 1);
+    // JSON 추출
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      text = jsonMatch[0];
     }
 
     const parsedJson = JSON.parse(text);

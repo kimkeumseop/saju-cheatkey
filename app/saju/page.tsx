@@ -2,23 +2,17 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Navbar from '@/components/Navbar';
+import AnalysisAccordion from '@/components/AnalysisAccordion';
 import ShareButtons from '@/components/ShareButtons';
-import { calculateSaju, OHAENG_COLORS } from '@/lib/saju';
-import { Sparkles, Loader2, Calendar, User, TrendingUp, Heart, Briefcase, Info, ChevronRight } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import Navbar from '@/components/Navbar';
+import { calculateSaju } from '@/lib/saju';
+import { Sparkles, Loader2, Layout } from 'lucide-react';
 
 function SajuContent() {
   const searchParams = useSearchParams();
   const [sajuData, setSajuData] = useState<any>(null);
   const [aiResult, setAiResult] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('basic');
 
   useEffect(() => {
     const name = searchParams.get('name') || '방문자';
@@ -70,50 +64,40 @@ function SajuContent() {
 
   if (!sajuData) return null;
 
-  const tabs = [
-    { id: 'basic', label: '사주 풀이', icon: Info },
-    { id: 'overall', label: '종합 총평', icon: User },
-    { id: 'career', label: '직업·재물', icon: Briefcase },
-    { id: 'love', label: '연애·관계', icon: Heart },
-    { id: 'advice', label: '올해의 조언', icon: TrendingUp },
-  ];
-
   return (
-    <div className="min-h-screen bg-slate-950 pt-24 pb-20 px-4 md:px-6">
+    <div className="min-h-screen bg-[#F7F8FA] pt-24 pb-20 px-4 md:px-6">
       <Navbar />
       
-      <div className="max-w-5xl mx-auto space-y-10">
-        {/* 상단 헤더: 이름 & 생년월일 정보 */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold-500/10 border border-gold-500/20 text-gold-400 text-sm font-medium">
+      <div className="max-w-4xl mx-auto space-y-12">
+        {/* 상단 헤더 */}
+        <div className="text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#FEE500] text-[#3C1E1E] text-sm font-bold shadow-sm">
             <Sparkles className="w-4 h-4" />
-            현대적 명리 심리 분석 리포트
+            MZ세대 맞춤형 AI 사주 리포트
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white text-serif">
-            <span className="text-gold-400">{sajuData.userName}</span> 님의 인생 지도
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
+            <span className="text-[#3C1E1E] bg-[#FEE500] px-2 rounded-lg">{sajuData.userName}</span> 님의 인생 결과표
           </h1>
-          <p className="text-gray-400 flex items-center justify-center gap-4 text-sm md:text-base">
+          <p className="text-gray-500 flex items-center justify-center gap-4 text-sm md:text-lg font-medium">
             <span>{searchParams.get('birthDate')}</span>
-            <span className="w-1 h-1 rounded-full bg-gray-600" />
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
             <span>{searchParams.get('birthTime')} ({searchParams.get('calendarType') === 'solar' ? '양력' : '음력'})</span>
           </p>
         </div>
 
-        {/* 1. 명식표 (8글자 카드) */}
-        <div className="grid grid-cols-4 gap-3 md:gap-6">
+        {/* 1. 명식표 (트렌디한 디자인) */}
+        <div className="grid grid-cols-4 gap-4 md:gap-6">
           {sajuData.sajuBreakdown.map((column: any, idx: number) => (
-            <div key={idx} className="space-y-3">
-              <div className="text-center text-xs font-bold text-gray-500 tracking-widest uppercase">{column.title}</div>
-              <div className="space-y-3">
+            <div key={idx} className="space-y-4">
+              <div className="text-center text-xs font-black text-gray-400 tracking-widest uppercase">{column.title}</div>
+              <div className="space-y-4">
                 {column.items.map((item: any, i: number) => (
                   <div 
                     key={i} 
-                    className="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-white/10 flex flex-col items-center justify-center gap-2 hover:border-gold-500/30 transition-all group relative overflow-hidden"
+                    className="bg-white p-4 md:p-6 rounded-[1.5rem] border border-gray-100 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all group"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <span className="text-2xl md:text-4xl font-bold text-serif relative z-10" style={{ color: item.color }}>{item.char}</span>
-                    <span className="text-xs md:text-sm text-gray-400 font-medium relative z-10">{item.sound}</span>
-                    <span className="absolute top-2 right-2 text-[10px] md:text-xs text-gray-600 opacity-50 group-hover:opacity-100 transition-opacity">{item.icon}</span>
+                    <span className="text-3xl md:text-5xl font-bold tracking-tighter" style={{ color: item.color }}>{item.char}</span>
+                    <span className="text-sm md:text-base text-gray-800 font-bold">{item.sound}</span>
                   </div>
                 ))}
               </div>
@@ -121,109 +105,54 @@ function SajuContent() {
           ))}
         </div>
 
-        {/* 2. 오행 분석 차트 (심플형) */}
-        <div className="glass-panel p-8 rounded-[2.5rem] border border-white/10">
-          <h3 className="text-lg font-bold text-gray-200 mb-8 flex items-center gap-2 text-serif">
-            <div className="w-1.5 h-6 bg-gold-500 rounded-full" />
-            오행(五行) 분포 분석
-          </h3>
-          <div className="grid grid-cols-5 gap-4">
-            {Object.entries(sajuData.ohaengCount).map(([key, count]: any) => (
-              <div key={key} className="space-y-3 flex flex-col items-center">
-                <div 
-                  className="w-full rounded-2xl flex items-end justify-center px-1 overflow-hidden bg-white/5 relative"
-                  style={{ height: '120px' }}
-                >
-                  <div 
-                    className="w-full rounded-t-xl transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(0,0,0,0.5)]"
-                    style={{ 
-                      height: `${(count / 8) * 100}%`, 
-                      backgroundColor: OHAENG_COLORS[key],
-                      opacity: count > 0 ? 1 : 0.2
-                    }} 
-                  />
-                </div>
-                <div className="text-center">
-                  <div className="text-sm font-bold text-gray-200">{key}</div>
-                  <div className="text-xs text-gray-500">{count}개</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 3. AI 심층 상담 (5-탭 시스템) */}
-        <div className="space-y-6">
-          <div className="flex overflow-x-auto no-scrollbar gap-2 p-1.5 bg-black/40 rounded-[2rem] border border-white/5">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "flex items-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-bold whitespace-nowrap transition-all",
-                  activeTab === tab.id 
-                    ? "bg-gold-600 text-white shadow-lg shadow-gold-900/20" 
-                    : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
-                )}
-              >
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            ))}
+        {/* 2. AI 분석 결과 (아코디언) */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-3 ml-2">
+            <Layout className="w-6 h-6 text-[#3C1E1E]" />
+            <h3 className="text-2xl font-bold text-gray-900">심층 분석 리포트</h3>
           </div>
 
-          <div className="glass-panel p-8 md:p-12 rounded-[2.5rem] border border-white/10 min-h-[400px] relative overflow-hidden">
+          <div className="min-h-[400px] relative">
             {loading ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-950/50 backdrop-blur-sm z-20">
+              <div className="flex flex-col items-center justify-center py-32 gap-6 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm">
                 <div className="relative">
-                  <Loader2 className="w-12 h-12 text-gold-500 animate-spin" />
-                  <Sparkles className="w-6 h-6 text-gold-400 absolute -top-2 -right-2 animate-bounce" />
+                  <Loader2 className="w-16 h-16 text-[#FEE500] animate-spin stroke-[3]" />
+                  <Sparkles className="w-8 h-8 text-[#3C1E1E] absolute -top-2 -right-2 animate-bounce" />
                 </div>
-                <p className="text-gray-300 font-medium animate-pulse text-serif">인생의 지도를 읽어내는 중입니다...</p>
+                <div className="text-center space-y-2">
+                  <p className="text-xl font-bold text-gray-900">운명의 데이터 분석 중...</p>
+                  <p className="text-gray-400">당신만을 위한 뼈 때리는 조언을 생성하고 있어요.</p>
+                </div>
               </div>
             ) : aiResult ? (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="flex items-center gap-3 mb-8">
-                  <div className="p-3 rounded-2xl bg-gold-500/10 border border-gold-500/20">
-                    {(() => {
-                      const Icon = tabs.find(t => t.id === activeTab)?.icon || Info;
-                      return <Icon className="w-6 h-6 text-gold-400" />;
-                    })()}
-                  </div>
-                  <h4 className="text-xl font-bold text-white text-serif">{tabs.find(t => t.id === activeTab)?.label}</h4>
-                </div>
+              <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                <AnalysisAccordion data={aiResult} />
                 
-                <div className="space-y-6">
-                  {aiResult[activeTab]?.split('\n').map((paragraph: string, i: number) => (
-                    <p key={i} className="text-gray-300 leading-[1.9] text-lg font-light break-keep indent-2 first:first-letter:text-3xl first:first-letter:font-bold first:first-letter:text-gold-400 first:first-letter:mr-1">
-                      {paragraph}
-                    </p>
-                  ))}
+                <div className="mt-12 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8">
+                  <div className="space-y-2">
+                    <h4 className="text-lg font-bold text-gray-900">결과가 맘에 드시나요?</h4>
+                    <p className="text-gray-500 text-sm">친구들에게 이 놀라운 분석 결과를 공유해보세요!</p>
+                  </div>
+                  <ShareButtons name={sajuData.userName} />
                 </div>
 
-                <ShareButtons name={sajuData.userName} />
-
-                <div className="mt-8 pt-8 border-t border-white/5 flex justify-between items-center">
-                  <p className="text-xs text-gray-500 italic">※ 명리학 분석은 삶의 방향을 제안할 뿐, 모든 선택은 본인의 몫입니다.</p>
+                <div className="mt-10 text-center">
+                  <p className="text-sm text-gray-400 italic">※ 명리학 분석은 재미와 참고용으로만 활용해주세요. 당신의 미래는 당신이 만들어가는 것입니다.</p>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-20 text-gray-500">분석 데이터를 불러오지 못했습니다.</div>
+              <div className="text-center py-20 text-gray-500 bg-white rounded-[2.5rem] border border-gray-100">분석 데이터를 불러오지 못했습니다. 다시 시도해주세요.</div>
             )}
           </div>
         </div>
       </div>
-
-      {/* 배경 장식 */}
-      <div className="fixed top-1/4 -right-20 w-[40vw] h-[40vw] bg-gold-900/5 blur-[150px] rounded-full z-[-1] pointer-events-none" />
-      <div className="fixed bottom-1/4 -left-20 w-[40vw] h-[40vw] bg-primary-900/5 blur-[150px] rounded-full z-[-1] pointer-events-none" />
     </div>
   );
 }
 
 export default function SajuResultPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center"><Loader2 className="w-10 h-10 text-gold-500 animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center"><Loader2 className="w-10 h-10 text-[#FEE500] animate-spin" /></div>}>
       <SajuContent />
     </Suspense>
   );
