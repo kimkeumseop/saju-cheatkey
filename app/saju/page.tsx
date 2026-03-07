@@ -42,7 +42,9 @@ function SajuProcessingContent() {
       const aiResult = await response.json();
 
       // 3. Firestore에 저장
+      console.log('📦 데이터 저장 시작:', { name, birthDate });
       setLoadingStep('치트키 생성 완료! 저장 중...');
+      
       const docRef = await addDoc(collection(db, 'sajuResults'), {
         userName: name,
         birthDate,
@@ -52,14 +54,19 @@ function SajuProcessingContent() {
         sajuData: sajuData, // 전체 계산 데이터 포함
         aiResult: aiResult, // 8개 테마 JSON
         createdAt: serverTimestamp()
+      }).catch(err => {
+        console.error('🔥 Firestore 쓰기 에러 (상세):', err);
+        throw err;
       });
+
+      console.log('✅ 저장 성공! 문서 ID:', docRef.id);
 
       // 4. 결과 페이지로 리다이렉트
       router.push(`/result/${docRef.id}`);
 
-    } catch (error) {
-      console.error('분석 프로세스 오류:', error);
-      alert('분석 중 오류가 발생했습니다. 메인으로 돌아갑니다.');
+    } catch (error: any) {
+      console.error('❌ 분석 프로세스 치명적 오류:', error);
+      alert(`분석 중 오류가 발생했습니다: ${error.message || '알 수 없는 오류'}\n메인으로 돌아갑니다.`);
       router.push('/');
     }
   };
