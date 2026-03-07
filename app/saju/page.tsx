@@ -1,18 +1,16 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import AnalysisAccordion from '@/components/AnalysisAccordion';
-import ShareButtons from '@/components/ShareButtons';
-import Navbar from '@/components/Navbar';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { calculateSaju } from '@/lib/saju';
-import { Sparkles, Loader2, Layout } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
 
-function SajuContent() {
+function SajuProcessingContent() {
   const searchParams = useSearchParams();
-  const [sajuData, setSajuData] = useState<any>(null);
-  const [aiResult, setAiResult] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const [loadingStep, setLoadingStep] = useState('사주 원국 계산 중...');
 
   useEffect(() => {
     const name = searchParams.get('name') || '방문자';
@@ -22,171 +20,83 @@ function SajuContent() {
     const gender = searchParams.get('gender') || 'male';
 
     if (birthDate) {
-      const data = calculateSaju(birthDate, birthTime, calendarType, gender);
-      setSajuData({ ...data, userName: name });
-      analyzeWithAi(data, name);
-
-      // 최근 분석 기록 저장
-      if (typeof window !== 'undefined') {
-        const newHistoryItem = {
-          id: Math.random().toString(36).substr(2, 9),
-          name,
-          birthDate,
-          birthTime,
-          calendarType,
-          gender,
-          timestamp: Date.now()
-        };
-        const saved = localStorage.getItem('saju_history');
-        let history = saved ? JSON.parse(saved) : [];
-        history = history.filter((item: any) => !(item.name === name && item.birthDate === birthDate));
-        history.unshift(newHistoryItem);
-        localStorage.setItem('saju_history', JSON.stringify(history.slice(0, 10)));
-      }
+      processAnalysis(name, birthDate, birthTime, calendarType, gender);
     }
   }, [searchParams]);
 
-  const analyzeWithAi = async (data: any, name: string) => {
+  const processAnalysis = async (name: string, birthDate: string, birthTime: string, calendarType: string, gender: string) => {
     try {
+      // 1. 사주 원국 계산
+      setLoadingStep('우주의 기운을 스캔하는 중... (사주 원국 계산)');
+      const sajuData = calculateSaju(birthDate, birthTime, calendarType, gender);
+
+      // 2. Gemini AI 분석 호출
+      setLoadingStep('AI 도사가 당신의 운명을 팩폭 중... (약 5초 소요)');
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sajuData: data.rawSaju, userName: name }),
+        body: JSON.stringify({ sajuData: sajuData.rawSaju, userName: name }),
       });
-      const result = await response.json();
-      setAiResult(result);
+      
+      if (!response.ok) throw new Error('AI 분석 실패');
+      const aiResult = await response.json();
+
+      // 3. Firestore에 저장
+      setLoadingStep('치트키 생성 완료! 저장 중...');
+      const docRef = await addDoc(collection(db, 'sajuResults'), {
+        userName: name,
+        birthDate,
+        birthTime,
+        calendarType,
+        gender,
+        sajuData: sajuData, // 전체 계산 데이터 포함
+        aiResult: aiResult, // 8개 테마 JSON
+        createdAt: serverTimestamp()
+      });
+
+      // 4. 결과 페이지로 리다이렉트
+      router.push(`/result/${docRef.id}`);
+
     } catch (error) {
-      console.error('AI 분석 실패:', error);
-    } finally {
-      setLoading(false);
+      console.error('분석 프로세스 오류:', error);
+      alert('분석 중 오류가 발생했습니다. 메인으로 돌아갑니다.');
+      router.push('/');
     }
   };
 
-  if (!sajuData) return null;
-
   return (
-    <div className="min-h-screen bg-[#F7F8FA] pt-24 pb-32 px-4 md:px-6">
-      <Navbar />
+    <div className="min-h-screen bg-[#F7F8FA] flex flex-col items-center justify-center p-6 text-center">
+      <div className="relative mb-8">
+        <div className="w-24 h-24 bg-[#FEE500] rounded-[2.5rem] flex items-center justify-center shadow-lg animate-pulse">
+          <Loader2 className="w-12 h-12 text-[#3C1E1E] animate-spin stroke-[3]" />
+        </div>
+        <Sparkles className="w-10 h-10 text-[#3C1E1E] absolute -top-4 -right-4 animate-bounce" />
+      </div>
       
-      <div className="max-w-4xl mx-auto space-y-12">
-        {/* 상단 헤더 */}
-        <div className="text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#FEE500] text-[#3C1E1E] text-sm font-bold shadow-sm">
-            <Sparkles className="w-4 h-4" />
-            MZ세대 맞춤형 AI 사주 리포트
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
-            <span className="text-[#3C1E1E] bg-[#FEE500] px-2 rounded-lg">{sajuData.userName}</span> 님의 인생 결과표
-          </h1>
-          <p className="text-gray-500 flex items-center justify-center gap-4 text-sm md:text-lg font-medium">
-            <span>{searchParams.get('birthDate')}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-            <span>{searchParams.get('birthTime')} ({searchParams.get('calendarType') === 'solar' ? '양력' : '음력'})</span>
-          </p>
-        </div>
+      <div className="space-y-4">
+        <h2 className="text-3xl font-black text-[#3C1E1E] tracking-tight animate-in fade-in slide-in-from-bottom-4">
+          당신의 우주를 스캔하는 중...
+        </h2>
+        <p className="text-lg font-bold text-gray-500 animate-pulse">
+          {loadingStep}
+        </p>
+      </div>
 
-        {/* 1. 명식표 (트렌디한 디자인) */}
-        <div className="grid grid-cols-4 gap-4 md:gap-6">
-          {sajuData.sajuBreakdown.map((column: any, idx: number) => (
-            <div key={idx} className="space-y-4">
-              <div className="text-center text-xs font-black text-gray-400 tracking-widest uppercase">{column.title}</div>
-              <div className="space-y-4">
-                {column.items.map((item: any, i: number) => (
-                  <div 
-                    key={i} 
-                    className="bg-white p-4 md:p-6 rounded-[1.5rem] border border-gray-100 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all group"
-                  >
-                    <span className="text-3xl md:text-5xl font-bold tracking-tighter" style={{ color: item.color }}>{item.char}</span>
-                    <span className="text-sm md:text-base text-gray-800 font-bold">{item.sound}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* 2. AI 분석 결과 (아코디언) */}
-        <div className="space-y-8">
-          <div className="flex items-center gap-3 ml-2">
-            <Layout className="w-6 h-6 text-[#3C1E1E]" />
-            <h3 className="text-2xl font-bold text-gray-900">심층 분석 리포트</h3>
-          </div>
-
-          <div className="min-h-[400px] relative">
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-32 gap-6 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm">
-                <div className="relative">
-                  <Loader2 className="w-16 h-16 text-[#FEE500] animate-spin stroke-[3]" />
-                  <Sparkles className="w-8 h-8 text-[#3C1E1E] absolute -top-2 -right-2 animate-bounce" />
-                </div>
-                <div className="text-center space-y-2">
-                  <p className="text-xl font-bold text-gray-900">운명의 데이터 분석 중...</p>
-                  <p className="text-gray-400">당신만을 위한 뼈 때리는 조언을 생성하고 있어요.</p>
-                </div>
-              </div>
-            ) : aiResult ? (
-              <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                <AnalysisAccordion data={aiResult} />
-                
-                {/* CTA 배너 섹션 */}
-                <div className="mt-12 space-y-4">
-                  {/* 배너 1: 친구/연인 사주 유도 */}
-                  <button 
-                    onClick={() => window.location.href = '/'}
-                    className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 px-4 rounded-[2rem] shadow-lg shadow-pink-200 transition-all active:scale-[0.98] flex flex-col items-center justify-center gap-1 group"
-                  >
-                    <span className="text-lg md:text-xl font-black tracking-tight">
-                      내 사주만 보기 아쉽다면? 😈
-                    </span>
-                    <span className="text-sm font-bold opacity-90 group-hover:underline">
-                      친구, 연인 사주 훔쳐보기 🤍
-                    </span>
-                  </button>
-
-                  {/* 배너 2: 2026 운세 유도 (티저) */}
-                  <button 
-                    onClick={() => {
-                      // BottomNav의 모달을 띄우기 위해 커스텀 이벤트를 발생시키거나 직접 알림
-                      const event = new CustomEvent('openTeaserModal');
-                      window.dispatchEvent(event);
-                    }}
-                    className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-6 px-4 rounded-[2rem] shadow-lg shadow-yellow-100 transition-all active:scale-[0.98] flex flex-col items-center justify-center gap-1 group"
-                  >
-                    <span className="text-lg md:text-xl font-black tracking-tight">
-                      돈벼락 맞을 준비 됐어? 💸
-                    </span>
-                    <span className="text-sm font-bold opacity-80 group-hover:underline">
-                      2026년 신년운세 보러가기 💖
-                    </span>
-                  </button>
-                </div>
-                
-                <div className="mt-12 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8">
-                  <div className="space-y-2">
-                    <h4 className="text-lg font-bold text-gray-900">결과가 맘에 드시나요?</h4>
-                    <p className="text-gray-500 text-sm">친구들에게 이 놀라운 분석 결과를 공유해보세요!</p>
-                  </div>
-                  <ShareButtons name={sajuData.userName} />
-                </div>
-
-                <div className="mt-10 text-center">
-                  <p className="text-sm text-gray-400 italic">※ 명리학 분석은 재미와 참고용으로만 활용해주세요. 당신의 미래는 당신이 만들어가는 것입니다.</p>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-20 text-gray-500 bg-white rounded-[2.5rem] border border-gray-100">분석 데이터를 불러오지 못했습니다. 다시 시도해주세요.</div>
-            )}
-          </div>
-        </div>
+      <div className="mt-12 max-w-xs w-full bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm text-sm text-gray-400 font-medium">
+        팁: 태어난 시간이 정확할수록 <br/>더 소름 돋는 결과가 나옵니다 💥
       </div>
     </div>
   );
 }
 
-export default function SajuResultPage() {
+export default function SajuProcessingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center"><Loader2 className="w-10 h-10 text-[#FEE500] animate-spin" /></div>}>
-      <SajuContent />
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-[#FEE500] animate-spin" />
+      </div>
+    }>
+      <SajuProcessingContent />
     </Suspense>
   );
 }
