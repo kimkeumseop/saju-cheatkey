@@ -38,7 +38,10 @@ export default function RootLayout({
         ></script>
         <meta name="google-adsense-account" content="ca-pub-1059415497859090" />
         
-        <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" integrity="sha384-TiCmbV6A3JiR00k/T0AixA1A7yMceX+sUo0DtcX2mRzIfq0tN2A5Y+Z4B5B4j+u" crossOrigin="anonymous" async></script>
+        <script 
+          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" 
+          async
+        ></script>
       </head>
       <body className="antialiased min-h-screen relative pb-20">
         <div className="fixed inset-0 bg-texture z-[-1]" />
