@@ -65,7 +65,7 @@ function SajuContent() {
   if (!sajuData) return null;
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] pt-24 pb-20 px-4 md:px-6">
+    <div className="min-h-screen bg-[#F7F8FA] pt-24 pb-32 px-4 md:px-6">
       <Navbar />
       
       <div className="max-w-4xl mx-auto space-y-12">
@@ -127,6 +127,39 @@ function SajuContent() {
             ) : aiResult ? (
               <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
                 <AnalysisAccordion data={aiResult} />
+                
+                {/* CTA 배너 섹션 */}
+                <div className="mt-12 space-y-4">
+                  {/* 배너 1: 친구/연인 사주 유도 */}
+                  <button 
+                    onClick={() => window.location.href = '/'}
+                    className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 px-4 rounded-[2rem] shadow-lg shadow-pink-200 transition-all active:scale-[0.98] flex flex-col items-center justify-center gap-1 group"
+                  >
+                    <span className="text-lg md:text-xl font-black tracking-tight">
+                      내 사주만 보기 아쉽다면? 😈
+                    </span>
+                    <span className="text-sm font-bold opacity-90 group-hover:underline">
+                      친구, 연인 사주 훔쳐보기 🤍
+                    </span>
+                  </button>
+
+                  {/* 배너 2: 2026 운세 유도 (티저) */}
+                  <button 
+                    onClick={() => {
+                      // BottomNav의 모달을 띄우기 위해 커스텀 이벤트를 발생시키거나 직접 알림
+                      const event = new CustomEvent('openTeaserModal');
+                      window.dispatchEvent(event);
+                    }}
+                    className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-6 px-4 rounded-[2rem] shadow-lg shadow-yellow-100 transition-all active:scale-[0.98] flex flex-col items-center justify-center gap-1 group"
+                  >
+                    <span className="text-lg md:text-xl font-black tracking-tight">
+                      돈벼락 맞을 준비 됐어? 💸
+                    </span>
+                    <span className="text-sm font-bold opacity-80 group-hover:underline">
+                      2026년 신년운세 보러가기 💖
+                    </span>
+                  </button>
+                </div>
                 
                 <div className="mt-12 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8">
                   <div className="space-y-2">
