@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Sparkles } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -10,6 +10,8 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface AnalysisItem {
+  theme: string;
+  icon: string;
   title: string;
   content: string;
 }
@@ -43,23 +45,25 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
           >
             <div className="flex items-center gap-4">
               <div className={cn(
-                "w-10 h-10 rounded-2xl flex items-center justify-center transition-colors",
-                openIndex === index ? "bg-[#FEE500]" : "bg-gray-200 group-hover:bg-gray-300"
+                "w-12 h-12 rounded-2xl flex items-center justify-center transition-all text-2xl shadow-sm",
+                openIndex === index ? "bg-[#FEE500] scale-110" : "bg-gray-200 group-hover:bg-gray-300"
               )}>
-                <Sparkles className={cn(
-                  "w-5 h-5",
-                  openIndex === index ? "text-[#3C1E1E]" : "text-gray-500"
-                )} />
+                {item.icon}
               </div>
-              <span className={cn(
-                "text-lg md:text-xl font-bold tracking-tight",
-                openIndex === index ? "text-[#3C1E1E]" : "text-gray-600"
-              )}>
-                {item.title}
-              </span>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">
+                  {item.theme}
+                </p>
+                <h4 className={cn(
+                  "text-lg md:text-xl font-black tracking-tight",
+                  openIndex === index ? "text-[#3C1E1E]" : "text-gray-700"
+                )}>
+                  {item.title}
+                </h4>
+              </div>
             </div>
             <ChevronDown className={cn(
-              "w-6 h-6 transition-transform duration-300",
+              "w-6 h-6 transition-transform duration-300 shrink-0",
               openIndex === index ? "rotate-180 text-[#3C1E1E]" : "text-gray-400"
             )} />
           </button>
@@ -69,7 +73,7 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
             openIndex === index ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
           )}>
             <div className="overflow-hidden">
-              <div className="p-6 md:p-8 pt-0 text-gray-700 leading-relaxed text-lg break-keep whitespace-pre-wrap">
+              <div className="p-6 md:p-8 pt-0 text-gray-600 leading-relaxed text-lg break-keep whitespace-pre-wrap font-medium">
                 {item.content}
               </div>
             </div>
