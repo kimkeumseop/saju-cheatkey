@@ -26,6 +26,11 @@ function SajuProcessingContent() {
 
   const processAnalysis = async (name: string, birthDate: string, birthTime: string, calendarType: string, gender: string) => {
     try {
+      // 0. 환경 변수 체크 (Vercel 설정 확인용)
+      if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+        throw new Error('Firebase 프로젝트 ID가 설정되지 않았습니다. Vercel 환경 변수를 확인하세요.');
+      }
+
       // 1. 사주 원국 계산
       setLoadingStep('우주의 기운을 스캔하는 중... (사주 원국 계산)');
       const sajuData = calculateSaju(birthDate, birthTime, calendarType, gender);
