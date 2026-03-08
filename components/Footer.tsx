@@ -24,9 +24,9 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest">서비스</h4>
             <ul className="space-y-2 text-sm text-gray-400 font-bold">
-              <li><Link href="/" className="hover:text-[#3C1E1E] transition-colors">사주 분석</Link></li>
-              <li><Link href="/" className="hover:text-[#3C1E1E] transition-colors">2026년 신년운세</Link></li>
-              <li><Link href="/" className="hover:text-[#3C1E1E] transition-colors">AI 심층 상담</Link></li>
+              <li><Link href="/column/1" className="hover:text-[#3C1E1E] transition-colors">명리 심리 칼럼</Link></li>
+              <li><Link href="/column/2" className="hover:text-[#3C1E1E] transition-colors">2030 운세 트렌드</Link></li>
+              <li><Link href="/column/3" className="hover:text-[#3C1E1E] transition-colors">2026년 대비 가이드</Link></li>
             </ul>
           </div>
 
@@ -35,6 +35,7 @@ export default function Footer() {
             <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest">법적 고지</h4>
             <ul className="space-y-2 text-sm text-gray-400 font-bold">
               <li><Link href="/privacy" className="hover:text-[#3C1E1E] transition-colors flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> 개인정보처리방침</Link></li>
+              <li><Link href="/terms" className="hover:text-[#3C1E1E] transition-colors">이용약관</Link></li>
               <li className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> 문의: support@myeongri.com</li>
             </ul>
           </div>
