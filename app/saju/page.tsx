@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 import { calculateSaju } from '@/lib/saju';
 import { Sparkles, Loader2 } from 'lucide-react';
 
@@ -26,11 +26,6 @@ function SajuProcessingContent() {
 
   const processAnalysis = async (name: string, birthDate: string, birthTime: string, calendarType: string, gender: string) => {
     try {
-      // 0. 환경 변수 체크 (Vercel 설정 확인용)
-      if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
-        throw new Error('Firebase 프로젝트 ID가 설정되지 않았습니다. Vercel 환경 변수를 확인하세요.');
-      }
-
       // 1. 사주 원국 계산
       setLoadingStep('우주의 기운을 스캔하는 중... (사주 원국 계산)');
       const sajuData = calculateSaju(birthDate, birthTime, calendarType, gender);
@@ -46,32 +41,39 @@ function SajuProcessingContent() {
       if (!response.ok) throw new Error('AI 분석 실패');
       const aiResult = await response.json();
 
-      // 3. Firestore에 저장
-      console.log('📦 데이터 저장 시작:', { name, birthDate });
-      setLoadingStep('치트키 생성 완료! 저장 중...');
-      
-      const docRef = await addDoc(collection(db, 'sajuResults'), {
+      // 3. 결과 데이터 구성
+      const finalResult = {
         userName: name,
         birthDate,
         birthTime,
         calendarType,
         gender,
-        sajuData: sajuData, // 전체 계산 데이터 포함
-        aiResult: aiResult, // 8개 테마 JSON
-        createdAt: serverTimestamp()
-      }).catch(err => {
-        console.error('🔥 Firestore 쓰기 에러 (상세):', err);
-        throw err;
-      });
+        sajuData,
+        aiResult,
+        createdAt: new Date().toISOString()
+      };
 
-      console.log('✅ 저장 성공! 문서 ID:', docRef.id);
+      // 4. 로컬 스토리지에 먼저 백업 (DB 저장 실패 대비)
+      const localId = `local_${Date.now()}`;
+      localStorage.setItem(`saju_result_${localId}`, JSON.stringify(finalResult));
+      
+      setLoadingStep('치트키 생성 완료! 저장 중...');
 
-      // 4. 결과 페이지로 리다이렉트
-      router.push(`/result/${docRef.id}`);
+      // 5. Firestore 저장 시도 (백그라운드 느낌으로 처리)
+      try {
+        console.log('🚀 Firestore 저장 시도 중...');
+        const docRef = await addDoc(collection(db, 'sajuResults'), finalResult);
+        console.log('✅ Firestore 저장 성공:', docRef.id);
+        router.push(`/result/${docRef.id}`);
+      } catch (dbError) {
+        console.error('⚠️ DB 저장 실패, 로컬 모드로 전환:', dbError);
+        // DB 저장 실패 시 로컬 ID로 리다이렉트
+        router.push(`/result/${localId}`);
+      }
 
     } catch (error: any) {
-      console.error('❌ 분석 프로세스 치명적 오류:', error);
-      alert(`분석 중 오류가 발생했습니다: ${error.message || '알 수 없는 오류'}\n메인으로 돌아갑니다.`);
+      console.error('❌ 치명적 오류:', error);
+      alert(`오류: ${error.message || '알 수 없는 오류'}`);
       router.push('/');
     }
   };
@@ -86,16 +88,12 @@ function SajuProcessingContent() {
       </div>
       
       <div className="space-y-4">
-        <h2 className="text-3xl font-black text-[#3C1E1E] tracking-tight animate-in fade-in slide-in-from-bottom-4">
+        <h2 className="text-3xl font-black text-[#3C1E1E] tracking-tight">
           당신의 우주를 스캔하는 중...
         </h2>
         <p className="text-lg font-bold text-gray-500 animate-pulse">
           {loadingStep}
         </p>
-      </div>
-
-      <div className="mt-12 max-w-xs w-full bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm text-sm text-gray-400 font-medium">
-        팁: 태어난 시간이 정확할수록 <br/>더 소름 돋는 결과가 나옵니다 💥
       </div>
     </div>
   );
@@ -103,11 +101,7 @@ function SajuProcessingContent() {
 
 export default function SajuProcessingPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">
-        <Loader2 className="w-10 h-10 text-[#FEE500] animate-spin" />
-      </div>
-    }>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-[#FEE500]" /></div>}>
       <SajuProcessingContent />
     </Suspense>
   );

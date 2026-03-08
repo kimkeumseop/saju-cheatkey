@@ -18,18 +18,41 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // 1. 로컬 데이터 먼저 확인 (local_로 시작하는 경우)
+        if (id.startsWith('local_')) {
+          const localData = localStorage.getItem(`saju_result_${id}`);
+          if (localData) {
+            setData(JSON.parse(localData));
+            setLoading(false);
+            return;
+          }
+        }
+
+        // 2. Firestore에서 데이터 가져오기
         const docRef = doc(db, 'sajuResults', id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           setData(docSnap.data());
         } else {
-          alert('존재하지 않거나 만료된 분석 결과입니다.');
-          router.push('/');
+          // Firestore에 없으면 로컬에서도 한 번 더 찾아봄
+          const localData = localStorage.getItem(`saju_result_${id}`);
+          if (localData) {
+            setData(JSON.parse(localData));
+          } else {
+            alert('결과 데이터를 찾을 수 없습니다.');
+            router.push('/');
+          }
         }
       } catch (error) {
         console.error('데이터 로드 오류:', error);
-        router.push('/');
+        // 에러 발생 시 로컬 스토리지 시도
+        const localData = localStorage.getItem(`saju_result_${id}`);
+        if (localData) {
+          setData(JSON.parse(localData));
+        } else {
+          router.push('/');
+        }
       } finally {
         setLoading(false);
       }
@@ -60,7 +83,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
         <div className="text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#FEE500] text-[#3C1E1E] text-sm font-bold shadow-sm">
             <Sparkles className="w-4 h-4" />
-            MZ세대 맞춤형 AI 사주 리포트
+            MZ세대 맞춤형 AI 사주 리포트 {id.startsWith('local_') && '(임시저장됨)'}
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
             <span className="text-[#3C1E1E] bg-[#FEE500] px-2 rounded-lg">{userName}</span> 님의 인생 결과표

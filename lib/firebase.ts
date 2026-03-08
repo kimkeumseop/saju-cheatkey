@@ -1,7 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore } from "firebase/firestore";
 
-// Firebase 설정값 (환경 변수)
+// Firebase 설정값
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -11,13 +11,32 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// 설정값 누락 체크
-if (!firebaseConfig.projectId) {
-  console.error("🔥 Firebase Project ID가 누락되었습니다. .env 설정을 확인하세요.");
+// 필수 설정값 확인
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  if (typeof window !== "undefined") {
+    console.warn("⚠️ Firebase 환경 변수가 설정되지 않았습니다. 개발 환경인지 확인하세요.");
+  }
 }
 
-// 앱 초기화 (중복 방지)
+// 앱 초기화
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
+
+// Firestore 초기화
+let db: any;
+try {
+  if (typeof window !== "undefined") {
+    // 브라우저 환경: 연결 안정성을 위해 Long Polling 사용
+    db = initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+    });
+    console.log("🔥 Firestore 초기화 완료 (Long Polling)");
+  } else {
+    // 서버 환경
+    db = getFirestore(app);
+  }
+} catch (e) {
+  console.warn("ℹ️ 기존 Firestore 인스턴스를 사용합니다.");
+  db = getFirestore(app);
+}
 
 export { db };
