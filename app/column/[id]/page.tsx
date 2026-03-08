@@ -134,7 +134,7 @@ export default function ColumnPage({ params }: { params: Promise<{ id: string }>
             {column.title}
           </h1>
           <div className="flex items-center justify-center gap-4 text-gray-500 text-sm font-medium">
-            <span>인생치트키 편집팀</span>
+            <span>사주 치트키 편집팀</span>
             <span className="w-1 h-1 rounded-full bg-gray-300"></span>
             <span>2026.03.08</span>
             <span className="w-1 h-1 rounded-full bg-gray-300"></span>
