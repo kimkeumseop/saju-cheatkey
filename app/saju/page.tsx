@@ -30,8 +30,8 @@ function SajuProcessingContent() {
       setLoadingStep('우주의 기운을 스캔하는 중... (사주 원국 계산)');
       const sajuData = calculateSaju(birthDate, birthTime, calendarType, gender);
 
-      // 2. Gemini AI 분석 호출
-      setLoadingStep('AI 도사가 당신의 운명을 팩폭 중... (약 5초 소요)');
+      // 2. 전문가 심층 분석 호출
+      setLoadingStep('명리학 전문가가 당신의 운명을 팩폭 중... (약 5초 소요)');
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

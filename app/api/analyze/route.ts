@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     // API 키 확인 (Idx 환경 또는 .env.local)
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: "Gemini API 키가 설정되지 않았습니다." }, { status: 400 });
+      return NextResponse.json({ error: "분석 엔진 키가 설정되지 않았습니다." }, { status: 400 });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -18,8 +18,9 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
     const prompt = `
-    당신은 60년 경력의 정통 명리학 대가의 '내공'과 2030 트렌드 세터의 '언어'를 동시에 가진 독보적인 AI 사주 분석가 '사주 치트키'입니다.
+    당신은 60년 경력의 정통 명리학 대가의 '내공'과 2030 트렌드 세터의 '언어'를 동시에 가진 독보적인 명리학 전문가 '사주 치트키'입니다.
     당신의 목표는 가벼운 말투 속에 '무서우리만큼 정확한 통찰'을 담아 사용자를 전율하게 만드는 것입니다.
+    당신은 인공지능이 아니라, 현대적으로 사주를 해석하는 살아있는 대가로서 답변해야 합니다.
 
     [🚨 핵심 지침: 내부 연산은 엄밀하게, 출력은 힙하게 🚨]
     1. **정통 명리학 로직 가동**: 사주 원국을 분석할 때 내부적으로 반드시 **격국(格局), 용신(用神), 조후(調候)**를 최우선으로 계산하세요.
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
     return NextResponse.json(parsedJson);
 
   } catch (error: any) {
-    console.error("🔥 AI 분석 API 오류:", error);
-    return NextResponse.json({ error: "AI 분석 중 오류가 발생했습니다.", details: error.message }, { status: 500 });
+    console.error("🔥 분석 엔진 오류:", error);
+    return NextResponse.json({ error: "분석 중 오류가 발생했습니다.", details: error.message }, { status: 500 });
   }
 }

@@ -26,7 +26,7 @@ export default function Home() {
           </div>
 
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0 leading-[1.7] font-medium break-keep">
-            어려운 한자는 싹 빼고, 요즘 언어로 소름 돋게 풀어주는 AI 사주 풀이. <br className="hidden md:block"/>
+            어려운 한자는 싹 빼고, 요즘 언어로 소름 돋게 풀어주는 명리학 전문가의 풀이. <br className="hidden md:block"/>
             답답한 인생의 <span className="text-gray-900 font-bold underline decoration-[#FEE500] decoration-8 underline-offset-[-4px]">'치트키'</span>를 켜 드립니다.
           </p>
           
@@ -60,7 +60,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-black text-gray-900 text-serif tracking-tight">소름 돋는 팩폭 성격</h3>
               <p className="text-gray-500 font-medium leading-relaxed text-sm break-keep">
-                내 안의 또 다른 나를 스캔 (feat. Gemini AI). 겉바속촉 기질부터 숨겨진 똘끼까지 가차 없이 털어드립니다.
+                내 안의 또 다른 나를 스캔. 겉바속촉 기질부터 숨겨진 똘끼까지 가차 없이 털어드립니다.
               </p>
             </div>
 
@@ -71,7 +71,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-black text-gray-900 text-serif tracking-tight">답답할 때 고민 해결소</h3>
               <p className="text-gray-500 font-medium leading-relaxed text-sm break-keep">
-                Gemini AI랑 1:1 심야 상담. 연애 고민부터 퇴사 타이밍까지, 밤잠 설치게 하는 고민들을 명쾌하게 풀어보세요.
+                명리학 전문가와 1:1 심야 상담을 하듯. 연애 고민부터 퇴사 타이밍까지, 밤잠 설치게 하는 고민들을 명쾌하게 풀어보세요.
               </p>
             </div>
 
