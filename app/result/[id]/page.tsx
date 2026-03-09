@@ -176,7 +176,32 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
           </div>
 
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            <AnalysisAccordion data={aiResult} />
+            {/* 데이터 형식 변환 로직 (객체 -> 배열) */}
+            {(() => {
+              let displayData = [];
+              
+              if (Array.isArray(aiResult)) {
+                displayData = aiResult;
+              } else if (typeof aiResult === 'object' && aiResult !== null) {
+                // 프리미엄 객체 데이터를 배열로 변환
+                const themes = [
+                  { key: 'basic', theme: '나의 스탯', title: '타고난 기운과 능력치', icon: '🧬' },
+                  { key: 'overall', theme: '본질 자아', title: '성격 본질과 세계관', icon: '🧠' },
+                  { key: 'career', theme: '성공 공식', title: '직업운과 재물 파이프라인', icon: '💰' },
+                  { key: 'love', theme: '연애 귀인', title: '인연 지수와 관계 분석', icon: '💖' },
+                  { key: 'advice', theme: '갓생 가이드', title: '2026년 월별 행동 지침', icon: '🗓️' }
+                ];
+
+                displayData = themes.map(t => ({
+                  theme: t.theme,
+                  title: t.title,
+                  icon: t.icon,
+                  content: aiResult[t.key] || '분석 내용을 불러오지 못했습니다.'
+                }));
+              }
+
+              return <AnalysisAccordion data={displayData} />;
+            })()}
 
             {/* CTA 배너 섹션 */}
             <div className="mt-12 space-y-4">
