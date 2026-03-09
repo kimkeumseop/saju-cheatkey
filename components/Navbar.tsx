@@ -1,14 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Sparkles, LogOut, User as UserIcon } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
-import LoginModal from './LoginModal';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
@@ -51,7 +50,7 @@ export default function Navbar() {
               </div>
             ) : (
               <button 
-                onClick={() => setIsLoginModalOpen(true)}
+                onClick={() => router.push('/login')}
                 className="bg-[#3C1E1E] text-white px-5 py-2.5 rounded-2xl text-sm font-black hover:bg-[#2A1515] transition-all active:scale-[0.95] shadow-md shadow-brown-100"
               >
                 로그인
@@ -60,11 +59,6 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
-      />
     </nav>
   );
 }
