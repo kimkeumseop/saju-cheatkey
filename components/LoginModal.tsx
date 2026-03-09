@@ -116,48 +116,44 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             </p>
           </div>
 
-          {/* 소셜 로그인 버튼들 (회원가입 시에도 동일하게 제공) */}
-          {!isSignUp && (
-            <>
-              <div className="grid grid-cols-1 gap-3">
-                <button
-                  onClick={handleGoogleLogin}
-                  disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-4 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-[0.98]"
-                >
-                  <Chrome className="w-5 h-5" />
-                  구글로 시작하기
-                </button>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={handleKakaoLogin}
-                    disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 bg-[#FEE500] py-4 rounded-2xl font-bold text-[#3C1E1E] hover:bg-[#FDD000] transition-all active:scale-[0.98]"
-                  >
-                    <span className="text-lg">🟡</span>
-                    카카오
-                  </button>
-                  <button
-                    onClick={handleNaverLogin}
-                    disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 bg-[#03C75A] py-4 rounded-2xl font-bold text-white hover:bg-[#02b351] transition-all active:scale-[0.98]"
-                  >
-                    <span className="text-lg">🟢</span>
-                    네이버
-                  </button>
-                </div>
-              </div>
+          {/* 소셜 로그인 버튼들 (항상 표시) */}
+          <div className="space-y-3">
+            <button
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-4 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-[0.98]"
+            >
+              <Chrome className="w-5 h-5 text-blue-500" />
+              구글로 시작하기
+            </button>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={handleKakaoLogin}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 bg-[#FEE500] py-4 rounded-2xl font-bold text-[#3C1E1E] hover:bg-[#FDD000] transition-all active:scale-[0.98]"
+              >
+                <span className="text-lg">🟡</span>
+                카카오
+              </button>
+              <button
+                onClick={handleNaverLogin}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 bg-[#03C75A] py-4 rounded-2xl font-bold text-white hover:bg-[#02b351] transition-all active:scale-[0.98]"
+              >
+                <span className="text-lg">🟢</span>
+                네이버
+              </button>
+            </div>
+          </div>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-100"></span>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-4 text-gray-400 font-bold">또는 이메일</span>
-                </div>
-              </div>
-            </>
-          )}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-100"></span>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-4 text-gray-400 font-bold">또는 이메일</span>
+            </div>
+          </div>
 
           {/* 에러 메시지 */}
           {error && (
