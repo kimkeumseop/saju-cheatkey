@@ -12,8 +12,13 @@ interface LoginModalProps {
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const { loginWithGoogle, loginWithEmail, signUpWithEmail } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
-  
-  // ... (기존 상태들)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  if (!isOpen) return null;
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -123,6 +128,24 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   <Chrome className="w-5 h-5" />
                   구글로 시작하기
                 </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={handleKakaoLogin}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-[#FEE500] py-4 rounded-2xl font-bold text-[#3C1E1E] hover:bg-[#FDD000] transition-all active:scale-[0.98]"
+                  >
+                    <span className="text-lg">🟡</span>
+                    카카오
+                  </button>
+                  <button
+                    onClick={handleNaverLogin}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-[#03C75A] py-4 rounded-2xl font-bold text-white hover:bg-[#02b351] transition-all active:scale-[0.98]"
+                  >
+                    <span className="text-lg">🟢</span>
+                    네이버
+                  </button>
+                </div>
               </div>
 
               <div className="relative">
