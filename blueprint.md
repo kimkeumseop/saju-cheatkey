@@ -74,8 +74,20 @@ A modern Myeongrihak (Saju) web service that provides personalized life analysis
     - [x] Implemented SDK initialization and sharing logic in `ShareButtons.tsx` using JavaScript Key.
 - [x] Build and Lint check.
 
+### Phase 6: Authentication & Login System (Premium)
+- [x] **Global Auth State Management:** Implemented `AuthContext` using Firebase Authentication (`lib/auth.tsx`).
+- [x] **Integrated Login Modal:** 
+    - Designed a "Pop" MZ-style centered modal with backdrop-blur effects.
+    - Features seamless switching between Login and Signup tabs.
+    - Responsive design with internal scrolling to prevent UI clipping on mobile.
+- [x] **Social Login Integration:** 
+    - Google, Kakao, and Naver login buttons prominently displayed.
+    - Implemented standardized error handling with user-friendly Korean alerts (e.g., handling `popup-closed-by-user`).
+- [x] **Profile Integration:** Connected `Navbar` to display user nicknames and profile photos upon successful login.
+- [x] **Security & Domain Setup:** Configured authorized domains and detailed error logging for production environments.
+
 ## Implementation Details (Latest Update)
+- **Login UI Optimization:** Centered the login modal and added a scrollable container (`max-h-[70vh]`) to ensure all login options (Google, Kakao, Naver, Email) are visible on small screens.
+- **Enhanced Debugging:** Added Firebase environment variable checks and detailed console logging for authentication flows.
 - **Visual Redundancy Removal:** Cleaned up the AI counseling UI by removing overlapping visual elements like cards and timelines.
 - **Text-Focused Design:** Prioritized reading experience with improved spacing, line height (leading-2.0), and drop-caps for each tab.
-- **Year Context:** All AI output is calibrated to the year 2026.
-- **Bilingual Display:** Ensured all Hanja characters are accompanied by their Korean sounds for accessibility.
