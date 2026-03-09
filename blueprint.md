@@ -36,10 +36,13 @@ A modern Myeongrihak (Saju) web service that provides personalized life analysis
 - [x] **Global Layout:** Navigation bar, Footer, and responsive container.
 - [x] **Home Page:** Hero section with high-quality illustration and Saju input form.
 - [x] **Saju Result Page (Premium Refactoring):**
-    - [x] **8-Character Barcode UI:** Redesigned the Myeong-sik table into a premium infographic card style.
-    - [x] **Pastel Element Coding:** Applied element-based pastel backgrounds (Wood/Fire/Earth/Metal/Water).
-    - [x] **Hierarchical Cards:** Implemented 3-layer information display (Ten Gods, Large Hanja, Hangul).
-    - [x] **Day Master (Self) Highlight:** Added special scaling, gradient borders, and "👑 나의 본질" badge to the Day Master card.
+    L39:     - [x] **8-Character Barcode UI (Instagram Redesign):**
+    L40:         - Removed scholarly Hanja (Sipsung) and replaced with intuitive "Emoji + Hangul" O-haeng labels.
+    L41:         - Applied modern, rounded gothic fonts for Hanja characters.
+    L42:         - Increased padding and refined shadows/borders for a "Pop" aesthetic.
+    L43:         - Updated Day Master highlight to "👑 나의 본질" with enhanced visual effects.
+    L44:     - [x] Pastel Element Coding: Applied element-based pastel backgrounds.
+
     - [x] Ohaeng distribution chart.
     - [x] **AI Counseling (5-Tab Text System):**
         1. **사주 뜻풀이 (Saju Meaning):** Detailed analysis of the 8 characters and their harmony.

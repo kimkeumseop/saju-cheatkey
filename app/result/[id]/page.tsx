@@ -124,38 +124,40 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                       >
                         {/* '나의 본질' 뱃지 */}
                         {isDayMaster && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-30 whitespace-nowrap">
-                            <span className="bg-gradient-to-r from-yellow-400 to-amber-500 text-[#3C1E1E] text-[9px] md:text-[11px] font-black px-3 py-1 rounded-full shadow-md border border-white/50 flex items-center gap-1 animate-bounce">
-                              ✨ ME
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30 whitespace-nowrap">
+                            <span className="bg-gradient-to-r from-pink-500 to-rose-600 text-white text-[10px] md:text-[12px] font-black px-4 py-1.5 rounded-full shadow-lg border-2 border-white flex items-center gap-1.5 animate-bounce">
+                              👑 나의 본질
                             </span>
                           </div>
                         )}
 
                         <div className={`
                           ${style.bg} ${style.text}
-                          p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.2rem]
-                          flex flex-col items-center justify-center gap-1 md:gap-2
-                          shadow-sm border-[3px] transition-all
+                          p-4 md:p-8 rounded-[2rem] md:rounded-[3rem]
+                          flex flex-col items-center justify-center gap-2 md:gap-4
+                          shadow-md border-[4px] transition-all duration-300
                           ${isDayMaster 
-                            ? 'border-[#FEE500] shadow-xl shadow-yellow-100 ring-4 ring-yellow-50/50' 
-                            : 'border-white group-hover:shadow-md'
+                            ? 'border-pink-400 shadow-xl shadow-pink-100 ring-8 ring-pink-50/50' 
+                            : 'border-white group-hover:shadow-lg group-hover:border-gray-100'
                           }
                         `}>
-                          {/* 상단: 이모지 + 오행 */}
-                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/40 text-[9px] md:text-[11px] font-black">
+                          {/* 상단: 이모지 + 오행 (인스타 감성 직관적 표시) */}
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/60 text-[10px] md:text-[13px] font-bold shadow-sm">
                             <span>{item.emoji}</span>
                             <span>{item.elementLabel}</span>
                           </div>
                           
-                          {/* 중앙: 한자 (모던 고딕) */}
-                          <span className="text-3xl md:text-6xl font-black leading-none py-1 md:py-2 drop-shadow-sm">
+                          {/* 중앙: 한자 (둥글둥글하고 트렌디한 모던 고딕 스타일) */}
+                          <span className="text-4xl md:text-7xl font-sans font-black leading-none py-2 md:py-4 drop-shadow-md tracking-tight">
                             {item.char}
                           </span>
                           
                           {/* 하단: 한글 발음 */}
-                          <span className="text-xs md:text-lg font-black tracking-tight opacity-90">
-                            {item.sound}
-                          </span>
+                          <div className="px-3 py-0.5 bg-black/5 rounded-lg">
+                            <span className="text-xs md:text-xl font-black tracking-tight opacity-90">
+                              {item.sound}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     );

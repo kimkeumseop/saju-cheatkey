@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
+import { AuthProvider } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "사주 치트키 | 현대적 명리학 심층 분석 리포트",
@@ -44,9 +45,11 @@ export default function RootLayout({
         ></script>
       </head>
       <body className="antialiased min-h-screen relative pb-20">
-        <div className="fixed inset-0 bg-texture z-[-1]" />
-        {children}
-        <BottomNav />
+        <AuthProvider>
+          <div className="fixed inset-0 bg-texture z-[-1]" />
+          {children}
+          <BottomNav />
+        </AuthProvider>
       </body>
     </html>
   );

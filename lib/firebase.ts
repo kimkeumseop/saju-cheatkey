@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, initializeFirestore } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider, OAuthProvider } from "firebase/auth";
 
 // Firebase 설정값
 const firebaseConfig = {
@@ -25,18 +26,22 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 let db: any;
 try {
   if (typeof window !== "undefined") {
-    // 브라우저 환경: 연결 안정성을 위해 Long Polling 사용
     db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
     });
-    console.log("🔥 Firestore 초기화 완료 (Long Polling)");
   } else {
-    // 서버 환경
     db = getFirestore(app);
   }
 } catch (e) {
-  console.warn("ℹ️ 기존 Firestore 인스턴스를 사용합니다.");
   db = getFirestore(app);
 }
 
-export { db };
+// Auth 초기화
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
+// 네이버/카카오는 OAuthProvider를 사용하여 커스텀 설정 가능 (설정 필요)
+const kakaoProvider = new OAuthProvider('oidc.kakao');
+const naverProvider = new OAuthProvider('oidc.naver');
+
+export { db, auth, googleProvider, kakaoProvider, naverProvider };
