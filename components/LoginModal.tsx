@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { X, Mail, Lock, Loader2, Chrome, User as UserIcon } from 'lucide-react';
+import { signInWithPopup, OAuthProvider } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -20,48 +22,25 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
   if (!isOpen) return null;
 
-  const handleGoogleLogin = async () => {
+  // 공통 소셜 로그인 핸들러 (에러 로깅 강화)
+  const handleSocialLogin = async (providerName: 'google' | 'kakao' | 'naver') => {
     setLoading(true);
     setError('');
     try {
-      await loginWithGoogle();
+      if (providerName === 'google') {
+        await loginWithGoogle();
+      } else {
+        const providerId = providerName === 'kakao' ? 'oidc.kakao' : 'oidc.naver';
+        const provider = new OAuthProvider(providerId);
+        await signInWithPopup(auth, provider);
+      }
       onClose();
     } catch (err: any) {
-      setError('구글 로그인에 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleKakaoLogin = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const { signInWithPopup, OAuthProvider } = await import('firebase/auth');
-      const { auth } = await import('@/lib/firebase');
-      const provider = new OAuthProvider('oidc.kakao');
-      await signInWithPopup(auth, provider);
-      onClose();
-    } catch (err: any) {
-      console.error(err);
-      setError('카카오 로그인을 위해 Firebase 콘솔 설정이 필요합니다. (Issuer URL: https://kauth.kakao.com)');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleNaverLogin = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const { signInWithPopup, OAuthProvider } = await import('firebase/auth');
-      const { auth } = await import('@/lib/firebase');
-      const provider = new OAuthProvider('oidc.naver');
-      await signInWithPopup(auth, provider);
-      onClose();
-    } catch (err: any) {
-      console.error(err);
-      setError('네이버 로그인을 위해 Firebase 콘솔 설정이 필요합니다. (Issuer URL: https://nid.naver.com)');
+      console.error(`❌ [Login Error] ${providerName} Login Failed:`, err);
+      // 사용자에게 구체적인 에러 코드 알림
+      const errorMsg = `로그인 설정 오류 (${err.code}): 관리자에게 문의하세요.\n${err.message}`;
+      alert(errorMsg);
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -81,6 +60,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       }
       onClose();
     } catch (err: any) {
+      console.error("❌ [Login Error] Email Login Failed:", err);
       if (err.code === 'auth/email-already-in-use') {
         setError('이미 사용 중인 이메일입니다.');
       } else if (err.code === 'auth/wrong-password') {
@@ -96,24 +76,26 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   };
 
   return (
+    // 1. 전체 화면을 덮는 고정 위치 모달 (화면 쪼개짐 현상 해결)
     <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
       onClick={onClose}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300 cursor-pointer overflow-y-auto"
     >
+      {/* 2. 깔끔한 흰색/파스텔 배경의 단독 페이지급 카드 */}
       <div 
+        className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl relative animate-in zoom-in-95 duration-300 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
-        className="bg-white w-full max-w-sm md:max-w-md rounded-[2.5rem] shadow-2xl relative animate-in zoom-in-95 duration-300 cursor-default my-auto"
       >
-        {/* 상단 탭 */}
-        <div className="flex border-b border-gray-100 rounded-t-[2.5rem] overflow-hidden">
+        {/* 상단 탭 구분 */}
+        <div className="flex border-b border-gray-100">
           <button 
-            onClick={() => { setIsSignUp(false); setError(''); }}
+            onClick={() => setIsSignUp(false)}
             className={`flex-1 py-5 text-sm font-black transition-all ${!isSignUp ? 'text-[#3C1E1E] bg-white border-b-4 border-[#FEE500]' : 'text-gray-400 bg-gray-50'}`}
           >
             로그인
           </button>
           <button 
-            onClick={() => { setIsSignUp(true); setError(''); }}
+            onClick={() => setIsSignUp(true)}
             className={`flex-1 py-5 text-sm font-black transition-all ${isSignUp ? 'text-[#3C1E1E] bg-white border-b-4 border-[#FEE500]' : 'text-gray-400 bg-gray-50'}`}
           >
             회원가입
@@ -128,30 +110,29 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           <X className="w-5 h-5 text-gray-400" />
         </button>
 
-        <div className="p-6 md:p-10 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
-          <div className="text-center space-y-1">
+        <div className="p-8 md:p-10 space-y-6 max-h-[85vh] overflow-y-auto">
+          <div className="text-center space-y-2">
             <h2 className="text-2xl font-black text-[#3C1E1E] tracking-tight">
-              {isSignUp ? '환영해요! 💖' : '반가워요! ✨'}
+              {isSignUp ? '함께해서 기뻐요! 💖' : '다시 와주셨군요! ✨'}
             </h2>
-            <p className="text-[13px] text-gray-500 font-bold break-keep">
-              {isSignUp ? '3초 만에 가입하고 내 운명 확인하기' : '내 운명 치트키를 평생 소장하세요.'}
+            <p className="text-sm text-gray-500 font-bold break-keep">
+              {isSignUp ? '지금 가입하면 나만의 사주 결과가 저장돼요.' : '로그인하고 내 운명 치트키를 다시 확인하세요.'}
             </p>
           </div>
 
-          {/* 소셜 로그인 버튼 (가장 중요) */}
-          <div className="space-y-2.5">
+          {/* 소셜 로그인 버튼들 */}
+          <div className="space-y-3">
             <button
-              onClick={handleGoogleLogin}
+              onClick={() => handleSocialLogin('google')}
               disabled={loading}
               className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-3.5 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 hover:border-blue-100 transition-all active:scale-[0.98] shadow-sm"
             >
               <Chrome className="w-5 h-5 text-blue-500" />
               <span>구글로 시작하기</span>
             </button>
-            
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={handleKakaoLogin}
+                onClick={() => handleSocialLogin('kakao')}
                 disabled={loading}
                 className="w-full flex items-center justify-center gap-2 bg-[#FEE500] py-3.5 rounded-2xl font-bold text-[#3C1E1E] hover:bg-[#FDD000] transition-all active:scale-[0.98]"
               >
@@ -159,7 +140,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 카카오
               </button>
               <button
-                onClick={handleNaverLogin}
+                onClick={() => handleSocialLogin('naver')}
                 disabled={loading}
                 className="w-full flex items-center justify-center gap-2 bg-[#03C75A] py-3.5 rounded-2xl font-bold text-white hover:bg-[#02b351] transition-all active:scale-[0.98]"
               >
@@ -180,13 +161,13 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
           {/* 에러 메시지 */}
           {error && (
-            <div className="p-3.5 rounded-xl bg-red-50 text-red-600 text-[12px] font-bold text-center animate-shake leading-tight break-keep">
+            <div className="p-4 rounded-xl bg-red-50 text-red-600 text-[12px] font-bold text-center leading-tight">
               {error}
             </div>
           )}
 
-          {/* 입력 폼 */}
-          <form onSubmit={handleSubmit} className="space-y-3">
+          {/* 이메일 로그인 폼 */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
               <div className="relative">
                 <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
