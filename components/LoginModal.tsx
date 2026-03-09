@@ -22,7 +22,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
   if (!isOpen) return null;
 
-  // 공통 소셜 로그인 핸들러 (에러 로깅 강화)
   const handleSocialLogin = async (providerName: 'google' | 'kakao' | 'naver') => {
     setLoading(true);
     setError('');
@@ -36,11 +35,16 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       }
       onClose();
     } catch (err: any) {
-      console.error(`❌ [Login Error] ${providerName} Login Failed:`, err);
-      // 사용자에게 구체적인 에러 코드 알림
-      const errorMsg = `로그인 설정 오류 (${err.code}): 관리자에게 문의하세요.\n${err.message}`;
-      alert(errorMsg);
-      setError(errorMsg);
+      console.error(`❌ [Login Error] ${providerName} Failed:`, err);
+      
+      if (err.code === 'auth/popup-closed-by-user') {
+        setError('로그인 창이 닫혔습니다. 다시 시도해 주세요.');
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setError('승인되지 않은 도메인입니다. Firebase 콘솔 설정을 확인하세요.');
+      } else {
+        setError(`${providerName} 로그인 설정 오류: 관리자에게 문의하세요.`);
+        alert(`로그인 오류 (${err.code}):\n${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -60,15 +64,10 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       }
       onClose();
     } catch (err: any) {
-      console.error("❌ [Login Error] Email Login Failed:", err);
       if (err.code === 'auth/email-already-in-use') {
         setError('이미 사용 중인 이메일입니다.');
-      } else if (err.code === 'auth/wrong-password') {
-        setError('비밀번호가 틀렸습니다.');
-      } else if (err.code === 'auth/user-not-found') {
-        setError('가입되지 않은 이메일입니다.');
       } else {
-        setError(err.message || '로그인에 실패했습니다.');
+        setError('로그인 정보가 올바르지 않습니다.');
       }
     } finally {
       setLoading(false);
@@ -76,26 +75,24 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   };
 
   return (
-    // 1. 전체 화면을 덮는 고정 위치 모달 (화면 쪼개짐 현상 해결)
     <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300"
       onClick={onClose}
     >
-      {/* 2. 깔끔한 흰색/파스텔 배경의 단독 페이지급 카드 */}
       <div 
-        className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl relative animate-in zoom-in-95 duration-300 overflow-hidden"
+        className="bg-white w-full max-w-sm md:max-w-md rounded-[2.5rem] shadow-2xl relative animate-in zoom-in-95 duration-300 overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 상단 탭 구분 */}
-        <div className="flex border-b border-gray-100">
+        {/* 상단 탭 */}
+        <div className="flex border-b border-gray-100 shrink-0">
           <button 
-            onClick={() => setIsSignUp(false)}
+            onClick={() => { setIsSignUp(false); setError(''); }}
             className={`flex-1 py-5 text-sm font-black transition-all ${!isSignUp ? 'text-[#3C1E1E] bg-white border-b-4 border-[#FEE500]' : 'text-gray-400 bg-gray-50'}`}
           >
             로그인
           </button>
           <button 
-            onClick={() => setIsSignUp(true)}
+            onClick={() => { setIsSignUp(true); setError(''); }}
             className={`flex-1 py-5 text-sm font-black transition-all ${isSignUp ? 'text-[#3C1E1E] bg-white border-b-4 border-[#FEE500]' : 'text-gray-400 bg-gray-50'}`}
           >
             회원가입
@@ -103,112 +100,63 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         </div>
 
         {/* 닫기 버튼 */}
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors z-20"
-        >
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 z-30">
           <X className="w-5 h-5 text-gray-400" />
         </button>
 
-        <div className="p-8 md:p-10 space-y-6 max-h-[85vh] overflow-y-auto">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-black text-[#3C1E1E] tracking-tight">
-              {isSignUp ? '함께해서 기뻐요! 💖' : '다시 와주셨군요! ✨'}
+        {/* 내용 섹션 (스크롤 가능) */}
+        <div className="p-6 md:p-10 space-y-6 overflow-y-auto max-h-[70vh]">
+          <div className="text-center space-y-1">
+            <h2 className="text-2xl font-black text-[#3C1E1E] tracking-tight leading-tight">
+              {isSignUp ? '반가워요! 💖' : '내 운명 치트키 ✨'}
             </h2>
-            <p className="text-sm text-gray-500 font-bold break-keep">
-              {isSignUp ? '지금 가입하면 나만의 사주 결과가 저장돼요.' : '로그인하고 내 운명 치트키를 다시 확인하세요.'}
-            </p>
+            <p className="text-xs text-gray-500 font-bold">3초 만에 로그인하고 결과를 소장하세요.</p>
           </div>
 
-          {/* 소셜 로그인 버튼들 */}
-          <div className="space-y-3">
+          {/* 소셜 버튼 (상단 고정) */}
+          <div className="space-y-2.5">
             <button
               onClick={() => handleSocialLogin('google')}
               disabled={loading}
               className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-3.5 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 hover:border-blue-100 transition-all active:scale-[0.98] shadow-sm"
             >
               <Chrome className="w-5 h-5 text-blue-500" />
-              <span>구글로 시작하기</span>
+              <span>구글로 로그인</span>
             </button>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => handleSocialLogin('kakao')}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-[#FEE500] py-3.5 rounded-2xl font-bold text-[#3C1E1E] hover:bg-[#FDD000] transition-all active:scale-[0.98]"
-              >
-                <span className="text-lg">🟡</span>
-                카카오
+            <div className="grid grid-cols-2 gap-2.5">
+              <button onClick={() => handleSocialLogin('kakao')} className="w-full flex items-center justify-center gap-2 bg-[#FEE500] py-3.5 rounded-2xl font-bold text-[#3C1E1E] hover:bg-[#FDD000] active:scale-[0.98] transition-all">
+                <span className="text-lg">🟡</span> 카카오
               </button>
-              <button
-                onClick={() => handleSocialLogin('naver')}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-[#03C75A] py-3.5 rounded-2xl font-bold text-white hover:bg-[#02b351] transition-all active:scale-[0.98]"
-              >
-                <span className="text-lg">🟢</span>
-                네이버
+              <button onClick={() => handleSocialLogin('naver')} className="w-full flex items-center justify-center gap-2 bg-[#03C75A] py-3.5 rounded-2xl font-bold text-white hover:bg-[#02b351] active:scale-[0.98] transition-all">
+                <span className="text-lg">🟢</span> 네이버
               </button>
             </div>
           </div>
 
           <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-100"></span>
-            </div>
-            <div className="relative flex justify-center text-[10px] uppercase">
-              <span className="bg-white px-3 text-gray-400 font-black tracking-widest">또는 이메일</span>
-            </div>
+            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-100"></span></div>
+            <div className="relative flex justify-center text-[10px] uppercase font-black text-gray-400 bg-white px-2">OR</div>
           </div>
 
-          {/* 에러 메시지 */}
-          {error && (
-            <div className="p-4 rounded-xl bg-red-50 text-red-600 text-[12px] font-bold text-center leading-tight">
-              {error}
-            </div>
-          )}
+          {error && <div className="p-3.5 rounded-xl bg-red-50 text-red-600 text-[12px] font-bold text-center leading-tight break-keep">{error}</div>}
 
-          {/* 이메일 로그인 폼 */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {isSignUp && (
               <div className="relative">
                 <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="닉네임"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-transparent focus:border-[#FEE500] focus:bg-white rounded-2xl outline-none transition-all font-medium text-sm"
-                />
+                <input type="text" placeholder="닉네임" required value={name} onChange={(e) => setName(e.target.value)} className="w-full pl-11 pr-4 py-3.5 bg-gray-50 rounded-2xl outline-none text-sm" />
               </div>
             )}
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="email"
-                placeholder="이메일 주소"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-transparent focus:border-[#FEE500] focus:bg-white rounded-2xl outline-none transition-all font-medium text-sm"
-              />
+              <input type="email" placeholder="이메일" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full pl-11 pr-4 py-3.5 bg-gray-50 rounded-2xl outline-none text-sm" />
             </div>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="password"
-                placeholder="비밀번호"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-transparent focus:border-[#FEE500] focus:bg-white rounded-2xl outline-none transition-all font-medium text-sm"
-              />
+              <input type="password" placeholder="비밀번호" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-11 pr-4 py-3.5 bg-gray-50 rounded-2xl outline-none text-sm" />
             </div>
-            <button
-              disabled={loading}
-              className="w-full bg-[#3C1E1E] text-white py-4 rounded-2xl font-black text-base shadow-lg shadow-brown-100 hover:bg-[#2A1515] transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isSignUp ? '무료 가입하기' : '로그인하기')}
+            <button disabled={loading} className="w-full bg-[#3C1E1E] text-white py-4 rounded-2xl font-black text-base shadow-lg hover:bg-[#2A1515] active:scale-[0.98] transition-all">
+              {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : (isSignUp ? '가입하기' : '로그인')}
             </button>
           </form>
         </div>
