@@ -86,7 +86,7 @@ export default function BottomNav() {
               <div className="space-y-3">
                 <h3 className="text-2xl font-black text-[#3C1E1E] tracking-tight">앗! 조금만 기다려주세요</h3>
                 <p className="text-gray-500 font-bold leading-relaxed break-keep">
-                  이 기능은 현재 AI가 <span className="text-[#3C1E1E] underline decoration-[#FEE500] decoration-4 underline-offset-2">열심히 수련(?) 중</span>이에요. <br/>
+                  이 기능은 현재 전문가가 <span className="text-[#3C1E1E] underline decoration-[#FEE500] decoration-4 underline-offset-2">열심히 수련(?) 중</span>이에요. <br/>
                   조만간 엄청난 팩폭으로 돌아올게요! <br/>
                   기대해 주세요 😎
                 </p>

@@ -8,6 +8,7 @@ import Navbar from '@/components/Navbar';
 import AnalysisAccordion from '@/components/AnalysisAccordion';
 import ShareButtons from '@/components/ShareButtons';
 import { Loader2, Sparkles, Layout } from 'lucide-react';
+import { ELEMENT_STYLE } from '@/lib/saju';
 
 export default function SajuResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -18,7 +19,6 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. 로컬 데이터 먼저 확인 (local_로 시작하는 경우)
         if (id.startsWith('local_')) {
           const localData = localStorage.getItem(`saju_result_${id}`);
           if (localData) {
@@ -28,14 +28,12 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
           }
         }
 
-        // 2. Firestore에서 데이터 가져오기
         const docRef = doc(db, 'sajuResults', id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           setData(docSnap.data());
         } else {
-          // Firestore에 없으면 로컬에서도 한 번 더 찾아봄
           const localData = localStorage.getItem(`saju_result_${id}`);
           if (localData) {
             setData(JSON.parse(localData));
@@ -46,7 +44,6 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
         }
       } catch (error) {
         console.error('데이터 로드 오류:', error);
-        // 에러 발생 시 로컬 스토리지 시도
         const localData = localStorage.getItem(`saju_result_${id}`);
         if (localData) {
           setData(JSON.parse(localData));
@@ -65,7 +62,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
     return (
       <div className="min-h-screen bg-[#F7F8FA] flex flex-col items-center justify-center p-6 text-center">
         <Loader2 className="w-12 h-12 text-[#FEE500] animate-spin stroke-[3]" />
-        <p className="mt-4 text-gray-500 font-bold">인생 치트키 불러오는 중...</p>
+        <p className="mt-4 text-gray-500 font-bold">사주 치트키 불러오는 중...</p>
       </div>
     );
   }
@@ -83,7 +80,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
         <div className="text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#FEE500] text-[#3C1E1E] text-sm font-bold shadow-sm">
             <Sparkles className="w-4 h-4" />
-            MZ세대 맞춤형 AI 사주 리포트 {id.startsWith('local_') && '(임시저장됨)'}
+            MZ세대 맞춤형 전문가 사주 리포트 {id.startsWith('local_') && '(임시저장됨)'}
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
             <span className="text-[#3C1E1E] bg-[#FEE500] px-2 rounded-lg">{userName}</span> 님의 인생 결과표
@@ -95,27 +92,82 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
           </p>
         </div>
 
-        {/* 1. 명식표 */}
-        <div className="grid grid-cols-4 gap-4 md:gap-6">
-          {sajuData.sajuBreakdown.map((column: any, idx: number) => (
-            <div key={idx} className="space-y-4">
-              <div className="text-center text-xs font-black text-gray-400 tracking-widest uppercase">{column.title}</div>
-              <div className="space-y-4">
-                {column.items.map((item: any, i: number) => (
-                  <div 
-                    key={i} 
-                    className="bg-white p-4 md:p-6 rounded-[1.5rem] border border-gray-100 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all group"
-                  >
-                    <span className="text-3xl md:text-5xl font-bold tracking-tighter" style={{ color: item.color }}>{item.char}</span>
-                    <span className="text-sm md:text-base text-gray-800 font-bold">{item.sound}</span>
-                  </div>
-                ))}
+        {/* 1. 명식표 (8글자 바코드 스타일) */}
+        <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-50 space-y-10 relative overflow-hidden">
+          {/* 장식 요소 */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#FEE500]/5 rounded-full blur-3xl -mr-16 -mt-16" />
+          
+          <div className="flex items-center justify-between px-2">
+            <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
+              <span className="w-2 h-8 bg-[#FEE500] rounded-full" />
+              내 운명의 8글자 바코드
+            </h3>
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Personal Saju Chart</span>
+          </div>
+
+          <div className="grid grid-cols-4 gap-3 md:gap-6 relative z-10">
+            {sajuData.sajuBreakdown.map((column: any, colIdx: number) => (
+              <div key={colIdx} className="space-y-4">
+                <div className="text-center text-xs font-black text-gray-400 tracking-widest uppercase pb-2 border-b border-gray-100">
+                  {column.title}
+                </div>
+                <div className="space-y-3 md:space-y-6">
+                  {column.items.map((item: any, rowIdx: number) => {
+                    const style = ELEMENT_STYLE[item.element] || ELEMENT_STYLE['토'];
+                    const isDayMaster = colIdx === 2 && rowIdx === 0; // 일간 하이라이트
+
+                    return (
+                      <div 
+                        key={rowIdx} 
+                        className={`
+                          relative group transition-all duration-500
+                          ${isDayMaster ? 'scale-110 z-20' : 'hover:scale-105'}
+                        `}
+                      >
+                        {/* 일간 하이라이트 뱃지 & 테두리 */}
+                        {isDayMaster && (
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-30 whitespace-nowrap">
+                            <span className="bg-gradient-to-r from-purple-600 to-pink-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg border border-white/20 flex items-center gap-1">
+                              👑 나의 본질
+                            </span>
+                          </div>
+                        )}
+
+                        <div className={`
+                          ${style.bg} ${style.text}
+                          p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem]
+                          flex flex-col items-center justify-center gap-1 md:gap-3
+                          shadow-sm border-2 transition-all
+                          ${isDayMaster 
+                            ? 'border-pink-400 shadow-xl shadow-pink-100 ring-4 ring-pink-50' 
+                            : 'border-white group-hover:shadow-md'
+                          }
+                        `}>
+                          {/* 상단: 십성 */}
+                          <span className="text-[10px] md:text-xs font-bold opacity-60 tracking-tight">
+                            {item.shishen}
+                          </span>
+                          
+                          {/* 중앙: 한자 */}
+                          <span className="text-4xl md:text-7xl font-serif font-black leading-none py-1">
+                            {item.char}
+                          </span>
+                          
+                          {/* 하단: 한글 */}
+                          <span className="text-sm md:text-xl font-black tracking-tight">
+                            {item.sound}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
-        {/* 2. AI 분석 결과 (아코디언) */}
+        {/* 2. 전문가 분석 결과 (아코디언) */}
         <div className="space-y-8">
           <div className="flex items-center gap-3 ml-2">
             <Layout className="w-6 h-6 text-[#3C1E1E]" />
@@ -152,7 +204,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
               <ShareButtons name={userName} />
             </div>
 
-            <div className="mt-10 text-center">
+            <div className="mt-12 text-center">
               <p className="text-sm text-gray-400 italic">※ 명리학 분석은 재미와 참고용으로만 활용해주세요.</p>
             </div>
           </div>

@@ -48,8 +48,8 @@ export default function ShareButtons({ name }: ShareButtonsProps) {
       window.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
-          title: `나의 인생 치트키 결과는? (${name}님)`,
-          description: `AI가 분석한 나의 소름 돋는 팩폭 리포트를 확인해보세요!`,
+          title: `나의 사주 치트키 결과는? (${name}님)`,
+          description: `명리학 전문가가 분석한 나의 소름 돋는 팩폭 리포트를 확인해보세요!`,
           imageUrl: 'https://images.unsplash.com/photo-1506704980455-b6d738199d75?q=80&w=1000&auto=format&fit=crop',
           link: {
             mobileWebUrl: window.location.href,

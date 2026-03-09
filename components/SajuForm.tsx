@@ -41,7 +41,7 @@ export default function SajuForm() {
         <div className="text-center space-y-2 mb-4">
           <h3 className="text-2xl font-black text-gray-900 flex items-center justify-center gap-2">
             <Sparkles className="w-6 h-6 text-[#FEE500]" />
-            인생 치트키 키려면 정보 입력 필수!
+            사주 치트키 키려면 정보 입력 필수!
           </h3>
           <p className="text-sm text-gray-500 font-medium">나의 숨겨진 성격과 운명을 확인하세요!</p>
         </div>
