@@ -140,14 +140,16 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
           {/* 소셜 로그인 버튼 (항상 노출) */}
           <div className="space-y-2.5">
+            {/* 구글 로그인 버튼 - 디자인 강화 */}
             <button
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-3.5 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 py-3.5 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 hover:border-blue-100 transition-all active:scale-[0.98] shadow-sm"
             >
               <Chrome className="w-5 h-5 text-blue-500" />
-              구글로 시작하기
+              <span>구글로 시작하기</span>
             </button>
+            
             <div className="grid grid-cols-2 gap-2.5">
               <button
                 onClick={handleKakaoLogin}
