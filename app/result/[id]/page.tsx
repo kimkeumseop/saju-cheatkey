@@ -92,69 +92,68 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
           </p>
         </div>
 
-        {/* 1. 명식표 (8글자 바코드 스타일) */}
-        <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-50 space-y-10 relative overflow-hidden">
-          {/* 장식 요소 */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#FEE500]/5 rounded-full blur-3xl -mr-16 -mt-16" />
+        {/* 1. 명식표 (8글자 바코드 스타일 - 리팩토링 버전) */}
+        <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-2xl shadow-indigo-100/50 border border-white/50 space-y-8 relative overflow-hidden">
+          {/* 부드러운 배경 데코 */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-pink-100/20 rounded-full blur-3xl -mr-32 -mt-32" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-100/20 rounded-full blur-3xl -ml-32 -mb-32" />
           
-          <div className="flex items-center justify-between px-2">
-            <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
-              <span className="w-2 h-8 bg-[#FEE500] rounded-full" />
-              내 운명의 8글자 바코드
-            </h3>
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Personal Saju Chart</span>
+          <div className="text-center space-y-1 relative z-10">
+            <h3 className="text-2xl font-black text-gray-900 tracking-tight">내 운명의 8글자 바코드</h3>
+            <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">Personal Destiny Code</p>
           </div>
 
-          <div className="grid grid-cols-4 gap-3 md:gap-6 relative z-10">
+          <div className="grid grid-cols-4 gap-2 md:gap-4 relative z-10">
             {sajuData.sajuBreakdown.map((column: any, colIdx: number) => (
-              <div key={colIdx} className="space-y-4">
-                <div className="text-center text-xs font-black text-gray-400 tracking-widest uppercase pb-2 border-b border-gray-100">
+              <div key={colIdx} className="space-y-3">
+                <div className="text-center text-[10px] md:text-xs font-black text-gray-400 tracking-tighter opacity-80">
                   {column.title}
                 </div>
-                <div className="space-y-3 md:space-y-6">
+                <div className="space-y-2 md:space-y-4">
                   {column.items.map((item: any, rowIdx: number) => {
                     const style = ELEMENT_STYLE[item.element] || ELEMENT_STYLE['토'];
-                    const isDayMaster = colIdx === 2 && rowIdx === 0; // 일간 하이라이트
+                    const isDayMaster = colIdx === 2 && rowIdx === 0; // 일간
 
                     return (
                       <div 
                         key={rowIdx} 
                         className={`
                           relative group transition-all duration-500
-                          ${isDayMaster ? 'scale-110 z-20' : 'hover:scale-105'}
+                          ${isDayMaster ? 'scale-105 z-20' : 'hover:scale-[1.02]'}
                         `}
                       >
-                        {/* 일간 하이라이트 뱃지 & 테두리 */}
+                        {/* '나의 본질' 뱃지 */}
                         {isDayMaster && (
                           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-30 whitespace-nowrap">
-                            <span className="bg-gradient-to-r from-purple-600 to-pink-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg border border-white/20 flex items-center gap-1">
-                              👑 나의 본질
+                            <span className="bg-gradient-to-r from-yellow-400 to-amber-500 text-[#3C1E1E] text-[9px] md:text-[11px] font-black px-3 py-1 rounded-full shadow-md border border-white/50 flex items-center gap-1 animate-bounce">
+                              ✨ ME
                             </span>
                           </div>
                         )}
 
                         <div className={`
                           ${style.bg} ${style.text}
-                          p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem]
-                          flex flex-col items-center justify-center gap-1 md:gap-3
-                          shadow-sm border-2 transition-all
+                          p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.2rem]
+                          flex flex-col items-center justify-center gap-1 md:gap-2
+                          shadow-sm border-[3px] transition-all
                           ${isDayMaster 
-                            ? 'border-pink-400 shadow-xl shadow-pink-100 ring-4 ring-pink-50' 
+                            ? 'border-[#FEE500] shadow-xl shadow-yellow-100 ring-4 ring-yellow-50/50' 
                             : 'border-white group-hover:shadow-md'
                           }
                         `}>
-                          {/* 상단: 십성 */}
-                          <span className="text-[10px] md:text-xs font-bold opacity-60 tracking-tight">
-                            {item.shishen}
-                          </span>
+                          {/* 상단: 이모지 + 오행 */}
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/40 text-[9px] md:text-[11px] font-black">
+                            <span>{item.emoji}</span>
+                            <span>{item.elementLabel}</span>
+                          </div>
                           
-                          {/* 중앙: 한자 */}
-                          <span className="text-4xl md:text-7xl font-serif font-black leading-none py-1">
+                          {/* 중앙: 한자 (모던 고딕) */}
+                          <span className="text-3xl md:text-6xl font-black leading-none py-1 md:py-2 drop-shadow-sm">
                             {item.char}
                           </span>
                           
-                          {/* 하단: 한글 */}
-                          <span className="text-sm md:text-xl font-black tracking-tight">
+                          {/* 하단: 한글 발음 */}
+                          <span className="text-xs md:text-lg font-black tracking-tight opacity-90">
                             {item.sound}
                           </span>
                         </div>
