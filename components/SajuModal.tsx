@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, User, Plus, Sparkles, ChevronRight, Calendar, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { clsx, type ClassValue } from 'clsx';
@@ -19,6 +19,7 @@ interface SajuModalProps {
 export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalProps) {
   const router = useRouter();
   const [view, setView] = useState<'selection' | 'form'>('selection');
+  const [profiles, setProfiles] = useState<any[]>([]); // 저장된 프로필 목록 상태
   const [formData, setFormData] = useState({
     name: '',
     birthDate: '',
@@ -26,6 +27,19 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
     calendarType: 'solar',
     gender: 'male'
   });
+
+  // 모달이 열릴 때마다 저장된 프로필 로드
+  useEffect(() => {
+    if (isOpen) {
+      const saved = localStorage.getItem('saju_profiles');
+      if (saved) {
+        setProfiles(JSON.parse(saved));
+      } else {
+        setProfiles([]); // 저장된 데이터가 없으면 빈 배열
+      }
+      setView('selection'); // 열릴 때는 항상 선택 화면부터
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -62,44 +76,64 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
         {view === 'selection' ? (
           <div className="space-y-6">
             <div className="space-y-4">
-              <p className="text-gray-500 font-bold text-sm ml-1">저장된 프로필</p>
+              <p className="text-gray-500 font-bold text-sm ml-1 text-center sm:text-left">
+                {profiles.length > 0 ? '저장된 프로필 선택' : '저장된 프로필이 없어요!'}
+              </p>
               
-              {/* 본인 프로필 (더미) */}
-              <button 
-                onClick={() => {
-                  // 실제 구현시에는 저장된 데이터를 불러옴
-                  alert('내 프로필 데이터를 불러옵니다.');
-                  router.push('/saju?name=본인&birthDate=1995-01-01&calendarType=solar&gender=male');
-                  onClose();
-                }}
-                className="w-full flex items-center gap-4 p-5 bg-[#F7F8FA] hover:bg-[#FEE500]/10 border border-gray-100 rounded-[1.5rem] transition-all group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-[#FEE500] flex items-center justify-center shadow-sm">
-                  <User className="w-6 h-6 text-[#3C1E1E]" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-black text-[#3C1E1E]">내 프로필 (본인)</p>
-                  <p className="text-xs text-gray-400 font-bold">1995년 1월 1일 · 남성</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[#3C1E1E] transition-colors" />
-              </button>
+              {/* 저장된 프로필 목록 (있을 때만 표시) */}
+              {profiles.map((profile, index) => (
+                <button 
+                  key={index}
+                  onClick={() => {
+                    const params = new URLSearchParams(profile);
+                    router.push(`/saju?${params.toString()}`);
+                    onClose();
+                  }}
+                  className="w-full flex items-center gap-4 p-5 bg-[#F7F8FA] hover:bg-[#FEE500]/10 border border-gray-100 rounded-[1.5rem] transition-all group"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-[#FEE500] flex items-center justify-center shadow-sm">
+                    <User className="w-6 h-6 text-[#3C1E1E]" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="font-black text-[#3C1E1E]">{profile.name || '무명'}</p>
+                    <p className="text-xs text-gray-400 font-bold">{profile.birthDate} · {profile.gender === 'male' ? '남성' : '여성'}</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[#3C1E1E] transition-colors" />
+                </button>
+              ))}
 
-              {/* 새로운 사람 추가 버튼 */}
+              {/* 새로운 사람 추가 버튼 (데이터가 없을 땐 이게 메인이 됨) */}
               <button 
                 onClick={() => setView('form')}
-                className="w-full flex items-center gap-4 p-5 bg-white border-2 border-dashed border-gray-200 hover:border-[#FEE500] rounded-[1.5rem] transition-all group"
+                className={cn(
+                  "w-full flex items-center gap-4 p-5 rounded-[1.5rem] transition-all group",
+                  profiles.length === 0 
+                    ? "bg-[#FEE500] border-none shadow-lg scale-100 hover:scale-[1.02]" 
+                    : "bg-white border-2 border-dashed border-gray-200 hover:border-[#FEE500]"
+                )}
               >
-                <div className="w-12 h-12 rounded-xl bg-gray-50 group-hover:bg-[#FEE500]/20 flex items-center justify-center transition-colors">
-                  <Plus className="w-6 h-6 text-gray-400 group-hover:text-[#3C1E1E]" />
+                <div className={cn(
+                  "w-12 h-12 rounded-xl flex items-center justify-center transition-colors",
+                  profiles.length === 0 ? "bg-white/30" : "bg-gray-50 group-hover:bg-[#FEE500]/20"
+                )}>
+                  <Plus className={cn(
+                    "w-6 h-6 transition-colors",
+                    profiles.length === 0 ? "text-[#3C1E1E]" : "text-gray-400 group-hover:text-[#3C1E1E]"
+                  )} />
                 </div>
                 <div className="flex-1 text-left">
-                  <p className="font-black text-gray-400 group-hover:text-[#3C1E1E]">새로운 사람 추가하기</p>
+                  <p className={cn(
+                    "font-black transition-colors",
+                    profiles.length === 0 ? "text-[#3C1E1E]" : "text-gray-400 group-hover:text-[#3C1E1E]"
+                  )}>
+                    새로운 사람 추가하기
+                  </p>
                 </div>
               </button>
             </div>
 
             <p className="text-center text-xs text-gray-400 font-medium">
-              로그인하면 분석 기록이 자동으로 저장됩니다!
+              분석 결과 페이지에서 '프로필 저장'을 누르면 <br/> 여기에 자동으로 나타납니다!
             </p>
           </div>
         ) : (
