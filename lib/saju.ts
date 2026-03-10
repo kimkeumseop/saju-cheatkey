@@ -6,6 +6,20 @@ const HANJA_TO_KO: Record<string, string> = {
   '子': '자', '丑': '축', '寅': '인', '卯': '묘', '辰': '진', '巳': '사', '午': '오', '未': '미', '申': '신', '酉': '유', '戌': '술', '亥': '해'
 };
 
+// 십신 한글 매핑 (lunar-javascript의 중국어 간체 출력 대응)
+const TEN_GOD_KO: Record<string, string> = {
+  '比肩': '비견', '劫财': '겁재', '食神': '식신', '伤官': '상관',
+  '偏财': '편재', '正财': '정재', '七杀': '편관', '正官': '정관',
+  '偏印': '편인', '正印': '정인'
+};
+
+// 십이운성 한글 매핑
+const UNSEONG_KO: Record<string, string> = {
+  '长生': '장생', '沐浴': '목욕', '冠带': '관대', '临官': '건록',
+  '帝旺': '제왕', '衰': '쇠', '病': '병', '死': '사',
+  '墓': '묘', '绝': '절', '胎': '태', '养': '양'
+};
+
 // 지지 -> 동물 아이콘 매핑
 const ZODIAC_ICONS: Record<string, string> = {
   '子': '🐭', '丑': '🐮', '寅': '🐯', '卯': '🐰', '辰': '🐲', '巳': '🐍', '午': '🐴', '未': '🐑', '申': '🐵', '酉': '🐔', '戌': '🐶', '亥': '🐷'
@@ -61,31 +75,34 @@ export function calculateSaju(
   // 안전하게 십신 및 십이운성을 가져오는 헬퍼 함수
   const getSafeTenGodGan = (pillar: string) => {
     try {
-      if (pillar === 'year') return eightChar.getYearShiShenGan();
-      if (pillar === 'month') return eightChar.getMonthShiShenGan();
-      if (pillar === 'day') return '일간';
-      if (pillar === 'time') return eightChar.getTimeShiShenGan();
-      return '';
+      let hanja = '';
+      if (pillar === 'year') hanja = eightChar.getYearShiShenGan();
+      else if (pillar === 'month') hanja = eightChar.getMonthShiShenGan();
+      else if (pillar === 'day') return '일간';
+      else if (pillar === 'time') hanja = eightChar.getTimeShiShenGan();
+      return TEN_GOD_KO[hanja] || hanja || '';
     } catch { return ''; }
   };
 
   const getSafeTenGodZhi = (pillar: string) => {
     try {
-      if (pillar === 'year') return eightChar.getYearShiShenZhi()[0];
-      if (pillar === 'month') return eightChar.getMonthShiShenZhi()[0];
-      if (pillar === 'day') return eightChar.getDayShiShenZhi()[0];
-      if (pillar === 'time') return eightChar.getTimeShiShenZhi()[0];
-      return '';
+      let hanja = '';
+      if (pillar === 'year') hanja = eightChar.getYearShiShenZhi()[0];
+      else if (pillar === 'month') hanja = eightChar.getMonthShiShenZhi()[0];
+      else if (pillar === 'day') hanja = eightChar.getDayShiShenZhi()[0];
+      else if (pillar === 'time') hanja = eightChar.getTimeShiShenZhi()[0];
+      return TEN_GOD_KO[hanja] || hanja || '';
     } catch { return ''; }
   };
 
   const getSafeUnSeong = (pillar: string) => {
     try {
-      if (pillar === 'year') return eightChar.getYearShiErYunXing();
-      if (pillar === 'month') return eightChar.getMonthShiErYunXing();
-      if (pillar === 'day') return eightChar.getDayShiErYunXing();
-      if (pillar === 'time') return eightChar.getTimeShiErYunXing();
-      return '';
+      let hanja = '';
+      if (pillar === 'year') hanja = eightChar.getYearDiShi();
+      else if (pillar === 'month') hanja = eightChar.getMonthDiShi();
+      else if (pillar === 'day') hanja = eightChar.getDayDiShi();
+      else if (pillar === 'time') hanja = eightChar.getTimeDiShi();
+      return UNSEONG_KO[hanja] || hanja || '';
     } catch { return ''; }
   };
 
@@ -122,9 +139,9 @@ export function calculateSaju(
     if (shinsalFull.some(s => s.includes('文昌'))) keyShinsal.push('문창귀인');
     if (shinsalFull.some(s => s.includes('羊刃'))) keyShinsal.push('양인살');
     if (shinsalFull.some(s => s.includes('白虎'))) keyShinsal.push('백호살');
-    if (shinsalFull.some(s => s.includes('驛馬'))) keyShinsal.push('역마살');
+    if (shinsalFull.some(s => s.includes('驛马') || s.includes('驛馬'))) keyShinsal.push('역마살');
     if (shinsalFull.some(s => s.includes('桃花'))) keyShinsal.push('도화살');
-    if (shinsalFull.some(s => s.includes('華蓋'))) keyShinsal.push('화개살');
+    if (shinsalFull.some(s => s.includes('华盖') || s.includes('華蓋'))) keyShinsal.push('화개살');
   } catch (e) {}
 
   const daYunList: any[] = [];
