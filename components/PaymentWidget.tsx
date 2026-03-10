@@ -68,7 +68,7 @@ export default function PaymentWidget({ resultId, onCancel }: { resultId: string
             PREMIUM UNLOCK
           </div>
           <h3 className="text-2xl font-black text-[#3C1E1E]">치트키 충전하기</h3>
-          <p className="text-gray-500 font-bold text-sm">행운의 777원으로 모든 풀이를 확인하세요!</p>
+          <p className="text-gray-500 font-bold text-sm">777원으로 모든 풀이를 확인하세요!</p>
         </div>
 
         <div className="flex-1 overflow-y-auto px-4">
@@ -88,7 +88,7 @@ export default function PaymentWidget({ resultId, onCancel }: { resultId: string
             disabled={loading}
             className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-6 rounded-2xl font-black text-xl shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 group disabled:opacity-50"
           >
-            행운의 777원 결제하고 결과 보기
+            777원 결제하고 결과 보기
           </button>
           <button 
             onClick={onCancel}

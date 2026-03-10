@@ -81,14 +81,14 @@ export default function GungHapPreview({ data, resultId }: GungHapPreviewProps) 
               <span className="font-black text-sm tracking-widest uppercase italic">Destiny CheatKey</span>
             </div>
             <h2 className="text-white text-2xl md:text-3xl font-black break-keep leading-tight">
-              단돈 <span className="text-[#FEE500]">990원</span>으로 <br/>
+              <span className="text-[#FEE500]">777원</span>으로 <br/>
               두 사람의 <span className="text-[#FEE500]">치트키</span>를 켜세요!
             </h2>
             <button 
               onClick={() => setShowPaymentWidget(true)}
               className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-5 rounded-2xl font-black text-xl shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-3"
             >
-              치트키 충전하기 (990원)
+              치트키 충전하기 (777원)
               <ChevronRight className="w-6 h-6" />
             </button>
           </div>

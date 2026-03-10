@@ -11,7 +11,7 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { auth, googleProvider, db } from './firebase';
-import { collection, query, getDocs, addDoc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs, addDoc, serverTimestamp, orderBy, doc, onSnapshot } from 'firebase/firestore';
 
 export type SajuProfile = {
   id?: string;
@@ -29,6 +29,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   profiles: SajuProfile[];
+  userCheatKeys: number;
   addProfile: (profile: SajuProfile) => Promise<void>;
   refreshProfiles: () => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<SajuProfile[]>([]);
+  const [userCheatKeys, setUserCheatKeys] = useState(0);
 
   // 1. 프로필 데이터 가져오기 함수
   const fetchProfiles = async (uid: string) => {
@@ -57,23 +59,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchedProfiles.push({ id: doc.id, ...doc.data() } as SajuProfile);
       });
       setProfiles(fetchedProfiles);
-      // 로컬 스토리지 동기화 (백업용)
       localStorage.setItem('saju_profiles', JSON.stringify(fetchedProfiles));
     } catch (error) {
       console.error('프로필 불러오기 실패:', error);
     }
   };
 
-  // 2. 인증 상태 감시
+  // 2. 인증 상태 감시 및 실시간 유저 데이터 동기화
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(user);
+    let unsubscribeUserDoc: (() => void) | undefined;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         fetchProfiles(currentUser.uid);
+
+        // 유저 문서(치트키 개수 등) 실시간 감시
+        unsubscribeUserDoc = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
+          if (docSnap.exists()) {
+            setUserCheatKeys(docSnap.data().cheatCoin || 0);
+          } else {
+            setUserCheatKeys(0);
+          }
+        });
       } else {
         setUser(null);
-        // 로그아웃 시 로컬 스토리지 데이터 로드
+        setUserCheatKeys(0);
         const saved = localStorage.getItem('saju_profiles');
         if (saved) setProfiles(JSON.parse(saved));
         else setProfiles([]);
@@ -81,14 +92,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeUserDoc) unsubscribeUserDoc();
+    };
   }, []);
 
-  // 3. 프로필 추가 함수 (DB 저장 + State 업데이트)
+  // 3. 프로필 추가 함수
   const addProfile = async (newProfile: SajuProfile) => {
     try {
       if (user) {
-        // 로그인 상태: Firestore 저장
         const docRef = await addDoc(collection(db, 'users', user.uid, 'profiles'), {
           ...newProfile,
           createdAt: serverTimestamp()
@@ -96,7 +109,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const profileWithId = { ...newProfile, id: docRef.id };
         setProfiles(prev => [profileWithId, ...prev]);
       } else {
-        // 비로그인 상태: 로컬 스토리지 저장
         const updatedProfiles = [newProfile, ...profiles].slice(0, 10);
         setProfiles(updatedProfiles);
         localStorage.setItem('saju_profiles', JSON.stringify(updatedProfiles));
@@ -115,7 +127,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
-      console.error('구글 로그인 실패:', error);
       throw error;
     }
   };
@@ -124,7 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await signInWithEmailAndPassword(auth, email, pass);
     } catch (error) {
-      console.error('이메일 로그인 실패:', error);
       throw error;
     }
   };
@@ -134,7 +144,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
       await updateProfile(userCredential.user, { displayName: name });
     } catch (error) {
-      console.error('회원가입 실패:', error);
       throw error;
     }
   };
@@ -153,6 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user, 
       loading, 
       profiles, 
+      userCheatKeys,
       addProfile, 
       refreshProfiles,
       loginWithGoogle, 
