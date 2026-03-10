@@ -97,7 +97,7 @@ export default function GungHapPreview({ data, resultId }: GungHapPreviewProps) 
 
       {/* 결제 위젯 모달 */}
       {showPaymentWidget && (
-        <PaymentWidget onCancel={() => setShowPaymentWidget(false)} />
+        <PaymentWidget resultId={resultId} onCancel={() => setShowPaymentWidget(false)} />
       )}
 
 
