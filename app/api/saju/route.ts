@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+// API 키가 제대로 설정되어 있는지 확인하기 위한 로그 (서버 로그에서만 보임)
+const apiKey = process.env.GEMINI_API_KEY;
 
 export async function POST(req: Request) {
   try {
@@ -12,59 +12,62 @@ export async function POST(req: Request) {
 
     // 1. 만세력 데이터 계산
     const sajuData = calculateSaju(birthDate, birthTime, calendarType, gender);
-    const pillars = sajuData.pillars.map(p => `${p.gan}${p.zhi}`).join(' ');
+    const pillarsText = sajuData.pillars.map(p => `${p.gan}${p.zhi}`).join(' ');
 
-    // 2. MZ 팩폭 분석 프롬프트 생성
+    // 2. Gemini 설정 및 호출
+    if (!apiKey) {
+      console.error('❌ GEMINI_API_KEY is missing in environment variables');
+      throw new Error('API 키 설정이 누락되었습니다.');
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    // 3. MZ 팩폭 분석 프롬프트 (이전에 성공했던 스타일로 최적화)
     const prompt = `
-      당신은 대한민국 최고의 MZ 명리학자 '사주 치트키'입니다.
-      아래 사주 데이터를 바탕으로 유저(${name}, ${gender})에게 '조선시대 MBTI' 컨셉의 팩폭 분석 리포트를 작성하세요.
+      너는 대한민국에서 가장 사주를 소름 돋게 잘 맞추는 '사주 치트키' 전문가야.
+      아래 유저의 사주 데이터를 바탕으로 2030 세대가 좋아할 만한 아주 직설적이고 유머러스한 '팩폭 리포트'를 써줘.
 
-      [유저 사주 데이터]
-      - 사주 8자: ${pillars}
-      - 일간(본질): ${sajuData.dayGan} (${sajuData.dayGanElement})
+      [데이터]
+      - 이름: ${name} (${gender})
+      - 사주: ${pillarsText}
+      - 일간: ${sajuData.dayGan}
       - MBTI 성향: ${sajuData.mbti}
 
-      [작성 가이드라인]
-      1. 말투: 반말과 존댓말을 섞어 매우 직설적이고 유머러스하게 (예: "너 사실 ~인 거 다 알아")
-      2. 구조: 
-         - headline: 소름 돋는 한 줄 요약
-         - nickname: 조선 MBTI 별명 (예: 성공에 미친 선비)
-         - packPok: 성격과 야망을 가차 없이 털어줌
-         - mbtiAnalysis: 사주와 MBTI의 싱크로율 분석
-         - cheatKey: 2026년 현실적이고 구체적인 조언 1개
-      3. 형식: 반드시 순수한 JSON 형식으로만 응답하세요. 다른 설명은 생략하세요.
+      [미션]
+      반드시 아래 JSON 형식을 지켜서 응답해. 다른 말은 절대 하지 마.
+      {
+        "headline": "한 줄 요약 팩폭",
+        "nickname": "조선시대 MBTI 별명",
+        "packPok": "성격과 야망에 대한 디테일한 팩폭 (3~4문장)",
+        "mbtiAnalysis": "사주와 MBTI의 소름 돋는 연결 분석",
+        "cheatKey": "2026년 행운을 위한 현실적인 조언"
+      }
     `;
-
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY가 설정되지 않았습니다.');
-    }
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
-
-    // JSON 추출 (정규표현식으로 { } 사이의 내용만 추출)
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    const jsonString = jsonMatch ? jsonMatch[0] : responseText;
-
-    let analysis;
+    
+    // JSON 추출 로직 (불필요한 마크다운 제거)
+    const cleanJson = responseText.replace(/```json|```/g, '').trim();
+    
     try {
-      analysis = JSON.parse(jsonString);
+      const analysis = JSON.parse(cleanJson);
+      return NextResponse.json({ 
+        success: true, 
+        saju: sajuData,
+        analysis: analysis 
+      });
     } catch (parseError) {
-      console.error('JSON Parse Error:', responseText);
-      throw new Error('AI 응답 형식이 올바르지 않습니다.');
+      console.error('JSON Parse Failed. Raw Response:', responseText);
+      throw new Error('AI 응답 데이터 분석에 실패했습니다.');
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      saju: sajuData,
-      analysis: analysis 
-    });
-
   } catch (error: any) {
-    console.error('Saju API Detail Error:', error);
+    console.error('Saju API Error:', error);
     return NextResponse.json({ 
       success: false, 
-      error: error.message || '분석 중 오류 발생' 
+      error: error.message || '알 수 없는 서버 오류' 
     }, { status: 500 });
   }
 }
