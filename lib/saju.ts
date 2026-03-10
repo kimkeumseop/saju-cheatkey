@@ -1,113 +1,81 @@
-import { Solar, Lunar } from 'lunar-javascript';
+import { Solar, Lunar, EightChar } from 'lunar-javascript';
 
-// 🔥 인스타 감성의 직관적인 자연물 및 상징 매핑
-export const SAJU_MEANING: Record<string, { sound: string, color: string, desc: string, icon: string, element: string, emoji: string, elementLabel: string }> = {
-  // 천간 (하늘의 기운)
-  '甲': { sound: '갑', color: '#166534', desc: '하늘을 향해 뻗은 큰 나무', icon: '🌲', element: '목', emoji: '🌲', elementLabel: '나무' },
-  '乙': { sound: '을', color: '#166534', desc: '바람을 이겨내는 작은 풀꽃', icon: '🌱', element: '목', emoji: '🌲', elementLabel: '나무' },
-  '丙': { sound: '병', color: '#991b1b', desc: '세상을 비추는 뜨거운 태양', icon: '☀️', element: '화', emoji: '🔥', elementLabel: '불' },
-  '丁': { sound: '정', color: '#991b1b', desc: '어둠을 밝히는 따뜻한 촛불', icon: '🕯️', element: '화', emoji: '🔥', elementLabel: '불' },
-  '戊': { sound: '무', color: '#92400e', desc: '모든 것을 품는 넓은 큰 산', icon: '⛰️', element: '토', emoji: '🪨', elementLabel: '흙' },
-  '己': { sound: '기', color: '#92400e', desc: '곡식을 길러내는 비옥한 평야', icon: '🌾', element: '토', emoji: '🪨', elementLabel: '흙' },
-  '庚': { sound: '경', color: '#334155', desc: '단단하고 강직한 바위/원석', icon: '🪨', element: '금', emoji: '⚔️', elementLabel: '쇠' },
-  '辛': { sound: '신', color: '#334155', desc: '빛나고 정교한 보석/칼', icon: '💎', element: '금', emoji: '⚔️', elementLabel: '쇠' },
-  '壬': { sound: '임', color: '#1e40af', desc: '끝없이 펼쳐진 깊은 바다', icon: '🌊', element: '수', emoji: '💧', elementLabel: '물' },
-  '癸': { sound: '계', color: '#1e40af', desc: '만물을 촉촉히 적시는 비', icon: '💧', element: '수', emoji: '💧', elementLabel: '물' },
-  // 지지 (땅의 기운)
-  '子': { sound: '자', color: '#1e40af', desc: '한겨울의 차가운 물 (쥐)', icon: '🐭', element: '수', emoji: '💧', elementLabel: '물' },
-  '丑': { sound: '축', color: '#92400e', desc: '얼어붙은 겨울의 땅 (소)', icon: '🐮', element: '토', emoji: '🪨', elementLabel: '흙' },
-  '寅': { sound: '인', color: '#166534', desc: '봄을 알리는 큰 나무 (호랑이)', icon: '🐯', element: '목', emoji: '🌲', elementLabel: '나무' },
-  '卯': { sound: '묘', color: '#166534', desc: '봄바람에 흔들리는 풀꽃 (토끼)', icon: '🐰', element: '목', emoji: '🌲', elementLabel: '나무' },
-  '辰': { sound: '진', color: '#92400e', desc: '촉촉하고 활기찬 봄의 땅 (용)', icon: '🐲', element: '토', emoji: '🪨', elementLabel: '흙' },
-  '巳': { sound: '사', color: '#991b1b', desc: '초여름의 뜨거운 불 (뱀)', icon: '🐍', element: '화', emoji: '🔥', elementLabel: '불' },
-  '午': { sound: '오', color: '#991b1b', desc: '한여름의 강렬한 태양 (말)', icon: '🐴', element: '화', emoji: '🔥', elementLabel: '불' },
-  '未': { sound: '미', color: '#92400e', desc: '뜨겁게 마른 한여름의 땅 (양)', icon: '🐏', element: '토', emoji: '🪨', elementLabel: '흙' },
-  '申': { sound: '신', color: '#334155', desc: '단단하게 익은 가을의 바위 (원숭이)', icon: '🐵', element: '금', emoji: '⚔️', elementLabel: '쇠' },
-  '酉': { sound: '유', color: '#334155', desc: '가을의 보석 같은 결실 (닭)', icon: '🐔', element: '금', emoji: '⚔️', elementLabel: '쇠' },
-  '戌': { sound: '술', color: '#92400e', desc: '가을의 마른 땅 (개)', icon: '🐶', element: '토', emoji: '🪨', elementLabel: '흙' },
-  '亥': { sound: '해', color: '#1e40af', desc: '초여름의 깊은 바다 (돼지)', icon: '🐷', element: '수', emoji: '💧', elementLabel: '물' }
+// 오행별 색상 매핑 (Tailwind Class)
+const ELEMENT_COLORS: Record<string, { bg: string, text: string, border: string }> = {
+  '木': { bg: 'bg-[#E8F5E9]', text: 'text-[#2E7D32]', border: 'border-[#A5D6A7]' },
+  '火': { bg: 'bg-[#FFEBEE]', text: 'text-[#C62828]', border: 'border-[#EF9A9A]' },
+  '土': { bg: 'bg-[#FFF8E1]', text: 'text-[#F9A825]', border: 'border-[#FFE082]' },
+  '金': { bg: 'bg-[#FAFAFA]', text: 'text-[#616161]', border: 'border-[#EEEEEE]' },
+  '水': { bg: 'bg-[#E3F2FD]', text: 'text-[#1565C0]', border: 'border-[#90CAF9]' },
 };
 
-export const ELEMENT_STYLE: Record<string, { bg: string, text: string }> = {
-  '목': { bg: 'bg-green-100', text: 'text-green-800' },
-  '화': { bg: 'bg-red-100', text: 'text-red-800' },
-  '토': { bg: 'bg-amber-100', text: 'text-amber-800' },
-  '금': { bg: 'bg-slate-100', text: 'text-slate-700' },
-  '수': { bg: 'bg-blue-100', text: 'text-blue-800' }
+// 일간(Day Gan) 기준으로 MBTI 성향 매핑 (기획안 기반)
+const MBTI_MAP: Record<string, string> = {
+  '甲': 'ENTJ/ENFP', '乙': 'ENFJ/INFP',
+  '丙': 'ESFP/ENTP', '丁': 'ISFP/INTP',
+  '戊': 'ISTJ/ISFJ', '己': 'ISFJ/ESFJ',
+  '庚': 'ENTJ/INTJ', '辛': 'INTJ/ISTP',
+  '壬': 'INTP/ENTP', '癸': 'INFP/INFJ',
 };
 
-export const OHAENG_COLORS: Record<string, string> = {
-  '목': '#22c55e', '화': '#ef4444', '토': '#eab308', '금': '#94a3b8', '수': '#3b82f6'
-};
-
-function calculateOhaeng(saju: any) {
-  const counts: Record<string, number> = { '목': 0, '화': 0, '토': 0, '금': 0, '수': 0 };
-  const ganOhaeng: Record<string, string> = { '甲':'목', '乙':'목', '丙':'화', '丁':'화', '戊':'토', '己':'토', '庚':'금', '辛':'금', '壬':'수', '癸':'수' };
-  const zhiOhaeng: Record<string, string> = { '寅':'목', '卯':'목', '巳':'화', '午':'화', '辰':'토', '戌':'토', '丑':'토', '未':'토', '申':'금', '酉':'금', '亥':'수', '子':'수' };
-
-  Object.values(saju).forEach((pair: any) => {
-    if (Array.isArray(pair)) {
-      if (ganOhaeng[pair[0]]) counts[ganOhaeng[pair[0]]]++;
-      if (zhiOhaeng[pair[1]]) counts[zhiOhaeng[pair[1]]]++;
-    }
-  });
-  return counts;
+// 십성(Ten Gods) 계산 유틸
+function getTenGod(dayGan: string, targetGan: string): string {
+  // 실제 명리학 생극제화 공식이 들어가야 하지만, 
+  // 여기서는 구조 파악을 위해 간단한 매핑 예시로 둠
+  return '비견'; // 실제로는 정재, 편관 등이 계산됨
 }
 
-export function calculateSaju(birthDate: string, birthTime: string, calendarType: string = 'solar', gender: string = 'male') {
+export function calculateSaju(
+  birthDate: string, 
+  birthTime: string, 
+  calendarType: 'solar' | 'lunar'
+) {
   const [year, month, day] = birthDate.split('-').map(Number);
-  const [hour, minute] = (birthTime || '12:00').split(':').map(Number);
+  const [hour, minute] = (birthTime || "00:00").split(':').map(Number);
 
-  let solar;
-  if (calendarType === 'lunar') {
-    const lunar = Lunar.fromYmd(year, month, day);
-    solar = lunar.getSolar();
-  } else {
-    solar = Solar.fromYmdHms(year, month, day, hour, minute, 0);
-  }
+  // 1. 한국 표준시 보정 (-30분)
+  let adjustedDate = new Date(year, month - 1, day, hour, minute);
+  adjustedDate.setMinutes(adjustedDate.getMinutes() - 30);
 
-  const lunarDate = solar.getLunar();
-  const eightChar = lunarDate.getEightChar();
-  
-  const rawSaju = {
-    year: [eightChar.getYearGan(), eightChar.getYearZhi()],
-    month: [eightChar.getMonthGan(), eightChar.getMonthZhi()],
-    day: [eightChar.getDayGan(), eightChar.getDayZhi()],
-    hour: [eightChar.getTimeGan(), eightChar.getTimeZhi()], 
+  const solar = calendarType === 'lunar' 
+    ? Lunar.fromYmdHms(adjustedDate.getFullYear(), adjustedDate.getMonth() + 1, adjustedDate.getDate(), adjustedDate.getHours(), adjustedDate.getMinutes(), 0).getSolar()
+    : Solar.fromYmdHms(adjustedDate.getFullYear(), adjustedDate.getMonth() + 1, adjustedDate.getDate(), adjustedDate.getHours(), adjustedDate.getMinutes(), 0);
+
+  const lunar = solar.getLunar();
+  const eightChar = lunar.getEightChar();
+  eightChar.setSect(2); // 야자시 적용 정석
+
+  const dayGan = eightChar.getDayGan();
+
+  const getElement = (char: string) => {
+    if ('甲乙寅卯'.includes(char)) return '木';
+    if ('丙丁巳午'.includes(char)) return '火';
+    if ('戊己辰戌丑未'.includes(char)) return '土';
+    if ('庚辛申酉'.includes(char)) return '金';
+    if ('壬癸亥子'.includes(char)) return '水';
+    return '土';
   };
 
-  const ohaengCount = calculateOhaeng(rawSaju);
-  
-  const sajuBreakdown = [
-    { 
-      title: '년주', 
-      items: rawSaju.year.map((char) => ({ 
-        char, 
-        ...SAJU_MEANING[char]
-      })) 
-    },
-    { 
-      title: '월주', 
-      items: rawSaju.month.map((char) => ({ 
-        char, 
-        ...SAJU_MEANING[char]
-      })) 
-    },
-    { 
-      title: '일주', 
-      items: rawSaju.day.map((char) => ({ 
-        char, 
-        ...SAJU_MEANING[char]
-      })) 
-    },
-    { 
-      title: '시주', 
-      items: rawSaju.hour.map((char) => ({ 
-        char, 
-        ...SAJU_MEANING[char]
-      })) 
-    },
-  ];
+  const pillars = [
+    { label: '시주', gan: eightChar.getTimeGan(), zhi: eightChar.getTimeZhi() },
+    { label: '일주', gan: eightChar.getDayGan(), zhi: eightChar.getDayZhi() },
+    { label: '월주', gan: eightChar.getMonthGan(), zhi: eightChar.getMonthZhi() },
+    { label: '연주', gan: eightChar.getYearGan(), zhi: eightChar.getYearZhi() },
+  ].map(p => ({
+    ...p,
+    ganElement: getElement(p.gan),
+    zhiElement: getElement(p.zhi),
+    ganColor: ELEMENT_COLORS[getElement(p.gan)],
+    zhiColor: ELEMENT_COLORS[getElement(p.zhi)],
+    tenGod: getTenGod(dayGan, p.gan)
+  }));
 
-  return { sajuBreakdown, ohaengCount, rawSaju };
+  return {
+    dayGan,
+    dayGanElement: getElement(dayGan),
+    mbti: MBTI_MAP[dayGan] || 'INTJ',
+    pillars,
+    lunarDate: lunar.toString(),
+    solarDate: solar.toString()
+  };
 }
