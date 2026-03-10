@@ -6,9 +6,9 @@ import { nanoid } from 'nanoid';
 import { useAuth } from '@/lib/auth';
 import { Loader2, Zap, AlertTriangle } from 'lucide-react';
 
-// 토스페이먼츠 공식 테스트용 클라이언트 키 (공용)
-const DEFAULT_TEST_KEY = 'test_ck_D5yaAdv5gc1P4dGzAY3VQEMzjn01';
-const clientKey = (process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || DEFAULT_TEST_KEY).trim();
+// 키 세정 로직: 알파벳, 숫자, _ 외의 모든 문자(따옴표, 공백 등)를 제거
+const rawKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || 'test_ck_D5yaAdv5gc1P4dGzAY3VQEMzjn01';
+const clientKey = rawKey.replace(/[^a-zA-Z0-9_]/g, '');
 
 export default function PaymentWidget({ resultId, onCancel }: { resultId: string, onCancel: () => void }) {
   const { user } = useAuth();
@@ -17,12 +17,11 @@ export default function PaymentWidget({ resultId, onCancel }: { resultId: string
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 1. Client Key 체크
-    console.log('🛠️ Toss Client Key Check:', clientKey);
-    if (!clientKey) {
-      const msg = 'Toss Client Key가 설정되지 않았습니다. .env.local 파일을 확인해주세요.';
-      console.error('❌', msg);
-      alert(msg);
+    // 1. Client Key 체크 및 로그
+    console.log('🛠️ Toss Client Key (Cleaned):', clientKey);
+    
+    if (!clientKey || clientKey.length < 5) {
+      const msg = 'Toss Client Key가 유효하지 않습니다. 환경 변수를 확인해주세요.';
       setError(msg);
       setLoading(false);
       return;
@@ -31,28 +30,28 @@ export default function PaymentWidget({ resultId, onCancel }: { resultId: string
     const initWidget = async () => {
       try {
         console.log('🚀 Initializing Toss Payment Widget...');
-        // 2. SDK 로드
-        const paymentWidget = await loadPaymentWidget(clientKey, user?.uid || 'ANONYMOUS');
-        console.log('✅ PaymentWidget Object Created:', paymentWidget);
+        // 2. SDK 로드 (고객 키는 유저 UID 혹은 랜덤값)
+        const customerKey = user?.uid ? user.uid.replace(/[^a-zA-Z0-9_-]/g, '') : 'ANONYMOUS';
+        const paymentWidget = await loadPaymentWidget(clientKey, customerKey);
+        
+        console.log('✅ PaymentWidget Object Created');
 
         // 3. 결제 수단 렌더링
-        // #payment-method 요소가 DOM에 존재하는지 확인 후 렌더링
-        paymentWidget.renderPaymentMethods(
+        await paymentWidget.renderPaymentMethods(
           '#payment-method',
           { value: 777 },
           { variantKey: 'DEFAULT' }
         );
-        console.log('🎨 Payment Methods Rendered to #payment-method');
-
+        
         // 4. 이용약관 렌더링
-        paymentWidget.renderAgreement('#agreement', { variantKey: 'AGREEMENT' });
-        console.log('📝 Agreement Rendered to #agreement');
+        await paymentWidget.renderAgreement('#agreement', { variantKey: 'AGREEMENT' });
 
         paymentWidgetRef.current = paymentWidget;
+        console.log('🎨 Widget Rendering Complete');
         setLoading(false);
       } catch (err: any) {
         console.error('❌ Widget Initialization Error:', err);
-        setError('결제 위젯 로딩 중 오류가 발생했습니다.');
+        setError(`결제 위젯 로드 실패: ${err.message || '인증 오류'}`);
         setLoading(false);
       }
     };
@@ -62,33 +61,23 @@ export default function PaymentWidget({ resultId, onCancel }: { resultId: string
 
   const handlePaymentRequest = async () => {
     const paymentWidget = paymentWidgetRef.current;
-    console.log('💳 Payment Request Triggered. Widget State:', !!paymentWidget);
-
     if (!paymentWidget) {
-      alert('결제 위젯이 아직 준비되지 않았습니다.');
+      alert('결제창이 아직 준비되지 않았습니다. 잠시만 기다려주세요.');
       return;
     }
 
     try {
       const orderId = nanoid();
-      const successUrl = `${window.location.origin}/api/payments/confirm?resultId=${resultId}`;
-      const failUrl = `${window.location.origin}/result/${resultId}?payment=fail`;
-
-      console.log('🔗 Success URL:', successUrl);
-      console.log('🔗 Fail URL:', failUrl);
-
       await paymentWidget.requestPayment({
         orderId,
         orderName: '사주 치트키 프리미엄 분석',
         customerName: user?.displayName || '방문자',
         customerEmail: user?.email || '',
-        successUrl,
-        failUrl,
+        successUrl: `${window.location.origin}/api/payments/confirm?resultId=${resultId}`,
+        failUrl: `${window.location.origin}/result/${resultId}?payment=fail`,
       });
-      
-      console.log('✅ requestPayment Function Called Successfully');
     } catch (err: any) {
-      console.error('❌ requestPayment Error:', err);
+      console.error('❌ Payment Request Error:', err);
       alert(`결제 요청 실패: ${err.message || '알 수 없는 오류'}`);
     }
   };
@@ -105,25 +94,24 @@ export default function PaymentWidget({ resultId, onCancel }: { resultId: string
           <p className="text-gray-500 font-bold text-sm">777원으로 모든 풀이를 확인하세요!</p>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 min-h-[300px]">
-          {loading && (
-            <div className="h-64 flex flex-col items-center justify-center gap-4">
+        <div className="flex-1 overflow-y-auto px-4 min-h-[350px] flex flex-col">
+          {loading && !error && (
+            <div className="flex-1 flex flex-col items-center justify-center gap-4 py-20">
               <Loader2 className="w-10 h-10 text-[#FEE500] animate-spin stroke-[3]" />
-              <p className="text-gray-400 font-black animate-pulse">결제창을 준비하고 있어요...</p>
+              <p className="text-gray-400 font-black animate-pulse">결제창을 불러오고 있어요...</p>
             </div>
           )}
           
           {error && (
-            <div className="h-64 flex flex-col items-center justify-center gap-4 text-red-500 px-8 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center gap-4 text-red-500 px-8 text-center py-20">
               <AlertTriangle className="w-12 h-12" />
               <p className="font-bold">{error}</p>
-              <button onClick={() => window.location.reload()} className="text-sm underline text-gray-400">다시 시도하기</button>
+              <button onClick={() => window.location.reload()} className="text-sm underline text-gray-400">페이지 새로고침</button>
             </div>
           )}
 
-          {/* ID가 정확히 일치해야 함 */}
-          <div id="payment-method" className="w-full" />
-          <div id="agreement" className="w-full" />
+          <div id="payment-method" className={loading || error ? 'hidden' : 'w-full'} />
+          <div id="agreement" className={loading || error ? 'hidden' : 'w-full'} />
         </div>
 
         {!error && (
