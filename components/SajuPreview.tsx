@@ -1,11 +1,22 @@
 'use client';
 
 import { Zap, CreditCard, Lock } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface SajuPillar {
   label: string;
   gan: string;
   zhi: string;
+  ganKo: string;
+  zhiKo: string;
+  tenGodGan: string;
+  tenGodZhi: string;
+  unSeong: string;
   ganColor: { bg: string, text: string, border: string };
   zhiColor: { bg: string, text: string, border: string };
 }
@@ -54,7 +65,7 @@ export default function SajuPreview({ name = '홍길동', gender = '남', birthD
       </div>
 
       {/* 하단: 만세력 미리보기 섹션 */}
-      <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 space-y-8 relative">
+      <div className="bg-white rounded-[3rem] p-8 shadow-sm border border-gray-100 space-y-8 relative overflow-hidden">
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white via-white/80 to-transparent z-10 rounded-b-[2.5rem] flex items-end justify-center pb-12">
           <div className="text-center space-y-2">
             <Lock className="w-8 h-8 text-[#3C1E1E]/20 mx-auto" />
@@ -67,30 +78,42 @@ export default function SajuPreview({ name = '홍길동', gender = '남', birthD
           <p className="text-gray-400 font-bold text-sm">{name} ({gender}) · {birthDate}</p>
         </div>
 
-        {/* 4x2 만세력 표 */}
+        {/* 4x2 만세력 표 (고도화 버전) */}
         <div className="grid grid-cols-4 gap-2">
           {pillars.map((p) => (
-            <div key={p.label} className="text-center text-[11px] font-black text-gray-400 mb-1">{p.label}</div>
+            <div key={p.label} className="text-center space-y-1 mb-2">
+              <div className="text-[10px] font-black text-gray-300 uppercase tracking-tighter">{p.label}</div>
+              <div className="text-[11px] font-black text-[#3C1E1E]">{p.tenGodGan}</div>
+            </div>
           ))}
           
           {/* 천간 */}
           {pillars.map((p, i) => (
-            <div key={`gan-${i}`} className={`aspect-square rounded-2xl border ${p.ganColor.border} flex flex-col items-center justify-center ${p.ganColor.bg} shadow-sm`}>
-              <span className={`text-2xl font-black ${p.ganColor.text}`}>{p.gan}</span>
+            <div key={`gan-${i}`} className={cn(`aspect-square rounded-2xl border flex flex-col items-center justify-center shadow-sm transition-all duration-500`, p.ganColor.border, p.ganColor.bg)}>
+              <span className={cn(`text-2xl font-black`, p.ganColor.text)}>{p.ganKo}</span>
             </div>
           ))}
 
           {/* 지지 */}
           {pillars.map((p, i) => (
-            <div key={`zhi-${i}`} className={`aspect-square rounded-2xl border ${p.zhiColor.border} flex flex-col items-center justify-center ${p.zhiColor.bg} shadow-sm`}>
-              <span className={`text-2xl font-black ${p.zhiColor.text}`}>{p.zhi}</span>
+            <div key={`zhi-${i}`} className={cn(`aspect-square rounded-2xl border flex flex-col items-center justify-center shadow-sm transition-all duration-500`, p.zhiColor.border, p.zhiColor.bg)}>
+              <span className={cn(`text-2xl font-black`, p.zhiColor.text)}>{p.zhiKo}</span>
+            </div>
+          ))}
+
+          {/* 하단 정보 */}
+          {pillars.map((p, i) => (
+            <div key={`info-${i}`} className="text-center space-y-0.5 mt-2">
+              <div className="text-[11px] font-black text-[#3C1E1E]">{p.tenGodZhi}</div>
+              <div className="text-[9px] font-bold text-gray-400">{p.unSeong}</div>
             </div>
           ))}
         </div>
 
-        <div className="space-y-4 opacity-10">
+        <div className="space-y-4 opacity-5">
           <div className="h-4 bg-gray-200 rounded-full w-3/4" />
           <div className="h-4 bg-gray-200 rounded-full w-full" />
+          <div className="h-4 bg-gray-200 rounded-full w-5/6" />
         </div>
       </div>
     </div>

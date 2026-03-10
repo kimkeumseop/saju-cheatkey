@@ -1,18 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Heart, Zap, ChevronRight, AlertCircle, Layout } from 'lucide-react';
+import { Sparkles, Heart, Zap, ChevronRight, AlertCircle, Layout, BarChart3, Star, History, Coins } from 'lucide-react';
 import AnalysisAccordion from './AnalysisAccordion';
 import ShareButtons from './ShareButtons';
 import PaymentWidget from './PaymentWidget';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useAuth } from '@/lib/auth';
+import { ELEMENT_STYLE } from '@/lib/saju';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-function PillarChart({ pillars, title, color = "bg-[#FEE500]" }: { pillars: any[], title?: string, color?: string }) {
+function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
   return (
     <div className="space-y-4">
       {title && <h4 className="text-center font-black text-[#3C1E1E] text-sm md:text-base">{title}</h4>}
@@ -21,34 +23,63 @@ function PillarChart({ pillars, title, color = "bg-[#FEE500]" }: { pillars: any[
           const isDayPillar = p.label === '일주';
           return (
             <div key={colIdx} className="space-y-2">
-              <div className="text-center text-[8px] md:text-[10px] font-black text-gray-400 tracking-tighter opacity-80 uppercase">
-                {p.label}
+              <div className="text-center space-y-0.5">
+                <div className="text-[8px] md:text-[10px] font-black text-gray-400 tracking-tighter opacity-80 uppercase">{p.label}</div>
+                <div className="text-[9px] md:text-[11px] font-black text-[#3C1E1E]">{p.tenGodGan}</div>
               </div>
+              
               <div className="space-y-1.5 md:space-y-3">
                 <div className={cn(
                   p.ganColor.bg, p.ganColor.text,
                   "p-2.5 md:p-6 rounded-[1.2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center gap-0.5 md:gap-1 shadow-sm border-[2px] md:border-[3px] transition-all",
-                  isDayPillar ? "border-pink-300 shadow-md scale-105" : "border-white"
+                  isDayPillar ? "border-[#FEE500] shadow-md scale-105" : "border-white"
                 )}>
-                  <span className="text-[9px] md:text-xs font-black opacity-60">{p.ganKo}</span>
                   <span className="text-xl md:text-5xl font-sans font-black leading-none tracking-tight">
-                    {p.gan}
+                    {p.isUnknown ? '?' : p.ganKo}
                   </span>
                 </div>
                 <div className={cn(
                   p.zhiColor.bg, p.zhiColor.text,
                   "p-2.5 md:p-6 rounded-[1.2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center gap-0.5 md:gap-1 shadow-sm border-[2px] md:border-[3px] border-white"
                 )}>
-                  <span className="text-[9px] md:text-xs font-black opacity-60">{p.zhiKo}</span>
                   <span className="text-xl md:text-5xl font-sans font-black leading-none tracking-tight">
-                    {p.zhi}
+                    {p.isUnknown ? '?' : p.zhiKo}
                   </span>
                 </div>
+              </div>
+
+              <div className="text-center space-y-0.5 mt-1">
+                <div className="text-[9px] md:text-[11px] font-black text-[#3C1E1E]">{p.tenGodZhi}</div>
+                <div className="text-[8px] md:text-[10px] font-bold text-gray-400">{p.unSeong}</div>
               </div>
             </div>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function ElementsChart({ counts }: { counts: any }) {
+  const elements = [
+    { label: '목', key: '木', color: ELEMENT_STYLE['木'].color, bg: 'bg-[#E8F5E9]' },
+    { label: '화', key: '火', color: ELEMENT_STYLE['火'].color, bg: 'bg-[#FFEBEE]' },
+    { label: '토', key: '土', color: ELEMENT_STYLE['土'].color, bg: 'bg-[#FFF8E1]' },
+    { label: '금', key: '金', color: ELEMENT_STYLE['金'].color, bg: 'bg-[#FAFAFA]' },
+    { label: '수', key: '水', color: ELEMENT_STYLE['水'].color, bg: 'bg-[#E3F2FD]' },
+  ];
+
+  return (
+    <div className="flex justify-between gap-1.5">
+      {elements.map((el) => {
+        const count = counts[el.key] || 0;
+        return (
+          <div key={el.key} className={cn(el.bg, "flex-1 p-2 rounded-2xl text-center border border-white/50")}>
+            <div className="text-[9px] font-black text-gray-500 mb-1">{el.label}</div>
+            <div className="text-xs font-black" style={{ color: el.color }}>{count}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -60,6 +91,7 @@ interface GungHapPreviewProps {
 
 export default function GungHapPreview({ data, resultId }: GungHapPreviewProps) {
   const { user1, user2, saju1, saju2, aiResult, isPaid, relation } = data;
+  const { userCheatKeys } = useAuth();
   const [showPaymentWidget, setShowPaymentWidget] = useState(false);
 
   const relationLabels: Record<string, string> = {
@@ -73,62 +105,71 @@ export default function GungHapPreview({ data, resultId }: GungHapPreviewProps) 
     <div className="space-y-10">
       {/* 1. 상단 결제 배너 (미결제 시) */}
       {!isPaid && (
-        <div className="bg-[#3C1E1E] rounded-[2.5rem] p-8 text-center shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#FEE500]/10 rounded-full -mr-16 -mt-16 blur-3xl animate-pulse" />
-          <div className="space-y-6 relative z-10">
-            <div className="flex items-center justify-center gap-2 text-[#FEE500]">
-              <Zap className="w-6 h-6 fill-[#FEE500]" />
-              <span className="font-black text-sm tracking-widest uppercase italic">Destiny CheatKey</span>
+        <div className="bg-white rounded-[3rem] p-8 shadow-xl border border-gray-100 space-y-10 relative overflow-hidden">
+          <div className="flex items-center justify-between bg-gray-50 p-6 rounded-3xl border border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                <Coins className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">보유 치트키</p>
+                <p className="text-lg font-black text-[#3C1E1E]">{userCheatKeys} 개</p>
+              </div>
             </div>
-            <h2 className="text-white text-2xl md:text-3xl font-black break-keep leading-tight">
-              <span className="text-[#FEE500]">777원</span>으로 <br/>
-              두 사람의 <span className="text-[#FEE500]">치트키</span>를 켜세요!
-            </h2>
-            <button 
-              onClick={() => setShowPaymentWidget(true)}
-              className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-5 rounded-2xl font-black text-xl shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-3"
-            >
-              치트키 충전하기 (777원)
-              <ChevronRight className="w-6 h-6" />
-            </button>
+            <div className="h-10 w-px bg-gray-200" />
+            <div className="text-right">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">필요 치트키</p>
+              <p className="text-lg font-black text-[#3C1E1E]">1 개</p>
+            </div>
+          </div>
+
+          <div className="bg-[#3C1E1E] rounded-[2.5rem] p-8 text-center shadow-2xl relative overflow-hidden group">
+            <div className="space-y-6 relative z-10">
+              <div className="flex items-center justify-center gap-2 text-[#FEE500]">
+                <Zap className="w-6 h-6 fill-[#FEE500]" />
+                <span className="font-black text-xs tracking-widest uppercase italic">Destiny CheatKey</span>
+              </div>
+              <h2 className="text-white text-2xl md:text-3xl font-black leading-tight">
+                <span className="text-[#FEE500]">777원</span>으로 <br/>
+                두 사람의 <span className="text-[#FEE500]">치트키</span>를 켜세요!
+              </h2>
+              <button 
+                onClick={() => setShowPaymentWidget(true)}
+                className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-5 rounded-2xl font-black text-xl shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-3"
+              >
+                치트키 충전하기 (777원)
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* 결제 위젯 모달 */}
       {showPaymentWidget && (
         <PaymentWidget resultId={resultId} onCancel={() => setShowPaymentWidget(false)} />
       )}
 
-
       {/* 2. 정보 요약 비교 */}
       <div className="grid grid-cols-2 gap-4">
         {[
-          { user: user1, role: data.role1 || '본인', color: 'blue' },
-          { user: user2, role: data.role2 || '상대방', color: 'pink' }
-        ].map((item, idx) => ( idx === 0 ? (
-          <div key={idx} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{item.role}</span>
+          { user: user1, saju: saju1, color: 'blue' },
+          { user: user2, saju: saju2, color: 'pink' }
+        ].map((item, idx) => (
+          <div key={idx} className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className={cn("w-2 h-2 rounded-full", idx === 0 ? "bg-blue-500" : "bg-pink-500")} />
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{idx === 0 ? '본인' : '상대방'}</span>
+              </div>
+              <span className="text-[10px] font-black text-[#3C1E1E]">{item.saju.dayGanKo}일간</span>
             </div>
             <div className="space-y-1">
-              <p className="text-xl font-black text-[#3C1E1E]">{item.user.name}</p>
-              <p className="text-[11px] text-gray-500 font-bold">{item.user.birthDate} ({item.user.gender === 'male' ? '남' : '여'})</p>
+              <p className="text-lg font-black text-[#3C1E1E]">{item.user.name}</p>
+              <p className="text-[10px] text-gray-400 font-bold">{item.user.birthDate}</p>
             </div>
+            <ElementsChart counts={item.saju.elementsCount} />
           </div>
-        ) : (
-          <div key={idx} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-pink-500" />
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{item.role}</span>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xl font-black text-[#3C1E1E]">{item.user.name}</p>
-              <p className="text-[11px] text-gray-500 font-bold">{item.user.birthDate} ({item.user.gender === 'male' ? '남' : '여'})</p>
-            </div>
-          </div>
-        )))}
+        ))}
       </div>
 
       <div className="flex items-center justify-center gap-3 bg-white py-4 rounded-2xl border border-gray-100 shadow-sm">
@@ -143,13 +184,34 @@ export default function GungHapPreview({ data, resultId }: GungHapPreviewProps) 
           <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">Manseyrok Comparison</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
-          <PillarChart pillars={saju1.pillars} title={`${user1.name}님의 사주`} />
-          <PillarChart pillars={saju2.pillars} title={`${user2.name}님의 사주`} />
+        <div className="space-y-16">
+          <div className="space-y-6">
+            <PillarChart pillars={saju1.pillars} title={`${user1.name}님의 사주`} />
+            <div className="flex flex-wrap justify-center gap-2">
+              {saju1.keyShinsal.map((s: string) => (
+                <span key={s} className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[9px] font-black border border-blue-100">#{s}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center py-2">
+            <div className="h-px bg-gray-100 flex-1" />
+            <div className="px-6 py-2 bg-[#F7F8FA] rounded-full text-[10px] font-black text-gray-400 italic">DESTINY MATCH</div>
+            <div className="h-px bg-gray-100 flex-1" />
+          </div>
+
+          <div className="space-y-6">
+            <PillarChart pillars={saju2.pillars} title={`${user2.name}님의 사주`} />
+            <div className="flex flex-wrap justify-center gap-2">
+              {saju2.keyShinsal.map((s: string) => (
+                <span key={s} className="px-3 py-1 rounded-full bg-pink-50 text-pink-600 text-[9px] font-black border border-pink-100">#{s}</span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* 4. 분석 결과 (결제 여부에 따라) */}
+      {/* 4. 분석 결과 */}
       <div className="space-y-8">
         <div className="flex items-center gap-3 ml-2">
           <Layout className="w-6 h-6 text-[#3C1E1E]" />
