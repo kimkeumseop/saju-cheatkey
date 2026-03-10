@@ -32,14 +32,25 @@ function SajuProcessingContent() {
 
       // 2. 전문가 심층 분석 호출
       setLoadingStep('명리학 전문가가 당신의 운명을 팩폭 중... (약 5초 소요)');
-      const response = await fetch('/api/analyze', {
+      const response = await fetch('/api/saju', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sajuData: sajuData.rawSaju, userName: name }),
+        body: JSON.stringify({ 
+          name,
+          birthDate, 
+          birthTime, 
+          calendarType, 
+          gender 
+        }),
       });
       
-      if (!response.ok) throw new Error('AI 분석 실패');
-      const aiResult = await response.json();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'AI 분석 실패');
+      }
+      
+      const resData = await response.json();
+      const aiResult = resData.analysis; // Gemini 분석 결과 추출
 
       // 3. 결과 데이터 구성
       const finalResult = {
