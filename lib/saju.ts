@@ -6,7 +6,7 @@ const HANJA_TO_KO: Record<string, string> = {
   '子': '자', '丑': '축', '寅': '인', '卯': '묘', '辰': '진', '巳': '사', '午': '오', '未': '미', '申': '신', '酉': '유', '戌': '술', '亥': '해'
 };
 
-// 십신 한글 매핑 (lunar-javascript의 중국어 간체 출력 대응)
+// 십신 한글 매핑 (중국어 간체 대응)
 const TEN_GOD_KO: Record<string, string> = {
   '比肩': '비견', '劫财': '겁재', '食神': '식신', '伤官': '상관',
   '偏财': '편재', '正财': '정재', '七杀': '편관', '正官': '정관',
@@ -25,7 +25,7 @@ const ZODIAC_ICONS: Record<string, string> = {
   '子': '🐭', '丑': '🐮', '寅': '🐯', '卯': '🐰', '辰': '🐲', '巳': '🐍', '午': '🐴', '未': '🐑', '申': '🐵', '酉': '🐔', '戌': '🐶', '亥': '🐷'
 };
 
-// 오행별 색상 매핑 (Tailwind Class)
+// 오행별 색상 매핑
 export const ELEMENT_STYLE: Record<string, { bg: string, text: string, border: string, color: string }> = {
   '木': { bg: 'bg-[#E8F5E9]', text: 'text-[#2E7D32]', border: 'border-[#A5D6A7]', color: '#2E7D32' },
   '火': { bg: 'bg-[#FFEBEE]', text: 'text-[#C62828]', border: 'border-[#EF9A9A]', color: '#C62828' },
@@ -48,6 +48,57 @@ const getElement = (char: string) => {
   if ('壬癸亥子'.includes(char)) return '水';
   return '土';
 };
+
+// 신살 수동 계산 함수
+function calculateKeyShinsal(dayGan: string, pillars: any[]) {
+  const shinsal = new Set<string>();
+  const zhis = pillars.map(p => p.zhi);
+  const gzs = pillars.map(p => p.gan + p.zhi);
+
+  // 1. 천을귀인 (Day Gan 기준)
+  const cheonEul: Record<string, string[]> = {
+    '甲': ['未', '丑'], '戊': ['未', '丑'], '庚': ['未', '丑'],
+    '乙': ['申', '子'], '己': ['申', '子'],
+    '丙': ['酉', '亥'], '丁': ['酉', '亥'],
+    '壬': ['卯', '巳'], '癸': ['卯', '巳'],
+    '辛': ['午', '寅']
+  };
+  if (cheonEul[dayGan]?.some(z => zhis.includes(z))) shinsal.add('천을귀인');
+
+  // 2. 문창귀인 (Day Gan 기준)
+  const moonChang: Record<string, string> = {
+    '甲': '巳', '乙': '午', '丙': '申', '丁': '酉', '戊': '申', '己': '酉', '庚': '亥', '辛': '子', '壬': '寅', '癸': '卯'
+  };
+  if (zhis.includes(moonChang[dayGan])) shinsal.add('문창귀인');
+
+  // 3. 백호살 (Pillar 기준)
+  const baekHo = ['甲辰', '乙未', '丙戌', '丁丑', '戊辰', '壬戌', '癸丑'];
+  if (gzs.some(gz => baekHo.includes(gz))) shinsal.add('백호살');
+
+  // 4. 역마살 (월지/일지 기준 - 단순화)
+  const yeokMaMap: Record<string, string> = {
+    '申': '寅', '子': '寅', '辰': '寅',
+    '寅': '申', '午': '申', '戌': '申',
+    '巳': '亥', '酉': '亥', '丑': '亥',
+    '亥': '巳', '卯': '巳', '未': '巳'
+  };
+  if (zhis.includes(yeokMaMap[zhis[1]]) || zhis.includes(yeokMaMap[zhis[2]])) shinsal.add('역마살');
+
+  // 5. 도화살 (월지/일지 기준 - 단순화)
+  const doHwaMap: Record<string, string> = {
+    '申': '酉', '子': '酉', '辰': '酉',
+    '寅': '卯', '午': '卯', '戌': '卯',
+    '巳': '午', '酉': '午', '丑': '午',
+    '亥': '子', '卯': '子', '未': '子'
+  };
+  if (zhis.includes(doHwaMap[zhis[1]]) || zhis.includes(doHwaMap[zhis[2]])) shinsal.add('도화살');
+
+  // 6. 괴강살
+  const goeGang = ['戊戌', '庚戌', '庚辰', '壬辰', '壬戌'];
+  if (gzs.some(gz => goeGang.includes(gz))) shinsal.add('괴강살');
+
+  return Array.from(shinsal);
+}
 
 export function calculateSaju(
   birthDate: string, 
@@ -72,7 +123,6 @@ export function calculateSaju(
 
   const dayGan = eightChar.getDayGan();
 
-  // 안전하게 십신 및 십이운성을 가져오는 헬퍼 함수
   const getSafeTenGodGan = (pillar: string) => {
     try {
       let hanja = '';
@@ -125,30 +175,21 @@ export function calculateSaju(
     isUnknown: p.label === '시주' && isUnknownTime
   }));
 
-  const elementsCount: Record<string, number> = { '木': 0, '火': 0, '土': 0, '金': 0, '水': 0 };
+  const elementsCount: Record<string, number> = { '목': 0, '화': 0, '토': 0, '금': 0, '수': 0 };
+  const ELE_MAP: Record<string, string> = { '木': '목', '火': '화', '土': '토', '金': '금', '水': '수' };
   pillars.forEach(p => {
     if (p.isUnknown) return;
-    elementsCount[p.ganElement]++;
-    elementsCount[p.zhiElement]++;
+    elementsCount[ELE_MAP[p.ganElement]]++;
+    elementsCount[ELE_MAP[p.zhiElement]]++;
   });
 
-  const keyShinsal: string[] = [];
-  try {
-    const shinsalFull = lunar.getBaZiShenSha();
-    if (shinsalFull.some(s => s.includes('天乙'))) keyShinsal.push('천을귀인');
-    if (shinsalFull.some(s => s.includes('文昌'))) keyShinsal.push('문창귀인');
-    if (shinsalFull.some(s => s.includes('羊刃'))) keyShinsal.push('양인살');
-    if (shinsalFull.some(s => s.includes('白虎'))) keyShinsal.push('백호살');
-    if (shinsalFull.some(s => s.includes('驛马') || s.includes('驛馬'))) keyShinsal.push('역마살');
-    if (shinsalFull.some(s => s.includes('桃花'))) keyShinsal.push('도화살');
-    if (shinsalFull.some(s => s.includes('华盖') || s.includes('華蓋'))) keyShinsal.push('화개살');
-  } catch (e) {}
+  const keyShinsal = calculateKeyShinsal(dayGan, pillarsData);
 
   const daYunList: any[] = [];
   try {
-    const daYunObj = eightChar.getLuck(gender === 'male' ? 1 : 0);
-    const dys = daYunObj.getDaYun().slice(1, 9);
-    dys.forEach(dy => {
+    const yun = eightChar.getYun(gender === 'male' ? 1 : 0);
+    const dys = yun.getDaYun();
+    dys.slice(1, 9).forEach(dy => {
       const gz = dy.getGanZhi();
       const gan = gz.substring(0, 1);
       const zhi = gz.substring(1, 2);
@@ -162,7 +203,9 @@ export function calculateSaju(
         zhiColor: ELEMENT_STYLE[getElement(zhi)],
       });
     });
-  } catch (e) {}
+  } catch (e) {
+    console.error('DaYun Error:', e);
+  }
 
   return {
     dayGan,
