@@ -5,6 +5,25 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
+// 재시도 로직을 포함한 Gemini 호출 함수
+async function generateWithRetry(model: any, prompt: string, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await model.generateContent(prompt);
+    } catch (error: any) {
+      const isServiceUnavailable = error.message?.includes('503') || error.message?.includes('Service Unavailable');
+      const isLastRetry = i === maxRetries - 1;
+      
+      if (isServiceUnavailable && !isLastRetry) {
+        console.warn(`Gemini API 503 error, retrying... (${i + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // 지연 시간 점진적 증가
+        continue;
+      }
+      throw error;
+    }
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { user1, user2, relationship } = await req.json();
@@ -37,7 +56,7 @@ export async function POST(req: Request) {
       3. 형식: JSON 형식으로 응답하세요.
     `;
 
-    const result = await model.generateContent(prompt);
+    const result = await generateWithRetry(model, prompt);
     const responseText = result.response.text();
     const jsonString = responseText.replace(/```json|```/g, '').trim();
 

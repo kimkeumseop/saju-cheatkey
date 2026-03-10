@@ -28,7 +28,7 @@
 - **GungHapPreview**: 두 사람의 만세력 비교 UI 및 시너지 점수 노출 예정
 
 ## 기술 스택
-- **Backend**: Next.js App Router, Gemini 1.5 Flash API
+- **Backend**: Next.js App Router, Gemini 2.5 Flash Lite API
 - **Engine**: lunar-javascript
 - **UI/UX**: Tailwind CSS, Lucide React, Framer Motion
 

@@ -2,28 +2,43 @@ import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// API 키가 제대로 설정되어 있는지 확인하기 위한 로그 (서버 로그에서만 보임)
 const apiKey = process.env.GEMINI_API_KEY;
+
+// 재시도 로직을 포함한 Gemini 호출 함수
+async function generateWithRetry(model: any, prompt: string, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await model.generateContent(prompt);
+    } catch (error: any) {
+      const isServiceUnavailable = error.message?.includes('503') || error.message?.includes('Service Unavailable');
+      const isLastRetry = i === maxRetries - 1;
+      
+      if (isServiceUnavailable && !isLastRetry) {
+        console.warn(`Gemini API 503 error, retrying... (${i + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // 지연 시간 점진적 증가
+        continue;
+      }
+      throw error;
+    }
+  }
+}
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { name, birthDate, birthTime, calendarType, gender } = body;
 
-    // 1. 만세력 데이터 계산
     const sajuData = calculateSaju(birthDate, birthTime, calendarType, gender);
     const pillarsText = sajuData.pillars.map(p => `${p.gan}${p.zhi}`).join(' ');
 
-    // 2. Gemini 설정 및 호출
     if (!apiKey) {
-      console.error('❌ GEMINI_API_KEY is missing in environment variables');
+      console.error('❌ GEMINI_API_KEY is missing');
       throw new Error('API 키 설정이 누락되었습니다.');
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
-    // 3. MZ 팩폭 분석 프롬프트 (이전에 성공했던 스타일로 최적화)
     const prompt = `
       너는 대한민국에서 가장 사주를 소름 돋게 잘 맞추는 '사주 치트키' 전문가야.
       아래 유저의 사주 데이터를 바탕으로 2030 세대가 좋아할 만한 아주 직설적이고 유머러스한 '팩폭 리포트'를 써줘.
@@ -45,10 +60,8 @@ export async function POST(req: Request) {
       }
     `;
 
-    const result = await model.generateContent(prompt);
+    const result = await generateWithRetry(model, prompt);
     const responseText = result.response.text();
-    
-    // JSON 추출 로직 (불필요한 마크다운 제거)
     const cleanJson = responseText.replace(/```json|```/g, '').trim();
     
     try {
@@ -59,7 +72,7 @@ export async function POST(req: Request) {
         analysis: analysis 
       });
     } catch (parseError) {
-      console.error('JSON Parse Failed. Raw Response:', responseText);
+      console.error('JSON Parse Failed:', responseText);
       throw new Error('AI 응답 데이터 분석에 실패했습니다.');
     }
 
