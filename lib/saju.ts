@@ -62,12 +62,7 @@ export function calculateSaju(
     return '土';
   };
 
-  const pillars = [
-    { label: '시주', gan: eightChar.getTimeGan(), zhi: eightChar.getTimeZhi() },
-    { label: '일주', gan: eightChar.getDayGan(), zhi: eightChar.getDayZhi() },
-    { label: '월주', gan: eightChar.getMonthGan(), zhi: eightChar.getMonthZhi() },
-    { label: '연주', gan: eightChar.getYearGan(), zhi: eightChar.getYearZhi() },
-  ].map(p => ({
+  const resultPillars = pillars.map(p => ({
     ...p,
     ganElement: getElement(p.gan),
     zhiElement: getElement(p.zhi),
@@ -80,7 +75,8 @@ export function calculateSaju(
     dayGan,
     dayGanElement: getElement(dayGan),
     mbti: MBTI_MAP[dayGan] || 'INTJ',
-    pillars,
+    pillars: resultPillars,
+    rawSaju: resultPillars.map(p => `${p.gan}${p.zhi}`).join(' '),
     lunarDate: lunar.toString(),
     solarDate: solar.toString()
   };
