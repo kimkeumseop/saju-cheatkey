@@ -9,6 +9,12 @@ import AnalysisAccordion from '@/components/AnalysisAccordion';
 import ShareButtons from '@/components/ShareButtons';
 import { Loader2, Sparkles, Layout } from 'lucide-react';
 import { ELEMENT_STYLE } from '@/lib/saju';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export default function SajuResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -92,7 +98,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
           </p>
         </div>
 
-        {/* 1. 명식표 (8글자 바코드 스타일 - 리팩토링 버전) */}
+        {/* 1. 명식표 (8글자 바코드 스타일 - 신규 엔진 최적화 버전) */}
         <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-2xl shadow-indigo-100/50 border border-white/50 space-y-8 relative overflow-hidden">
           {/* 부드러운 배경 데코 */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-pink-100/20 rounded-full blur-3xl -mr-32 -mt-32" />
@@ -104,67 +110,62 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
           </div>
 
           <div className="grid grid-cols-4 gap-2 md:gap-4 relative z-10">
-            {sajuData.sajuBreakdown.map((column: any, colIdx: number) => (
-              <div key={colIdx} className="space-y-3">
-                <div className="text-center text-[10px] md:text-xs font-black text-gray-400 tracking-tighter opacity-80">
-                  {column.title}
-                </div>
-                <div className="space-y-2 md:space-y-4">
-                  {column.items.map((item: any, rowIdx: number) => {
-                    const style = ELEMENT_STYLE[item.element] || ELEMENT_STYLE['토'];
-                    const isDayMaster = colIdx === 2 && rowIdx === 0; // 일간
+            {sajuData.pillars.map((p: any, colIdx: number) => {
+              const isDayPillar = p.label === '일주';
 
-                    return (
-                      <div 
-                        key={rowIdx} 
-                        className={`
-                          relative group transition-all duration-500
-                          ${isDayMaster ? 'scale-105 z-20' : 'hover:scale-[1.02]'}
-                        `}
-                      >
-                        {/* '나의 본질' 뱃지 */}
-                        {isDayMaster && (
-                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30 whitespace-nowrap">
-                            <span className="bg-gradient-to-r from-pink-500 to-rose-600 text-white text-[10px] md:text-[12px] font-black px-4 py-1.5 rounded-full shadow-lg border-2 border-white flex items-center gap-1.5 animate-bounce">
-                              👑 나의 본질
-                            </span>
-                          </div>
-                        )}
-
-                        <div className={`
-                          ${style.bg} ${style.text}
-                          p-4 md:p-8 rounded-[2rem] md:rounded-[3rem]
-                          flex flex-col items-center justify-center gap-2 md:gap-4
-                          shadow-md border-[4px] transition-all duration-300
-                          ${isDayMaster 
-                            ? 'border-pink-400 shadow-xl shadow-pink-100 ring-8 ring-pink-50/50' 
-                            : 'border-white group-hover:shadow-lg group-hover:border-gray-100'
-                          }
-                        `}>
-                          {/* 상단: 이모지 + 오행 (인스타 감성 직관적 표시) */}
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/60 text-[10px] md:text-[13px] font-bold shadow-sm">
-                            <span>{item.emoji}</span>
-                            <span>{item.elementLabel}</span>
-                          </div>
-                          
-                          {/* 중앙: 한자 (둥글둥글하고 트렌디한 모던 고딕 스타일) */}
-                          <span className="text-4xl md:text-7xl font-sans font-black leading-none py-2 md:py-4 drop-shadow-md tracking-tight">
-                            {item.char}
+              return (
+                <div key={colIdx} className="space-y-3">
+                  <div className="text-center text-[10px] md:text-xs font-black text-gray-400 tracking-tighter opacity-80">
+                    {p.label}
+                  </div>
+                  <div className="space-y-2 md:space-y-4">
+                    {/* 천간 (Gan) */}
+                    <div className={cn(
+                      "relative group transition-all duration-500",
+                      isDayPillar ? "scale-105 z-20" : "hover:scale-[1.02]"
+                    )}>
+                      {isDayPillar && (
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30 whitespace-nowrap">
+                          <span className="bg-gradient-to-r from-pink-500 to-rose-600 text-white text-[10px] md:text-[12px] font-black px-4 py-1.5 rounded-full shadow-lg border-2 border-white flex items-center gap-1.5 animate-bounce">
+                            👑 나의 본질
                           </span>
-                          
-                          {/* 하단: 한글 발음 */}
-                          <div className="px-3 py-0.5 bg-black/5 rounded-lg">
-                            <span className="text-xs md:text-xl font-black tracking-tight opacity-90">
-                              {item.sound}
-                            </span>
-                          </div>
+                        </div>
+                      )}
+                      <div className={cn(
+                        p.ganColor.bg, p.ganColor.text,
+                        "p-4 md:p-8 rounded-[2rem] md:rounded-[3rem] flex flex-col items-center justify-center gap-2 md:gap-4 shadow-md border-[4px] transition-all duration-300",
+                        isDayPillar ? "border-pink-400 shadow-xl shadow-pink-100 ring-8 ring-pink-50/50" : "border-white group-hover:border-gray-100"
+                      )}>
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/60 text-[10px] md:text-[13px] font-bold shadow-sm">
+                          <span>{p.ganElement}</span>
+                        </div>
+                        <span className="text-4xl md:text-7xl font-sans font-black leading-none py-2 md:py-4 drop-shadow-md tracking-tight">
+                          {p.gan}
+                        </span>
+                        <div className="px-3 py-0.5 bg-black/5 rounded-lg">
+                          <span className="text-xs md:text-xl font-black tracking-tight opacity-90">{p.tenGod}</span>
                         </div>
                       </div>
-                    );
-                  })}
+                    </div>
+
+                    {/* 지지 (Zhi) */}
+                    <div className="relative group transition-all duration-500 hover:scale-[1.02]">
+                      <div className={cn(
+                        p.zhiColor.bg, p.zhiColor.text,
+                        "p-4 md:p-8 rounded-[2rem] md:rounded-[3rem] flex flex-col items-center justify-center gap-2 md:gap-4 shadow-md border-[4px] border-white transition-all duration-300 group-hover:border-gray-100"
+                      )}>
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/60 text-[10px] md:text-[13px] font-bold shadow-sm">
+                          <span>{p.zhiElement}</span>
+                        </div>
+                        <span className="text-4xl md:text-7xl font-sans font-black leading-none py-2 md:py-4 drop-shadow-md tracking-tight">
+                          {p.zhi}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -185,11 +186,11 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
               } else if (typeof aiResult === 'object' && aiResult !== null) {
                 // 프리미엄 객체 데이터를 배열로 변환
                 const themes = [
-                  { key: 'basic', theme: '나의 스탯', title: '타고난 기운과 능력치', icon: '🧬' },
-                  { key: 'overall', theme: '본질 자아', title: '성격 본질과 세계관', icon: '🧠' },
-                  { key: 'career', theme: '성공 공식', title: '직업운과 재물 파이프라인', icon: '💰' },
-                  { key: 'love', theme: '연애 귀인', title: '인연 지수와 관계 분석', icon: '💖' },
-                  { key: 'advice', theme: '갓생 가이드', title: '2026년 월별 행동 지침', icon: '🗓️' }
+                  { key: 'headline', theme: '한 줄 요약', title: '운명의 헤드라인', icon: '📢' },
+                  { key: 'nickname', theme: '조선 MBTI', title: '당신의 정체성', icon: '👤' },
+                  { key: 'packPok', theme: '본질 팩폭', title: '성격과 야망 분석', icon: '🧠' },
+                  { key: 'mbtiAnalysis', theme: 'MBTI 싱크로율', title: '사주와 성향의 연결', icon: '🧬' },
+                  { key: 'cheatKey', theme: '인생 치트키', title: '2026년 행동 지침', icon: '🗓️' }
                 ];
 
                 displayData = themes.map(t => ({
