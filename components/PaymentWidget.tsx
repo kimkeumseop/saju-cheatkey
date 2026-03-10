@@ -6,7 +6,9 @@ import { nanoid } from 'nanoid';
 import { useAuth } from '@/lib/auth';
 import { Loader2, Zap, AlertTriangle } from 'lucide-react';
 
-const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+// 토스페이먼츠 공식 테스트용 클라이언트 키 (공용)
+const DEFAULT_TEST_KEY = 'test_ck_D5yaAdv5gc1P4dGzAY3VQEMzjn01';
+const clientKey = (process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || DEFAULT_TEST_KEY).trim();
 
 export default function PaymentWidget({ resultId, onCancel }: { resultId: string, onCancel: () => void }) {
   const { user } = useAuth();
