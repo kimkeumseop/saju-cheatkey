@@ -4,58 +4,90 @@ import { useEffect, useRef, useState } from 'react';
 import { loadPaymentWidget, PaymentWidgetInstance } from '@tosspayments/payment-widget-sdk';
 import { nanoid } from 'nanoid';
 import { useAuth } from '@/lib/auth';
-import { Loader2, Zap } from 'lucide-react';
+import { Loader2, Zap, AlertTriangle } from 'lucide-react';
 
-// 환경 변수 설정 안내:
-// NEXT_PUBLIC_TOSS_CLIENT_KEY: 토스페이먼츠 개발자 센터에서 발급받은 클라이언트 키
-const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || 'test_ck_D5ya Adv5gc1P4dGzAY3VQEMzjn01'; // 테스트용 기본값
+const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
 
 export default function PaymentWidget({ resultId, onCancel }: { resultId: string, onCancel: () => void }) {
   const { user } = useAuth();
   const paymentWidgetRef = useRef<PaymentWidgetInstance | null>(null);
-  const paymentMethodsWidgetRef = useRef<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPaymentWidget = async () => {
+    // 1. Client Key 체크
+    console.log('🛠️ Toss Client Key Check:', clientKey);
+    if (!clientKey) {
+      const msg = 'Toss Client Key가 설정되지 않았습니다. .env.local 파일을 확인해주세요.';
+      console.error('❌', msg);
+      alert(msg);
+      setError(msg);
+      setLoading(false);
+      return;
+    }
+
+    const initWidget = async () => {
       try {
+        console.log('🚀 Initializing Toss Payment Widget...');
+        // 2. SDK 로드
         const paymentWidget = await loadPaymentWidget(clientKey, user?.uid || 'ANONYMOUS');
-        
-        // 결제 위젯 렌더링
-        const paymentMethodsWidget = paymentWidget.renderPaymentMethods(
+        console.log('✅ PaymentWidget Object Created:', paymentWidget);
+
+        // 3. 결제 수단 렌더링
+        // #payment-method 요소가 DOM에 존재하는지 확인 후 렌더링
+        paymentWidget.renderPaymentMethods(
           '#payment-method',
           { value: 777 },
           { variantKey: 'DEFAULT' }
         );
+        console.log('🎨 Payment Methods Rendered to #payment-method');
 
-        // 이용약관 위젯 렌더링
+        // 4. 이용약관 렌더링
         paymentWidget.renderAgreement('#agreement', { variantKey: 'AGREEMENT' });
+        console.log('📝 Agreement Rendered to #agreement');
 
         paymentWidgetRef.current = paymentWidget;
-        paymentMethodsWidgetRef.current = paymentMethodsWidget;
         setLoading(false);
-      } catch (error) {
-        console.error('결제 위젯 로드 실패:', error);
+      } catch (err: any) {
+        console.error('❌ Widget Initialization Error:', err);
+        setError('결제 위젯 로딩 중 오류가 발생했습니다.');
+        setLoading(false);
       }
     };
 
-    fetchPaymentWidget();
+    initWidget();
   }, [user]);
 
   const handlePaymentRequest = async () => {
     const paymentWidget = paymentWidgetRef.current;
+    console.log('💳 Payment Request Triggered. Widget State:', !!paymentWidget);
+
+    if (!paymentWidget) {
+      alert('결제 위젯이 아직 준비되지 않았습니다.');
+      return;
+    }
 
     try {
-      await paymentWidget?.requestPayment({
-        orderId: nanoid(),
+      const orderId = nanoid();
+      const successUrl = `${window.location.origin}/api/payments/confirm?resultId=${resultId}`;
+      const failUrl = `${window.location.origin}/result/${resultId}?payment=fail`;
+
+      console.log('🔗 Success URL:', successUrl);
+      console.log('🔗 Fail URL:', failUrl);
+
+      await paymentWidget.requestPayment({
+        orderId,
         orderName: '사주 치트키 프리미엄 분석',
         customerName: user?.displayName || '방문자',
         customerEmail: user?.email || '',
-        successUrl: `${window.location.origin}/api/payments/confirm?resultId=${resultId}`,
-        failUrl: `${window.location.origin}/result/${resultId}?payment=fail`,
+        successUrl,
+        failUrl,
       });
-    } catch (error) {
-      console.error('결제 요청 실패:', error);
+      
+      console.log('✅ requestPayment Function Called Successfully');
+    } catch (err: any) {
+      console.error('❌ requestPayment Error:', err);
+      alert(`결제 요청 실패: ${err.message || '알 수 없는 오류'}`);
     }
   };
 
@@ -71,32 +103,44 @@ export default function PaymentWidget({ resultId, onCancel }: { resultId: string
           <p className="text-gray-500 font-bold text-sm">777원으로 모든 풀이를 확인하세요!</p>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4">
+        <div className="flex-1 overflow-y-auto px-4 min-h-[300px]">
           {loading && (
             <div className="h-64 flex flex-col items-center justify-center gap-4">
               <Loader2 className="w-10 h-10 text-[#FEE500] animate-spin stroke-[3]" />
               <p className="text-gray-400 font-black animate-pulse">결제창을 준비하고 있어요...</p>
             </div>
           )}
+          
+          {error && (
+            <div className="h-64 flex flex-col items-center justify-center gap-4 text-red-500 px-8 text-center">
+              <AlertTriangle className="w-12 h-12" />
+              <p className="font-bold">{error}</p>
+              <button onClick={() => window.location.reload()} className="text-sm underline text-gray-400">다시 시도하기</button>
+            </div>
+          )}
+
+          {/* ID가 정확히 일치해야 함 */}
           <div id="payment-method" className="w-full" />
           <div id="agreement" className="w-full" />
         </div>
 
-        <div className="p-8 pt-0 space-y-3">
-          <button 
-            onClick={handlePaymentRequest}
-            disabled={loading}
-            className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-6 rounded-2xl font-black text-xl shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 group disabled:opacity-50"
-          >
-            777원 결제하고 결과 보기
-          </button>
-          <button 
-            onClick={onCancel}
-            className="w-full py-4 text-gray-400 font-black text-sm hover:text-gray-600 transition-colors"
-          >
-            다음에 할게요
-          </button>
-        </div>
+        {!error && (
+          <div className="p-8 pt-0 space-y-3">
+            <button 
+              onClick={handlePaymentRequest}
+              disabled={loading}
+              className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-6 rounded-2xl font-black text-xl shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 group disabled:opacity-50"
+            >
+              777원 결제하고 결과 보기
+            </button>
+            <button 
+              onClick={onCancel}
+              className="w-full py-4 text-gray-400 font-black text-sm hover:text-gray-600 transition-colors"
+            >
+              다음에 할게요
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
