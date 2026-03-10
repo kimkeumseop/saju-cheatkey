@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import SajuModal from './SajuModal';
+import GungHapInputModal from './GungHapInputModal';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -15,7 +16,7 @@ export default function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
   const [isSajuModalOpen, setIsSajuModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<'saju' | 'compatibility'>('saju');
+  const [isGungHapModalOpen, setIsGungHapModalOpen] = useState(false);
 
   const tabs = [
     { 
@@ -30,14 +31,14 @@ export default function BottomNav() {
       label: '팩폭 사주', 
       subLabel: '소름 주의!',
       emoji: '🦊', 
-      action: () => openModal('saju') 
+      action: () => setIsSajuModalOpen(true)
     },
     { 
       id: 'compatibility', 
       label: '환승 궁합', 
       subLabel: '우리 만날까?',
       emoji: '💞', 
-      action: () => openModal('compatibility') 
+      action: () => setIsGungHapModalOpen(true)
     },
     { 
       id: 'unse', 
@@ -47,11 +48,6 @@ export default function BottomNav() {
       path: '/unse' 
     },
   ];
-
-  const openModal = (type: 'saju' | 'compatibility') => {
-    setModalType(type);
-    setIsSajuModalOpen(true);
-  };
 
   const isActive = (tabPath: string | undefined) => {
     if (!tabPath) return false;
@@ -109,7 +105,10 @@ export default function BottomNav() {
       <SajuModal 
         isOpen={isSajuModalOpen} 
         onClose={() => setIsSajuModalOpen(false)} 
-        type={modalType} 
+      />
+      <GungHapInputModal
+        isOpen={isGungHapModalOpen}
+        onClose={() => setIsGungHapModalOpen(false)}
       />
     </>
   );

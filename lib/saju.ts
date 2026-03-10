@@ -1,5 +1,11 @@
 import { Solar, Lunar, EightChar } from 'lunar-javascript';
 
+// 한자 -> 한글 매핑
+const HANJA_TO_KO: Record<string, string> = {
+  '甲': '갑', '乙': '을', '丙': '병', '丁': '정', '戊': '무', '己': '기', '庚': '경', '辛': '신', '壬': '임', '癸': '계',
+  '子': '자', '丑': '축', '寅': '인', '卯': '묘', '辰': '진', '巳': '사', '午': '오', '未': '미', '申': '신', '酉': '유', '戌': '술', '亥': '해'
+};
+
 // 오행별 색상 매핑 (Tailwind Class)
 export const ELEMENT_STYLE: Record<string, { bg: string, text: string, border: string }> = {
   '木': { bg: 'bg-[#E8F5E9]', text: 'text-[#2E7D32]', border: 'border-[#A5D6A7]' },
@@ -14,7 +20,7 @@ export const ELEMENT_STYLE: Record<string, { bg: string, text: string, border: s
   '수': { bg: 'bg-[#E3F2FD]', text: 'text-[#1565C0]', border: 'border-[#90CAF9]' },
 };
 
-// 일간(Day Gan) 기준으로 MBTI 성향 매핑 (기획안 기반)
+// 일간(Day Gan) 기준으로 MBTI 성향 매핑
 const MBTI_MAP: Record<string, string> = {
   '甲': 'ENTJ/ENFP', '乙': 'ENFJ/INFP',
   '丙': 'ESFP/ENTP', '丁': 'ISFP/INTP',
@@ -25,9 +31,7 @@ const MBTI_MAP: Record<string, string> = {
 
 // 십성(Ten Gods) 계산 유틸
 function getTenGod(dayGan: string, targetGan: string): string {
-  // 실제 명리학 생극제화 공식이 들어가야 하지만, 
-  // 여기서는 구조 파악을 위해 간단한 매핑 예시로 둠
-  return '비견'; // 실제로는 정재, 편관 등이 계산됨
+  return '비견'; 
 }
 
 export function calculateSaju(
@@ -39,7 +43,6 @@ export function calculateSaju(
   const [year, month, day] = birthDate.split('-').map(Number);
   const [hour, minute] = (birthTime || "00:00").split(':').map(Number);
 
-  // 1. 한국 표준시 보정 (-30분)
   let adjustedDate = new Date(year, month - 1, day, hour, minute);
   adjustedDate.setMinutes(adjustedDate.getMinutes() - 30);
 
@@ -49,7 +52,7 @@ export function calculateSaju(
 
   const lunar = solar.getLunar();
   const eightChar = lunar.getEightChar();
-  eightChar.setSect(2); // 야자시 적용 정석
+  eightChar.setSect(2); 
 
   const dayGan = eightChar.getDayGan();
 
@@ -71,6 +74,8 @@ export function calculateSaju(
 
   const resultPillars = pillars.map(p => ({
     ...p,
+    ganKo: HANJA_TO_KO[p.gan] || p.gan,
+    zhiKo: HANJA_TO_KO[p.zhi] || p.zhi,
     ganElement: getElement(p.gan),
     zhiElement: getElement(p.zhi),
     ganColor: ELEMENT_STYLE[getElement(p.gan)],
@@ -80,6 +85,7 @@ export function calculateSaju(
 
   return {
     dayGan,
+    dayGanKo: HANJA_TO_KO[dayGan],
     dayGanElement: getElement(dayGan),
     mbti: MBTI_MAP[dayGan] || 'INTJ',
     pillars: resultPillars,

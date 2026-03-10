@@ -13,80 +13,128 @@ function SajuProcessingContent() {
   const [loadingStep, setLoadingStep] = useState('사주 원국 계산 중...');
 
   useEffect(() => {
-    const name = searchParams.get('name') || '방문자';
-    const birthDate = searchParams.get('birthDate');
-    const birthTime = searchParams.get('birthTime') || '12:00';
-    const calendarType = (searchParams.get('calendarType') as 'solar' | 'lunar') || 'solar';
-    const gender = searchParams.get('gender') || 'male';
+    const type = searchParams.get('type') || 'saju';
+    
+    if (type === 'compatibility') {
+      const user1 = {
+        name: searchParams.get('u1_name') || '인물1',
+        birthDate: searchParams.get('u1_birthDate'),
+        birthTime: searchParams.get('u1_birthTime') === 'unknown' ? '12:00' : (searchParams.get('u1_birthTime') || '12:00'),
+        isTimeUnknown: searchParams.get('u1_birthTime') === 'unknown',
+        calendarType: searchParams.get('u1_calendarType') || 'solar',
+        gender: searchParams.get('u1_gender') || 'male',
+      };
+      const user2 = {
+        name: searchParams.get('u2_name') || '인물2',
+        birthDate: searchParams.get('u2_birthDate'),
+        birthTime: searchParams.get('u2_birthTime') === 'unknown' ? '12:00' : (searchParams.get('u2_birthTime') || '12:00'),
+        isTimeUnknown: searchParams.get('u2_birthTime') === 'unknown',
+        calendarType: searchParams.get('u2_calendarType') || 'solar',
+        gender: searchParams.get('u2_gender') || 'male',
+      };
+      const relation = searchParams.get('relation') || 'some';
 
-    if (birthDate) {
-      processAnalysis(name, birthDate, birthTime, calendarType, gender);
+      if (user1.birthDate && user2.birthDate) {
+        processCompatibilityAnalysis(user1, user2, relation);
+      }
+    } else {
+      const name = searchParams.get('name') || '방문자';
+      const birthDate = searchParams.get('birthDate');
+      const rawTime = searchParams.get('birthTime');
+      const isTimeUnknown = rawTime === 'unknown';
+      const birthTime = isTimeUnknown ? '12:00' : (rawTime || '12:00');
+      const calendarType = (searchParams.get('calendarType') as 'solar' | 'lunar') || 'solar';
+      const gender = searchParams.get('gender') || 'male';
+
+      if (birthDate) {
+        processAnalysis(name, birthDate, birthTime, calendarType, gender, isTimeUnknown);
+      }
     }
   }, [searchParams]);
 
-  const processAnalysis = async (name: string, birthDate: string, birthTime: string, calendarType: 'solar' | 'lunar', gender: string) => {
+  const processAnalysis = async (name: string, birthDate: string, birthTime: string, calendarType: 'solar' | 'lunar', gender: string, isTimeUnknown: boolean) => {
     try {
-      // 1. 사주 원국 계산
-      setLoadingStep('우주의 기운을 스캔하는 중... (사주 원국 계산)');
+      setLoadingStep('우주의 기운을 스캔하는 중...');
       const sajuData = calculateSaju(birthDate, birthTime, calendarType, gender);
 
-      // 2. 전문가 심층 분석 호출
-      setLoadingStep('명리학 전문가가 당신의 운명을 팩폭 중... (약 5초 소요)');
+      setLoadingStep('명리학 전문가가 당신의 운명을 팩폭 중...');
       const response = await fetch('/api/saju', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name,
-          birthDate, 
-          birthTime, 
-          calendarType, 
-          gender 
-        }),
+        body: JSON.stringify({ name, birthDate, birthTime, calendarType, gender, isTimeUnknown }),
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'AI 분석 실패');
-      }
+      if (!response.ok) throw new Error('AI 분석 실패');
       
       const resData = await response.json();
-      const aiResult = resData.analysis; // Gemini 분석 결과 추출
-
-      // 3. 결과 데이터 구성
       const finalResult = {
+        type: 'saju',
         userName: name,
         birthDate,
-        birthTime,
+        birthTime: isTimeUnknown ? 'unknown' : birthTime,
         calendarType,
         gender,
         sajuData,
-        aiResult,
+        aiResult: resData.analysis,
+        isPaid: false,
         createdAt: new Date().toISOString()
       };
 
-      // 4. 로컬 스토리지에 먼저 백업 (DB 저장 실패 대비)
-      const localId = `local_${Date.now()}`;
-      localStorage.setItem(`saju_result_${localId}`, JSON.stringify(finalResult));
-      
-      setLoadingStep('치트키 생성 완료! 저장 중...');
-
-      // 5. Firestore 저장 시도 (백그라운드 느낌으로 처리)
-      try {
-        console.log('🚀 Firestore 저장 시도 중...');
-        const docRef = await addDoc(collection(db, 'sajuResults'), finalResult);
-        console.log('✅ Firestore 저장 성공:', docRef.id);
-        router.push(`/result/${docRef.id}`);
-      } catch (dbError) {
-        console.error('⚠️ DB 저장 실패, 로컬 모드로 전환:', dbError);
-        // DB 저장 실패 시 로컬 ID로 리다이렉트
-        router.push(`/result/${localId}`);
-      }
-
+      await saveAndRedirect(finalResult);
     } catch (error: any) {
-      console.error('❌ 치명적 오류:', error);
-      alert(`오류: ${error.message || '알 수 없는 오류'}`);
-      router.push('/');
+      handleAnalysisError(error);
     }
+  };
+
+  const processCompatibilityAnalysis = async (user1: any, user2: any, relation: string) => {
+    try {
+      setLoadingStep('두 사람의 인연을 매칭하는 중...');
+      const saju1 = calculateSaju(user1.birthDate, user1.birthTime, user1.calendarType, user1.gender);
+      const saju2 = calculateSaju(user2.birthDate, user2.birthTime, user2.calendarType, user2.gender);
+
+      setLoadingStep('환승 궁합 전문가가 두 사람의 속마음을 터는 중...');
+      const response = await fetch('/api/gunghap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user1, user2, relationship: relation }),
+      });
+      
+      if (!response.ok) throw new Error('궁합 분석 실패');
+      
+      const resData = await response.json();
+      const finalResult = {
+        type: 'compatibility',
+        user1,
+        user2,
+        saju1,
+        saju2,
+        relation,
+        aiResult: resData.analysis,
+        isPaid: false,
+        createdAt: new Date().toISOString()
+      };
+
+      await saveAndRedirect(finalResult);
+    } catch (error: any) {
+      handleAnalysisError(error);
+    }
+  };
+
+  const saveAndRedirect = async (result: any) => {
+    const localId = `local_${Date.now()}`;
+    localStorage.setItem(`saju_result_${localId}`, JSON.stringify(result));
+    try {
+      const docRef = await addDoc(collection(db, 'sajuResults'), result);
+      router.push(`/result/${docRef.id}`);
+    } catch (dbError) {
+      router.push(`/result/${localId}`);
+    }
+  };
+
+  const handleAnalysisError = (error: any) => {
+    console.error('❌ 분석 오류:', error);
+    alert(`오류: ${error.message || '알 수 없는 오류'}`);
+    router.push('/');
   };
 
   return (
@@ -97,14 +145,11 @@ function SajuProcessingContent() {
         </div>
         <Sparkles className="w-10 h-10 text-[#3C1E1E] absolute -top-4 -right-4 animate-bounce" />
       </div>
-      
       <div className="space-y-4">
         <h2 className="text-3xl font-black text-[#3C1E1E] tracking-tight">
-          당신의 우주를 스캔하는 중...
+          {searchParams.get('type') === 'compatibility' ? '두 사람의 운명을 매칭하는 중...' : '당신의 우주를 스캔하는 중...'}
         </h2>
-        <p className="text-lg font-bold text-gray-500 animate-pulse">
-          {loadingStep}
-        </p>
+        <p className="text-lg font-bold text-gray-500 animate-pulse">{loadingStep}</p>
       </div>
     </div>
   );

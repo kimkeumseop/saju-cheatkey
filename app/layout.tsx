@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "사주 치트키 - 현대적 명리학 심리 분석",
     description: "명리학 전문가가 그려주는 당신의 인생 지도, 지금 바로 확인하세요.",
-    url: "https://saju-cheatkey.vercel.app",
+    url: "https://saju-cheatkey.kr",
     siteName: "사주 치트키",
     locale: "ko_KR",
     type: "website",
