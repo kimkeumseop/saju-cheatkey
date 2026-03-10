@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { Sparkles, Heart, Zap, ChevronRight, AlertCircle, Layout } from 'lucide-react';
 import AnalysisAccordion from './AnalysisAccordion';
 import ShareButtons from './ShareButtons';
+import PaymentWidget from './PaymentWidget';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -53,10 +55,12 @@ function PillarChart({ pillars, title, color = "bg-[#FEE500]" }: { pillars: any[
 
 interface GungHapPreviewProps {
   data: any;
+  resultId: string;
 }
 
-export default function GungHapPreview({ data }: GungHapPreviewProps) {
+export default function GungHapPreview({ data, resultId }: GungHapPreviewProps) {
   const { user1, user2, saju1, saju2, aiResult, isPaid, relation } = data;
+  const [showPaymentWidget, setShowPaymentWidget] = useState(false);
 
   const relationLabels: Record<string, string> = {
     friend: '친구', some: '썸남 썸녀', couple: '연인', spouse: '배우자',
@@ -80,13 +84,22 @@ export default function GungHapPreview({ data }: GungHapPreviewProps) {
               단돈 <span className="text-[#FEE500]">990원</span>으로 <br/>
               두 사람의 <span className="text-[#FEE500]">치트키</span>를 켜세요!
             </h2>
-            <button className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-5 rounded-2xl font-black text-xl shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-3">
+            <button 
+              onClick={() => setShowPaymentWidget(true)}
+              className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-5 rounded-2xl font-black text-xl shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-3"
+            >
               치트키 충전하기 (990원)
               <ChevronRight className="w-6 h-6" />
             </button>
           </div>
         </div>
       )}
+
+      {/* 결제 위젯 모달 */}
+      {showPaymentWidget && (
+        <PaymentWidget onCancel={() => setShowPaymentWidget(false)} />
+      )}
+
 
       {/* 2. 정보 요약 비교 */}
       <div className="grid grid-cols-2 gap-4">

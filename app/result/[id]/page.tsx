@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState, use } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import Navbar from '@/components/Navbar';
 import AnalysisAccordion from '@/components/AnalysisAccordion';
 import ShareButtons from '@/components/ShareButtons';
 import GungHapPreview from '@/components/GungHapPreview';
+import PaymentWidget from '@/components/PaymentWidget';
 import { Loader2, Sparkles, Layout, Lock, Zap, ChevronRight, AlertCircle, Heart } from 'lucide-react';
 import { ELEMENT_STYLE } from '@/lib/saju';
 import { clsx, type ClassValue } from 'clsx';
@@ -69,50 +70,60 @@ function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
 export default function SajuResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showPaymentWidget, setShowPaymentWidget] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        let fetchedData = null;
+        
         if (id.startsWith('local_')) {
           const localData = localStorage.getItem(`saju_result_${id}`);
           if (localData) {
-            setData(JSON.parse(localData));
-            setLoading(false);
-            return;
+            fetchedData = JSON.parse(localData);
+          }
+        } else {
+          const docRef = doc(db, 'sajuResults', id);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            fetchedData = docSnap.data();
+          } else {
+            const localData = localStorage.getItem(`saju_result_${id}`);
+            if (localData) {
+              fetchedData = JSON.parse(localData);
+            }
           }
         }
 
-        const docRef = doc(db, 'sajuResults', id);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          setData(docSnap.data());
-        } else {
-          const localData = localStorage.getItem(`saju_result_${id}`);
-          if (localData) {
-            setData(JSON.parse(localData));
-          } else {
-            alert('결과 데이터를 찾을 수 없습니다.');
-            router.push('/');
+        // 결제 완료 후 리다이렉트된 경우 (URL 파라미터 확인)
+        if (fetchedData && searchParams.get('payment') === 'success') {
+          fetchedData.isPaid = true;
+          // 로컬 데이터인 경우 스토리지도 즉시 업데이트
+          if (id.startsWith('local_')) {
+            localStorage.setItem(`saju_result_${id}`, JSON.stringify(fetchedData));
           }
+        }
+
+        if (fetchedData) {
+          setData(fetchedData);
+        } else {
+          alert('결과 데이터를 찾을 수 없습니다.');
+          router.push('/');
         }
       } catch (error) {
         console.error('데이터 로드 오류:', error);
-        const localData = localStorage.getItem(`saju_result_${id}`);
-        if (localData) {
-          setData(JSON.parse(localData));
-        } else {
-          router.push('/');
-        }
+        router.push('/');
       } finally {
         setLoading(false);
       }
     };
 
     if (id) fetchData();
-  }, [id, router]);
+  }, [id, router, searchParams]);
 
   if (loading) {
     return (
@@ -133,7 +144,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
       
       <div className="max-w-4xl mx-auto space-y-12">
         {isCompatibility ? (
-          <GungHapPreview data={data} />
+          <GungHapPreview data={data} resultId={id} />
         ) : (
           <>
             {/* 상단 헤더 */}
@@ -215,13 +226,17 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                         인생의 <span className="text-[#FEE500]">치트키</span>를 켜세요!
                       </h2>
                       <div className="flex flex-col gap-3 max-w-xs mx-auto">
-                        <button className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-6 rounded-2xl font-black text-xl shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-3 group">
+                        <button 
+                          onClick={() => setShowPaymentWidget(true)}
+                          className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-6 rounded-2xl font-black text-xl shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-3 group"
+                        >
                           리포트 전체 열람하기
                           <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                         </button>
                       </div>
                     </div>
                   </div>
+
                   {/* 가려진 미리보기 (Blur) */}
                   <div className="space-y-6 opacity-40 select-none pointer-events-none filter blur-[6px]">
                     <div className="space-y-3">
@@ -230,6 +245,11 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                     </div>
                   </div>
                 </div>
+              )}
+
+              {/* 결제 위젯 모달 */}
+              {showPaymentWidget && (
+                <PaymentWidget resultId={id} onCancel={() => setShowPaymentWidget(false)} />
               )}
 
               {/* 하단 공유 */}
