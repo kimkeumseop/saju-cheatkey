@@ -1,12 +1,17 @@
 import { Solar, Lunar, EightChar } from 'lunar-javascript';
 
 // 오행별 색상 매핑 (Tailwind Class)
-const ELEMENT_COLORS: Record<string, { bg: string, text: string, border: string }> = {
+export const ELEMENT_STYLE: Record<string, { bg: string, text: string, border: string }> = {
   '木': { bg: 'bg-[#E8F5E9]', text: 'text-[#2E7D32]', border: 'border-[#A5D6A7]' },
   '火': { bg: 'bg-[#FFEBEE]', text: 'text-[#C62828]', border: 'border-[#EF9A9A]' },
   '土': { bg: 'bg-[#FFF8E1]', text: 'text-[#F9A825]', border: 'border-[#FFE082]' },
   '金': { bg: 'bg-[#FAFAFA]', text: 'text-[#616161]', border: 'border-[#EEEEEE]' },
   '水': { bg: 'bg-[#E3F2FD]', text: 'text-[#1565C0]', border: 'border-[#90CAF9]' },
+  '목': { bg: 'bg-[#E8F5E9]', text: 'text-[#2E7D32]', border: 'border-[#A5D6A7]' },
+  '화': { bg: 'bg-[#FFEBEE]', text: 'text-[#C62828]', border: 'border-[#EF9A9A]' },
+  '토': { bg: 'bg-[#FFF8E1]', text: 'text-[#F9A825]', border: 'border-[#FFE082]' },
+  '금': { bg: 'bg-[#FAFAFA]', text: 'text-[#616161]', border: 'border-[#EEEEEE]' },
+  '수': { bg: 'bg-[#E3F2FD]', text: 'text-[#1565C0]', border: 'border-[#90CAF9]' },
 };
 
 // 일간(Day Gan) 기준으로 MBTI 성향 매핑 (기획안 기반)
@@ -65,8 +70,8 @@ export function calculateSaju(
     ...p,
     ganElement: getElement(p.gan),
     zhiElement: getElement(p.zhi),
-    ganColor: ELEMENT_COLORS[getElement(p.gan)],
-    zhiColor: ELEMENT_COLORS[getElement(p.zhi)],
+    ganColor: ELEMENT_STYLE[getElement(p.gan)],
+    zhiColor: ELEMENT_STYLE[getElement(p.zhi)],
     tenGod: getTenGod(dayGan, p.gan)
   }));
 
