@@ -33,7 +33,8 @@ function getTenGod(dayGan: string, targetGan: string): string {
 export function calculateSaju(
   birthDate: string, 
   birthTime: string, 
-  calendarType: 'solar' | 'lunar'
+  calendarType: 'solar' | 'lunar',
+  gender: string = 'male'
 ) {
   const [year, month, day] = birthDate.split('-').map(Number);
   const [hour, minute] = (birthTime || "00:00").split(':').map(Number);
