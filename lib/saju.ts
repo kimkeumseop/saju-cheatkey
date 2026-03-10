@@ -58,11 +58,42 @@ export function calculateSaju(
 
   const dayGan = eightChar.getDayGan();
 
+  // 안전하게 십신 및 십이운성을 가져오는 헬퍼 함수
+  const getSafeTenGodGan = (pillar: string) => {
+    try {
+      if (pillar === 'year') return eightChar.getYearShiShenGan();
+      if (pillar === 'month') return eightChar.getMonthShiShenGan();
+      if (pillar === 'day') return '일간';
+      if (pillar === 'time') return eightChar.getTimeShiShenGan();
+      return '';
+    } catch { return ''; }
+  };
+
+  const getSafeTenGodZhi = (pillar: string) => {
+    try {
+      if (pillar === 'year') return eightChar.getYearShiShenZhi()[0];
+      if (pillar === 'month') return eightChar.getMonthShiShenZhi()[0];
+      if (pillar === 'day') return eightChar.getDayShiShenZhi()[0];
+      if (pillar === 'time') return eightChar.getTimeShiShenZhi()[0];
+      return '';
+    } catch { return ''; }
+  };
+
+  const getSafeUnSeong = (pillar: string) => {
+    try {
+      if (pillar === 'year') return eightChar.getYearShiErYunXing();
+      if (pillar === 'month') return eightChar.getMonthShiErYunXing();
+      if (pillar === 'day') return eightChar.getDayShiErYunXing();
+      if (pillar === 'time') return eightChar.getTimeShiErYunXing();
+      return '';
+    } catch { return ''; }
+  };
+
   const pillarsData = [
-    { label: '시주', gan: eightChar.getTimeGan(), zhi: eightChar.getTimeZhi(), tenGodGan: eightChar.getTimeTenStarGan(), tenGodZhi: eightChar.getTimeTenStarZhi(), unSeong: eightChar.getTimeShiErYunXing() },
-    { label: '일주', gan: eightChar.getDayGan(), zhi: eightChar.getDayZhi(), tenGodGan: '일간', tenGodZhi: eightChar.getDayTenStarZhi(), unSeong: eightChar.getDayShiErYunXing() },
-    { label: '월주', gan: eightChar.getMonthGan(), zhi: eightChar.getMonthZhi(), tenGodGan: eightChar.getMonthTenStarGan(), tenGodZhi: eightChar.getMonthTenStarZhi(), unSeong: eightChar.getMonthShiErYunXing() },
-    { label: '연주', gan: eightChar.getYearGan(), zhi: eightChar.getYearZhi(), tenGodGan: eightChar.getYearTenStarGan(), tenGodZhi: eightChar.getYearTenStarZhi(), unSeong: eightChar.getYearShiErYunXing() },
+    { label: '시주', gan: eightChar.getTimeGan(), zhi: eightChar.getTimeZhi(), tenGodGan: getSafeTenGodGan('time'), tenGodZhi: getSafeTenGodZhi('time'), unSeong: getSafeUnSeong('time') },
+    { label: '일주', gan: eightChar.getDayGan(), zhi: eightChar.getDayZhi(), tenGodGan: '일간', tenGodZhi: getSafeTenGodZhi('day'), unSeong: getSafeUnSeong('day') },
+    { label: '월주', gan: eightChar.getMonthGan(), zhi: eightChar.getMonthZhi(), tenGodGan: getSafeTenGodGan('month'), tenGodZhi: getSafeTenGodZhi('month'), unSeong: getSafeUnSeong('month') },
+    { label: '연주', gan: eightChar.getYearGan(), zhi: eightChar.getYearZhi(), tenGodGan: getSafeTenGodGan('year'), tenGodZhi: getSafeTenGodZhi('year'), unSeong: getSafeUnSeong('year') },
   ];
 
   const pillars = pillarsData.map(p => ({
@@ -84,30 +115,37 @@ export function calculateSaju(
     elementsCount[p.zhiElement]++;
   });
 
-  const keyShinsal = [];
-  const shinsalFull = lunar.getBaZiShenSha();
-  if (shinsalFull.some(s => s.includes('天乙'))) keyShinsal.push('천을귀인');
-  if (shinsalFull.some(s => s.includes('文昌'))) keyShinsal.push('문창귀인');
-  if (shinsalFull.some(s => s.includes('羊刃'))) keyShinsal.push('양인살');
-  if (shinsalFull.some(s => s.includes('白虎'))) keyShinsal.push('백호살');
-  if (shinsalFull.some(s => s.includes('驛馬'))) keyShinsal.push('역마살');
-  if (shinsalFull.some(s => s.includes('桃花'))) keyShinsal.push('도화살');
-  if (shinsalFull.some(s => s.includes('華蓋'))) keyShinsal.push('화개살');
+  const keyShinsal: string[] = [];
+  try {
+    const shinsalFull = lunar.getBaZiShenSha();
+    if (shinsalFull.some(s => s.includes('天乙'))) keyShinsal.push('천을귀인');
+    if (shinsalFull.some(s => s.includes('文昌'))) keyShinsal.push('문창귀인');
+    if (shinsalFull.some(s => s.includes('羊刃'))) keyShinsal.push('양인살');
+    if (shinsalFull.some(s => s.includes('白虎'))) keyShinsal.push('백호살');
+    if (shinsalFull.some(s => s.includes('驛馬'))) keyShinsal.push('역마살');
+    if (shinsalFull.some(s => s.includes('桃花'))) keyShinsal.push('도화살');
+    if (shinsalFull.some(s => s.includes('華蓋'))) keyShinsal.push('화개살');
+  } catch (e) {}
 
-  const daYunObj = eightChar.getLuck(gender === 'male' ? 1 : 0);
-  const daYunList = daYunObj.getDaYun().slice(1, 9).map(dy => {
-    const gan = dy.getGanZhi().substring(0, 1);
-    const zhi = dy.getGanZhi().substring(1, 2);
-    return {
-      age: dy.getStartAge(),
-      ganKo: HANJA_TO_KO[gan],
-      zhiKo: HANJA_TO_KO[zhi],
-      ganElement: getElement(gan),
-      zhiElement: getElement(zhi),
-      ganColor: ELEMENT_STYLE[getElement(gan)],
-      zhiColor: ELEMENT_STYLE[getElement(zhi)],
-    };
-  });
+  const daYunList: any[] = [];
+  try {
+    const daYunObj = eightChar.getLuck(gender === 'male' ? 1 : 0);
+    const dys = daYunObj.getDaYun().slice(1, 9);
+    dys.forEach(dy => {
+      const gz = dy.getGanZhi();
+      const gan = gz.substring(0, 1);
+      const zhi = gz.substring(1, 2);
+      daYunList.push({
+        age: dy.getStartAge(),
+        ganKo: HANJA_TO_KO[gan],
+        zhiKo: HANJA_TO_KO[zhi],
+        ganElement: getElement(gan),
+        zhiElement: getElement(zhi),
+        ganColor: ELEMENT_STYLE[getElement(gan)],
+        zhiColor: ELEMENT_STYLE[getElement(zhi)],
+      });
+    });
+  } catch (e) {}
 
   return {
     dayGan,
