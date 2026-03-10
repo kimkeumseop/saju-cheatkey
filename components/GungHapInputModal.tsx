@@ -5,6 +5,7 @@ import { X, User, Plus, Sparkles, ChevronRight, Calendar, Clock, Heart, Users } 
 import { useRouter } from 'next/navigation';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useAuth, SajuProfile } from '@/lib/auth';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -15,30 +16,20 @@ interface GungHapInputModalProps {
   onClose: () => void;
 }
 
-type Profile = {
-  name: string;
-  birthDate: string;
-  birthTime: string;
-  isTimeKnown: boolean;
-  isExactTime: boolean;
-  calendarType: 'solar' | 'lunar';
-  gender: 'male' | 'female';
-};
-
 export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModalProps) {
   const router = useRouter();
+  const { profiles, addProfile } = useAuth();
   const [view, setView] = useState<'main' | 'selection' | 'form'>('main');
-  const [profiles, setProfiles] = useState<Profile[]>([]);
   
   // 궁합 상태
-  const [person1, setPerson1] = useState<Profile | null>(null);
-  const [person2, setPerson2] = useState<Profile | null>(null);
+  const [person1, setPerson1] = useState<SajuProfile | null>(null);
+  const [person2, setPerson2] = useState<SajuProfile | null>(null);
   const [relation, setRelation] = useState<string>('');
   const [role1, setRole1] = useState<string>('');
   const [role2, setRole2] = useState<string>('');
   const [selectingFor, setSelectingFor] = useState<1 | 2>(1);
 
-  const [formData, setFormData] = useState<Profile>({
+  const [formData, setFormData] = useState<SajuProfile>({
     name: '',
     birthDate: '',
     birthTime: '',
@@ -49,22 +40,18 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
   });
 
   useEffect(() => {
-    if (isOpen) {
-      const saved = localStorage.getItem('saju_profiles');
-      if (saved) setProfiles(JSON.parse(saved));
-      setView('main');
-    }
+    if (isOpen) setView('main');
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleProfileSelect = (profile: Profile) => {
+  const handleProfileSelect = (profile: SajuProfile) => {
     if (selectingFor === 1) setPerson1(profile);
     else setPerson2(profile);
     setView('main');
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.birthDate) {
       alert('생년월일을 입력해주세요.');
@@ -76,14 +63,17 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
       finalData.birthTime = 'unknown';
     }
 
-    // 프로필 저장
-    const newProfiles = [...profiles, finalData].slice(-5);
-    localStorage.setItem('saju_profiles', JSON.stringify(newProfiles));
-    setProfiles(newProfiles);
+    try {
+      // 1. 전역 상태 및 DB에 저장
+      await addProfile(finalData);
 
-    if (selectingFor === 1) setPerson1({...finalData});
-    else setPerson2({...finalData});
-    setView('main');
+      // 2. 선택 상태 반영
+      if (selectingFor === 1) setPerson1(finalData);
+      else setPerson2(finalData);
+      setView('main');
+    } catch (error) {
+      alert('프로필 저장 중 오류가 발생했습니다.');
+    }
   };
 
   const handleFinalSubmit = () => {
@@ -93,7 +83,7 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
     }
 
     const params = new URLSearchParams();
-    const serialize = (p: Profile, prefix: string) => {
+    const serialize = (p: SajuProfile, prefix: string) => {
       Object.entries(p).forEach(([key, value]) => params.append(`${prefix}_${key}`, String(value)));
     };
     serialize(person1, 'u1');
@@ -184,7 +174,7 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
             <p className="text-gray-500 font-bold text-sm ml-1">저장된 프로필 선택</p>
             <div className="grid grid-cols-1 gap-3 max-h-[40vh] overflow-y-auto pr-2">
               {profiles.map((profile, index) => (
-                <button key={index} onClick={() => handleProfileSelect(profile)} className="w-full flex items-center gap-4 p-4 bg-[#F7F8FA] hover:bg-[#FEE500]/10 border border-gray-100 rounded-[1.5rem] transition-all group">
+                <button key={profile.id || index} onClick={() => handleProfileSelect(profile)} className="w-full flex items-center gap-4 p-4 bg-[#F7F8FA] hover:bg-[#FEE500]/10 border border-gray-100 rounded-[1.5rem] transition-all group">
                   <div className="w-10 h-10 rounded-xl bg-[#FEE500] flex items-center justify-center shadow-sm"><User className="w-5 h-5 text-[#3C1E1E]" /></div>
                   <div className="flex-1 text-left">
                     <p className="font-black text-sm text-[#3C1E1E]">{profile.name || '무명'}</p>
