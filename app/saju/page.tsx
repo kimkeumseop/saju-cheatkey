@@ -16,7 +16,7 @@ function SajuProcessingContent() {
     const name = searchParams.get('name') || '방문자';
     const birthDate = searchParams.get('birthDate');
     const birthTime = searchParams.get('birthTime') || '12:00';
-    const calendarType = searchParams.get('calendarType') || 'solar';
+    const calendarType = (searchParams.get('calendarType') as 'solar' | 'lunar') || 'solar';
     const gender = searchParams.get('gender') || 'male';
 
     if (birthDate) {
