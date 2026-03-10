@@ -24,7 +24,7 @@ function SajuProcessingContent() {
     }
   }, [searchParams]);
 
-  const processAnalysis = async (name: string, birthDate: string, birthTime: string, calendarType: string, gender: string) => {
+  const processAnalysis = async (name: string, birthDate: string, birthTime: string, calendarType: 'solar' | 'lunar', gender: string) => {
     try {
       // 1. 사주 원국 계산
       setLoadingStep('우주의 기운을 스캔하는 중... (사주 원국 계산)');
