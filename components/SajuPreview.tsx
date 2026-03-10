@@ -48,7 +48,7 @@ export default function SajuPreview({ name = '홍길동', gender = '남', birthD
 
           <button className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-5 rounded-2xl font-black text-xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-3">
             <CreditCard className="w-6 h-6" />
-            치트키 충전하기 (990원)
+            치트키 충전하기 (777원)
           </button>
         </div>
       </div>

@@ -9,71 +9,21 @@ import AnalysisAccordion from '@/components/AnalysisAccordion';
 import ShareButtons from '@/components/ShareButtons';
 import GungHapPreview from '@/components/GungHapPreview';
 import PaymentWidget from '@/components/PaymentWidget';
-import { Loader2, Sparkles, Layout, Lock, Zap, ChevronRight, AlertCircle, Heart } from 'lucide-react';
-import { ELEMENT_STYLE } from '@/lib/saju';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
-  return (
-    <div className="space-y-6">
-      {title && <h4 className="text-center font-black text-[#3C1E1E] text-lg">{title}</h4>}
-      <div className="grid grid-cols-4 gap-2 md:gap-4 relative z-10">
-        {pillars.map((p: any, colIdx: number) => {
-          const isDayPillar = p.label === '일주';
-          return (
-            <div key={colIdx} className="space-y-3">
-              <div className="text-center text-[8px] md:text-xs font-black text-gray-400 tracking-tighter opacity-80">
-                {p.label}
-              </div>
-              <div className="space-y-2 md:space-y-4">
-                <div className={cn(
-                  "relative group transition-all duration-500",
-                  isDayPillar ? "scale-105 z-20" : "hover:scale-[1.02]"
-                )}>
-                  <div className={cn(
-                    p.ganColor.bg, p.ganColor.text,
-                    "p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center gap-1 md:gap-2 shadow-md border-[2px] md:border-[4px] transition-all duration-300",
-                    isDayPillar ? "border-pink-400 shadow-xl shadow-pink-100" : "border-white"
-                  )}>
-                    <span className="text-[10px] md:text-sm font-black opacity-60 mb-[-4px]">{p.ganKo}</span>
-                    <span className="text-2xl md:text-7xl font-sans font-black leading-none drop-shadow-md tracking-tight">
-                      {p.gan}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="relative group transition-all duration-500 hover:scale-[1.02]">
-                  <div className={cn(
-                    p.zhiColor.bg, p.zhiColor.text,
-                    "p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center gap-1 md:gap-2 shadow-md border-[2px] md:border-[4px] border-white transition-all duration-300"
-                  )}>
-                    <span className="text-[10px] md:text-sm font-black opacity-60 mb-[-4px]">{p.zhiKo}</span>
-                    <span className="text-2xl md:text-7xl font-sans font-black leading-none drop-shadow-md tracking-tight">
-                      {p.zhi}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+import { Loader2, Sparkles, Layout, Lock, Zap, ChevronRight, AlertCircle, Heart, Coins } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 
 export default function SajuResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, userCheatKeys } = useAuth();
+  
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showPaymentWidget, setShowPaymentWidget] = useState(false);
+
+  const ADMIN_EMAIL = 'oops676@gmail.com';
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,27 +32,14 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
         
         if (id.startsWith('local_')) {
           const localData = localStorage.getItem(`saju_result_${id}`);
-          if (localData) {
-            fetchedData = JSON.parse(localData);
-          }
+          if (localData) fetchedData = JSON.parse(localData);
         } else {
-          const docRef = doc(db, 'sajuResults', id);
-          const docSnap = await getDoc(docRef);
-
-          if (docSnap.exists()) {
-            fetchedData = docSnap.data();
-          } else {
-            const localData = localStorage.getItem(`saju_result_${id}`);
-            if (localData) {
-              fetchedData = JSON.parse(localData);
-            }
-          }
+          const docSnap = await getDoc(doc(db, 'sajuResults', id));
+          if (docSnap.exists()) fetchedData = docSnap.data();
         }
 
-        // 결제 완료 후 리다이렉트된 경우 (URL 파라미터 확인)
         if (fetchedData && searchParams.get('payment') === 'success') {
           fetchedData.isPaid = true;
-          // 로컬 데이터인 경우 스토리지도 즉시 업데이트
           if (id.startsWith('local_')) {
             localStorage.setItem(`saju_result_${id}`, JSON.stringify(fetchedData));
           }
@@ -111,11 +48,11 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
         if (fetchedData) {
           setData(fetchedData);
         } else {
-          alert('결과 데이터를 찾을 수 없습니다.');
+          alert('데이터를 찾을 수 없습니다.');
           router.push('/');
         }
       } catch (error) {
-        console.error('데이터 로드 오류:', error);
+        console.error('로드 오류:', error);
         router.push('/');
       } finally {
         setLoading(false);
@@ -129,7 +66,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
     return (
       <div className="min-h-screen bg-[#F7F8FA] flex flex-col items-center justify-center p-6 text-center">
         <Loader2 className="w-12 h-12 text-[#FEE500] animate-spin stroke-[3]" />
-        <p className="mt-4 text-gray-500 font-bold">사주 치트키 불러오는 중...</p>
+        <p className="mt-4 text-gray-500 font-bold">결과 리포트 분석 중...</p>
       </div>
     );
   }
@@ -137,6 +74,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   if (!data) return null;
 
   const isCompatibility = data.type === 'compatibility';
+  const isUnlocked = data.isPaid || isAdmin;
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] pt-24 pb-32 px-4 md:px-6">
@@ -144,43 +82,22 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
       
       <div className="max-w-4xl mx-auto space-y-12">
         {isCompatibility ? (
-          <GungHapPreview data={data} resultId={id} />
+          <GungHapPreview data={{...data, isPaid: isUnlocked}} resultId={id} />
         ) : (
-          <>
-            {/* 상단 헤더 */}
+          <div className="space-y-12">
             <div className="text-center space-y-6">
-              <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#FEE500] text-[#3C1E1E] text-sm font-bold shadow-sm">
-                <Sparkles className="w-4 h-4" />
-                MZ세대 맞춤형 전문가 사주 리포트
-              </div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
-                <span className="text-[#3C1E1E] bg-[#FEE500] px-2 rounded-lg">{data.userName}</span> 님의 인생 결과표
+                <span className="text-[#3C1E1E] bg-[#FEE500] px-2 rounded-lg">{data.userName}</span> 님의 분석 결과
               </h1>
-              <p className="text-gray-500 flex items-center justify-center gap-4 text-sm md:text-lg font-medium">
-                <span>{data.birthDate}</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-                <span>{data.birthTime} ({data.calendarType === 'solar' ? '양력' : '음력'})</span>
-              </p>
             </div>
 
-            {/* 1. 명식표 섹션 */}
-            <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-2xl shadow-indigo-100/50 border border-white/50 space-y-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-pink-100/20 rounded-full blur-3xl -mr-32 -mt-32" />
-              <div className="text-center space-y-1 relative z-10">
-                <h3 className="text-2xl font-black text-gray-900 tracking-tight">나의 인생 설계도, 만세력</h3>
-                <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">Saju Analysis Chart</p>
-              </div>
-              <PillarChart pillars={data.sajuData.pillars} />
-            </div>
-
-            {/* 2. 전문가 분석 결과 */}
             <div className="space-y-8 relative">
               <div className="flex items-center gap-3 ml-2">
                 <Layout className="w-6 h-6 text-[#3C1E1E]" />
                 <h3 className="text-2xl font-bold text-gray-900">심층 분석 리포트</h3>
               </div>
 
-              {data.isPaid ? (
+              {isUnlocked ? (
                 <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
                   {(() => {
                     const themes = [
@@ -201,63 +118,72 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                 </div>
               ) : (
                 <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-xl border border-gray-100 space-y-10 relative overflow-hidden">
+                  <div className="flex items-center justify-between bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                        <Coins className="w-5 h-5 text-amber-500" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">보유 치트키</p>
+                        <p className="text-lg font-black text-[#3C1E1E]">{userCheatKeys} 개</p>
+                      </div>
+                    </div>
+                    <div className="h-10 w-px bg-gray-200" />
+                    <div className="text-right">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">필요 치트키</p>
+                      <p className="text-lg font-black text-[#3C1E1E]">1 개</p>
+                    </div>
+                  </div>
+
                   <div className="space-y-4 text-center sm:text-left">
                     <div className="flex items-center justify-center sm:justify-start gap-2 text-red-500 font-black text-sm">
                       <AlertCircle className="w-4 h-4" />
                       <span>충격 주의: 당신의 진짜 모습은 이게 아닙니다</span>
                     </div>
-                    <h4 className="text-2xl md:text-3xl font-black text-[#3C1E1E] leading-tight break-keep">
-                      "{data.userName}님, 사실 <span className="text-red-500 underline decoration-red-200 decoration-8 underline-offset-[-4px]">돈 복이 터지는 시기</span>가 따로 있다는 거 아시나요?"
+                    <h4 className="text-2xl md:text-3xl font-black text-[#3C1E1E] leading-tight">
+                      "{data.userName}님, 사실 <span className="text-red-500 underline underline-offset-4">숨겨진 대박 기회</span>가 따로 있다는 거 아시나요?"
                     </h4>
-                    <p className="text-gray-500 font-bold leading-relaxed">
-                      현재 분석된 데이터에 따르면, 당신의 사주에는 남들에게 말하지 못한 엄청난 야망과 함께 조만간 찾아올 역대급 기회가 포착되었습니다.
-                    </p>
                   </div>
 
                   <div className="bg-[#3C1E1E] rounded-[2.5rem] p-8 text-center shadow-2xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#FEE500]/10 rounded-full -mr-16 -mt-16 blur-3xl animate-pulse" />
                     <div className="space-y-6 relative z-10">
                       <div className="flex items-center justify-center gap-2 text-[#FEE500]">
                         <Zap className="w-6 h-6 fill-[#FEE500]" />
-                        <span className="font-black text-sm tracking-widest uppercase italic">Unlock Your Destiny</span>
+                        <span className="font-black text-xs tracking-widest uppercase italic">Destiny CheatKey</span>
                       </div>
-                      <h2 className="text-white text-2xl md:text-3xl font-black break-keep leading-tight">
-                        단돈 <span className="text-[#FEE500]">990원</span>으로 <br/>
-                        인생의 <span className="text-[#FEE500]">치트키</span>를 켜세요!
+                      <h2 className="text-white text-2xl md:text-3xl font-black leading-tight">
+                        <span className="text-[#FEE500]">777원</span>으로 <br/>
+                        인생의 치트키를 켜세요!
                       </h2>
-                      <div className="flex flex-col gap-3 max-w-xs mx-auto">
-                        <button 
-                          onClick={() => setShowPaymentWidget(true)}
-                          className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-6 rounded-2xl font-black text-xl shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-3 group"
-                        >
-                          리포트 전체 열람하기
-                          <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                      </div>
+                      <button 
+                        onClick={() => setShowPaymentWidget(true)}
+                        className="w-full bg-[#FEE500] hover:bg-[#FDD000] text-[#3C1E1E] py-6 rounded-2xl font-black text-xl shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-3"
+                      >
+                        치트키 충전하기 (777원)
+                        <ChevronRight className="w-6 h-6" />
+                      </button>
                     </div>
                   </div>
 
-                  {/* 가려진 미리보기 (Blur) */}
-                  <div className="space-y-6 opacity-40 select-none pointer-events-none filter blur-[6px]">
+                  <div className="space-y-6 opacity-40 select-none pointer-events-none filter blur-[8px]">
                     <div className="space-y-3">
                       <div className="h-4 bg-gray-100 rounded-full w-full" />
                       <div className="h-4 bg-gray-100 rounded-full w-5/6" />
+                      <div className="h-4 bg-gray-100 rounded-full w-4/6" />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* 결제 위젯 모달 */}
               {showPaymentWidget && (
                 <PaymentWidget resultId={id} onCancel={() => setShowPaymentWidget(false)} />
               )}
 
-              {/* 하단 공유 */}
-              <div className="mt-12 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8 text-center">
+              <div className="mt-12 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm text-center">
                 <ShareButtons name={data.userName} />
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>

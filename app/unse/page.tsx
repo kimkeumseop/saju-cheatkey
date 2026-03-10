@@ -62,7 +62,7 @@ export default function UnsePage() {
             <div className="bg-black/20 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
               <div className="flex justify-between items-center text-white">
                 <span className="font-bold text-sm">한정 기간 할인가</span>
-                <span className="text-2xl font-black text-[#FEE500]">990원</span>
+                <span className="text-2xl font-black text-[#FEE500]">777원</span>
               </div>
             </div>
 
@@ -94,7 +94,7 @@ export default function UnsePage() {
             </p>
 
             <button className="w-full bg-white/10 hover:bg-white/20 text-[#FEE500] border border-[#FEE500]/30 py-5 rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2">
-              1 치트코인으로 확인하기
+              1 치트키로 확인하기
             </button>
           </div>
         </section>
