@@ -28,6 +28,7 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
     birthDate: '',
     birthTime: 'unknown',
     isTimeKnown: false,
+    isExactTime: false,
     calendarType: 'solar',
     gender: 'male'
   });
