@@ -24,8 +24,7 @@ export default function Navbar() {
           
           <div className="flex items-center space-x-4 md:space-x-8">
             <div className="hidden md:flex items-center space-x-8 text-sm font-bold text-gray-400">
-              <Link href="/" className="hover:text-primary-600 transition-colors">사주분석</Link>
-              <Link href="/unse" className="hover:text-primary-600 transition-colors">오늘의운세</Link>
+              <Link href="/" className="hover:text-primary-600 transition-colors">홈</Link>
               <Link href="/privacy" className="hover:text-primary-600 transition-colors">개인정보처리방침</Link>
             </div>
 
