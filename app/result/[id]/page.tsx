@@ -182,9 +182,17 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             </div>
 
             <div className="bg-white p-8 md:p-10 rounded-[3rem] shadow-lg border border-pink-50 space-y-8">
-              <div className="flex items-center gap-2"><History className="w-5 h-5 text-primary-500" /><h3 className="text-xl font-black text-primary-900">대운 (10년 주기의 흐름)</h3></div>
-              <div className="flex overflow-x-auto pb-4 gap-4 no-scrollbar">
-                {saju?.daYun?.map((dy: any, idx: number) => {
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <History className="w-5 h-5 text-primary-500" />
+                  <h3 className="text-xl font-black text-primary-900">대운 (10년 주기의 흐름)</h3>
+                </div>
+                <p className="text-[13px] text-gray-400 font-medium leading-relaxed ml-7">
+                  💡 대운(大運)이란? 10년마다 내 인생에 깔리는 '배경화면'이에요. <br className="hidden md:block" />
+                  지금 나는 인생의 어떤 계절을 걷고 있는지 색상으로 확인해 보세요!
+                </p>
+              </div>
+              <div className="flex overflow-x-auto pb-4 gap-4 no-scrollbar">                {saju?.daYun?.map((dy: any, idx: number) => {
                   const style = dy.ganColor || getSafeColor(dy.ganElement);
                   return (
                     <div key={idx} className="flex-shrink-0 w-24 space-y-3">
