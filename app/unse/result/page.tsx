@@ -5,22 +5,28 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ShareButtons from '@/components/ShareButtons';
-import { Loader2, Sparkles, Moon, Heart, Star, Gift, Coffee, Music, ChevronRight } from 'lucide-react';
+import PaymentWidget from '@/components/PaymentWidget';
+import { Loader2, Sparkles, Moon, Heart, Star, Gift, Coffee, Music, ChevronRight, Lock, Zap } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 
-// useSearchParams를 사용하는 로직을 별도 컴포넌트로 분리
 function UnseResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   
   const [loading, setLoading] = useState(true);
   const [unseData, setUnseResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
 
   const name = searchParams.get('name');
   const birthDate = searchParams.get('birthDate');
   const birthTime = searchParams.get('birthTime');
   const calendarType = searchParams.get('calendarType');
   const gender = searchParams.get('gender');
+  const isPaidParam = searchParams.get('payment') === 'success';
+  const isAdmin = user?.email === 'oops676@gmail.com';
+  const isUnlocked = isPaidParam || isAdmin;
 
   useEffect(() => {
     const fetchUnse = async () => {
@@ -51,7 +57,6 @@ function UnseResultContent() {
         <Sparkles className="w-6 h-6 text-primary-300 absolute -top-2 -right-2 animate-bounce" />
       </div>
       <p className="mt-6 text-primary-600 font-black text-xl tracking-tight">오늘의 속삭임을 듣고 있어요...</p>
-      <p className="mt-2 text-primary-300 font-bold text-sm">당신의 운명이 예쁘게 그려지는 중입니다.</p>
     </div>
   );
 
@@ -62,7 +67,7 @@ function UnseResultContent() {
     </div>
   );
 
-  const { vibe, heartFlutter, luckyWhisper, gift } = unseData.analysis;
+  const { summary, vibe, heartFlutter, luckyWhisper, gift } = unseData.analysis;
 
   return (
     <div className="max-w-md mx-auto px-6 space-y-10">
@@ -75,78 +80,108 @@ function UnseResultContent() {
         <h1 className="text-3xl font-black text-primary-900 tracking-tight">
           {name}님을 위한 <br/> 오늘의 속삭임
         </h1>
-        <p className="text-primary-300 font-bold text-sm italic">{unseData.today.date} · {unseData.today.pillar}의 기운</p>
       </div>
 
-      {/* 메시지 카드 섹션 */}
-      <div className="space-y-6">
-        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-pink-50 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-            <Music className="w-20 h-20 text-primary-500" />
-          </div>
-          <div className="space-y-4 relative z-10">
-            <h3 className="text-primary-500 font-black text-sm flex items-center gap-2">
-              <Moon className="w-4 h-4 fill-primary-200" /> 오늘의 분위기
-            </h3>
-            <p className="text-primary-900 font-bold text-xl leading-snug break-keep">{vibe}</p>
-          </div>
+      {/* 무료 요약 카드 (신문 운세 스타일) */}
+      <section className="bg-white rounded-[2.5rem] p-8 shadow-xl border-4 border-primary-100 relative overflow-hidden ring-8 ring-primary-50/50">
+        <div className="absolute top-0 right-0 p-4">
+          <span className="text-[10px] font-black bg-primary-500 text-white px-2 py-1 rounded-lg">무료 공개</span>
         </div>
-
-        <div className="bg-primary-900 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
-          <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-white/5 rounded-full blur-3xl" />
-          <div className="space-y-4 relative z-10">
-            <h3 className="text-primary-300 font-black text-sm flex items-center gap-2">
-              <Heart className="w-4 h-4 fill-primary-400 text-primary-400" /> 가슴 뛰는 순간
-            </h3>
-            <p className="text-white font-medium text-lg leading-relaxed break-keep">{heartFlutter}</p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-pink-50 space-y-4">
-          <h3 className="text-primary-500 font-black text-sm flex items-center gap-2">
-            <Coffee className="w-4 h-4" /> 행운의 가이드
+        <div className="space-y-4 relative z-10">
+          <h3 className="text-primary-400 font-black text-xs uppercase tracking-widest flex items-center gap-2">
+            <Coffee className="w-4 h-4" /> 오늘의 한 줄 요약
           </h3>
-          <p className="text-gray-600 font-medium leading-relaxed break-keep">{luckyWhisper}</p>
+          <p className="text-primary-900 font-bold text-xl leading-snug break-keep underline decoration-primary-100 decoration-8 underline-offset-[-4px]">
+            "{summary}"
+          </p>
+        </div>
+      </section>
+
+      {/* 프리미엄 섹션 */}
+      <div className="space-y-6 relative">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-primary-900 font-black text-lg flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary-500 fill-primary-500" /> 프리미엄 속삭임
+          </h3>
+          {!isUnlocked && <span className="text-[10px] font-bold text-primary-300">총 4개 섹션 잠김</span>}
         </div>
 
-        <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-[2.5rem] p-8 shadow-lg border border-white space-y-4 text-center">
-          <div className="w-12 h-12 bg-white rounded-2xl mx-auto flex items-center justify-center shadow-sm mb-2">
-            <Gift className="w-6 h-6 text-primary-500" />
+        {isUnlocked ? (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-lg border border-pink-50 space-y-4">
+              <h3 className="text-primary-500 font-black text-sm flex items-center gap-2"><Moon className="w-4 h-4 fill-primary-200" /> 오늘의 분위기</h3>
+              <p className="text-gray-600 font-medium leading-relaxed break-keep">{vibe}</p>
+            </div>
+            <div className="bg-primary-900 rounded-[2.5rem] p-8 shadow-2xl space-y-4">
+              <h3 className="text-primary-200 font-black text-sm flex items-center gap-2"><Heart className="w-4 h-4 fill-primary-400 text-primary-400" /> 가슴 뛰는 순간</h3>
+              <p className="text-white font-medium leading-relaxed break-keep">{heartFlutter}</p>
+            </div>
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-lg border border-pink-50 space-y-4">
+              <h3 className="text-primary-500 font-black text-sm flex items-center gap-2"><Music className="w-4 h-4" /> 행운의 가이드</h3>
+              <p className="text-gray-600 font-medium leading-relaxed break-keep">{luckyWhisper}</p>
+            </div>
+            <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-[2.5rem] p-8 shadow-lg border border-white text-center space-y-2">
+              <Gift className="w-8 h-8 text-primary-500 mx-auto" />
+              <h3 className="text-primary-900 font-black text-lg">오늘 우주가 주는 선물</h3>
+              <p className="text-primary-600 font-bold text-sm break-keep">{gift}</p>
+            </div>
           </div>
-          <h3 className="text-primary-900 font-black text-lg">오늘 우주가 주는 선물</h3>
-          <p className="text-primary-600 font-bold text-sm leading-relaxed break-keep">{gift}</p>
-        </div>
+        ) : (
+          <div className="relative">
+            {/* 잠금 상태의 카드들 (블러 처리) */}
+            <div className="space-y-6 opacity-30 blur-[6px] pointer-events-none select-none">
+              <div className="bg-white h-32 rounded-[2rem]" />
+              <div className="bg-white h-32 rounded-[2rem]" />
+            </div>
+
+            {/* 결제 유도 페이월 */}
+            <div className="absolute inset-0 flex items-center justify-center z-10">
+              <div className="bg-primary-900 rounded-[2.5rem] p-8 text-center shadow-2xl w-full border-4 border-white/10 space-y-6">
+                <div className="space-y-2">
+                  <div className="flex justify-center"><Lock className="w-10 h-10 text-primary-300" /></div>
+                  <h2 className="text-white text-xl font-black leading-tight">
+                    방금 읽은 내용은 시작일 뿐! <br/>
+                    <span className="text-primary-300">시간대별 디테일</span>을 열어볼까요?
+                  </h2>
+                  <p className="text-white/60 text-xs font-bold">777원으로 오늘 하루의 완벽한 치트키를 확인하세요.</p>
+                </div>
+                
+                <button 
+                  onClick={() => setShowPayment(true)}
+                  className="w-full bg-primary-500 hover:bg-primary-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl transition-all active:scale-[0.95] flex items-center justify-center gap-2"
+                >
+                  <Zap className="w-5 h-5 fill-white" />
+                  777원으로 모두 확인하기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* 하단 버튼 및 공유 */}
+      {/* 하단 공유 */}
       <div className="pt-6 space-y-8">
-        <button 
-          onClick={() => router.push('/')}
-          className="w-full bg-primary-600 hover:bg-primary-700 text-white py-5 rounded-2xl font-black text-lg shadow-xl transition-all active:scale-[0.95] flex items-center justify-center gap-2"
-        >
-          홈으로 돌아가기
-        </button>
-        
         <div className="text-center space-y-4">
-          <p className="text-primary-300 font-bold text-xs uppercase tracking-widest">Share the magic</p>
+          <p className="text-primary-300 font-bold text-xs uppercase tracking-widest">Share the whisper</p>
           <ShareButtons name={name || '나'} />
         </div>
       </div>
+
+      {showPayment && (
+        <PaymentWidget 
+          resultId={`unse_premium_${Date.now()}`} 
+          onCancel={() => setShowPayment(false)} 
+        />
+      )}
     </div>
   );
 }
 
-// 메인 페이지 컴포넌트
 export default function UnseResultPage() {
   return (
     <main className="min-h-screen bg-[#FFF5F7] pt-24 pb-32 overflow-x-hidden">
       <Navbar />
-      <Suspense fallback={
-        <div className="flex flex-col items-center justify-center p-6 text-center py-20">
-          <Loader2 className="w-12 h-12 text-primary-400 animate-spin" />
-          <p className="mt-4 text-primary-400 font-bold">잠시만 기다려주세요...</p>
-        </div>
-      }>
+      <Suspense fallback={<div className="text-center py-20"><Loader2 className="w-10 h-10 text-primary-400 animate-spin mx-auto" /></div>}>
         <UnseResultContent />
       </Suspense>
       <Footer />
