@@ -20,7 +20,6 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
   const router = useRouter();
   const { profiles, deleteProfile, addProfile } = useAuth();
   
-  // me: 내 프로필 선택, partner: 상대 프로필 선택, form: 새 프로필 입력
   const [view, setView] = useState<'me' | 'partner' | 'form'>('me');
   const [formType, setFormType] = useState<'me' | 'partner'>('me');
   
@@ -30,9 +29,9 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
   const [formData, setFormData] = useState<SajuProfile>({
     name: '',
     birthDate: '',
-    birthTime: 'unknown',
-    isTimeKnown: false,
-    isExactTime: false,
+    birthTime: '',
+    isTimeKnown: true,
+    isExactTime: true,
     calendarType: 'solar',
     gender: 'female'
   });
@@ -59,13 +58,18 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const finalData = { ...formData };
+    if (!formData.isTimeKnown || !formData.isExactTime) {
+      finalData.birthTime = 'unknown';
+    }
+
     try {
-      await addProfile(formData);
+      await addProfile(finalData);
       if (formType === 'me') {
-        setMe(formData);
+        setMe(finalData);
         setView('partner');
       } else {
-        startAnalysis(me!, formData);
+        startAnalysis(me!, finalData);
       }
     } catch (err) {
       alert('저장 실패');
@@ -145,7 +149,7 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
           )}
 
           {view === 'form' && (
-            <form onSubmit={handleFormSubmit} className="space-y-6">
+            <form onSubmit={handleFormSubmit} className="space-y-6 pb-10">
               <div className="space-y-4">
                 <input type="text" placeholder="성함을 알려주세요" className={inputClasses} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
                 <div className="grid grid-cols-2 gap-3">
@@ -159,8 +163,39 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
                   </div>
                 </div>
                 <input type="date" className={inputClasses} value={formData.birthDate} onChange={e => setFormData({...formData, birthDate: e.target.value})} required />
+
+                {/* 태어난 시간 입력 섹션 추가 */}
+                <div className="space-y-4 pt-4 border-t border-pink-50">
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-black text-primary-900 ml-1 flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-primary-400" />태어난 시간을 아시나요?
+                    </label>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => setFormData({...formData, isTimeKnown: true})} className={radioBtnClasses(formData.isTimeKnown)}>예</button>
+                      <button type="button" onClick={() => setFormData({...formData, isTimeKnown: false})} className={radioBtnClasses(!formData.isTimeKnown)}>아니오</button>
+                    </div>
+                  </div>
+                  
+                  {formData.isTimeKnown && (
+                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <label className="text-[11px] font-black text-primary-900 ml-1 italic">정확한 시간인가요?</label>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => setFormData({...formData, isExactTime: true})} className={radioBtnClasses(formData.isExactTime)}>예</button>
+                        <button type="button" onClick={() => setFormData({...formData, isExactTime: false})} className={radioBtnClasses(!formData.isExactTime)}>아니오</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {formData.isTimeKnown && formData.isExactTime && (
+                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <label className="text-[11px] font-black text-primary-900 ml-1 uppercase tracking-widest font-black">Birth Time</label>
+                      <input type="time" className={inputClasses} value={formData.birthTime} onChange={e => setFormData({...formData, birthTime: e.target.value})} required={formData.isExactTime} />
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex gap-3">
+
+              <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setView(formType)} className="flex-1 bg-pink-50 text-primary-300 py-4 rounded-2xl font-black">뒤로</button>
                 <button type="submit" className="flex-[2] bg-primary-600 text-white py-4 rounded-2xl font-black shadow-lg">저장하고 계속</button>
               </div>
