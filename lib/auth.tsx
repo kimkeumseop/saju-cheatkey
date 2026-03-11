@@ -9,10 +9,9 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
-  signInWithCustomToken,
-  OAuthProvider
+  signInWithCustomToken
 } from 'firebase/auth';
-import { auth, googleProvider, naverProvider, db } from './firebase';
+import { auth, googleProvider, db } from './firebase';
 import { collection, query, getDocs, addDoc, serverTimestamp, orderBy, doc, onSnapshot, deleteDoc } from 'firebase/firestore';
 
 export type SajuProfile = {
@@ -136,16 +135,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithNaver = async () => {
     try {
-      // 1. 네이버 팝업 로그인으로 Access Token 획득
-      const result = await signInWithPopup(auth, naverProvider);
-      const credential = OAuthProvider.credentialFromResult(result);
-      const accessToken = credential?.accessToken;
+      // 1. 네이버 인증 팝업 열기
+      const clientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID;
+      const redirectUri = encodeURIComponent(window.location.origin + '/api/auth/callback/naver');
+      const state = Math.random().toString(36).substring(7);
+      const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=token&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}`;
 
-      if (!accessToken) {
-        throw new Error('네이버 인증 정보를 가져오지 못했습니다.');
-      }
+      const popup = window.open(naverAuthUrl, 'naverLoginPopup', 'width=500,height=600');
 
-      // 2. 백엔드 API를 통해 Custom Token 발급 (OIDC sub 매핑 에러 해결용)
+      // 2. 팝업으로부터 엑세스 토큰 수신 (postMessage 활용)
+      const accessToken = await new Promise<string>((resolve, reject) => {
+        const timer = setInterval(() => {
+          if (popup?.closed) {
+            clearInterval(timer);
+            reject(new Error('로그인 창이 닫혔습니다.'));
+          }
+        }, 1000);
+
+        const handleMessage = (event: MessageEvent) => {
+          if (event.origin !== window.location.origin) return;
+          if (event.data?.type === 'NAVER_AUTH_SUCCESS' && event.data.accessToken) {
+            clearInterval(timer);
+            window.removeEventListener('message', handleMessage);
+            resolve(event.data.accessToken);
+          }
+        };
+        window.addEventListener('message', handleMessage);
+      });
+
+      // 3. 백엔드 API를 통해 Firebase Custom Token 발급
       const response = await fetch('/api/auth/naver', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -153,17 +171,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       const data = await response.json();
-
       if (!data.success || !data.customToken) {
-        throw new Error(data.error || '커스텀 토큰 발급에 실패했습니다.');
+        throw new Error(data.error || '네이버 인증 처리에 실패했습니다.');
       }
 
-      // 3. 발급받은 Custom Token으로 로그인
+      // 4. 발급받은 Custom Token으로 파이어베이스 로그인 완료
       await signInWithCustomToken(auth, data.customToken);
 
     } catch (error: any) {
-      console.error('네이버 로그인 실패:', error);
-      // 에러 핸들링 보강: 유저에게 알림 표시
+      console.error('Naver Login Flow Error:', error);
       alert("네이버 로그인 연동에 실패했습니다. 관리자에게 문의하세요.");
       throw error;
     }
