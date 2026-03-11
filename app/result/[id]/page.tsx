@@ -99,6 +99,17 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // 뒤로가기 감지 시 홈으로 이동
+  useEffect(() => {
+    const handlePopState = () => {
+      window.location.href = '/';
+    };
+    // 현재 상태를 히스토리에 하나 더 쌓아서 뒤로가기 발생 시 이벤트를 가로챔
+    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -131,7 +142,6 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   if (!data) return null;
 
   const isCompatibility = data.type === 'compatibility';
-  // 결제 여부와 상관없이 무조건 공개 (무료화)
   const isUnlocked = true;
   const saju = isCompatibility ? data.saju1 : data.sajuData;
 

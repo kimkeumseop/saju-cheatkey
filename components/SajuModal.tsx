@@ -14,7 +14,7 @@ function cn(...inputs: ClassValue[]) {
 interface SajuModalProps {
   isOpen: boolean;
   onClose: () => void;
-  type?: 'saju' | 'unse'; // 모달 타입 추가
+  type?: 'saju' | 'unse';
 }
 
 export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalProps) {
@@ -42,9 +42,9 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
     const params = new URLSearchParams();
     Object.entries(profile).forEach(([key, value]) => params.append(key, String(value)));
     onClose();
-    // 타입에 따라 다른 경로로 이동
     const targetPath = type === 'unse' ? '/unse/result' : '/saju';
-    router.push(`${targetPath}?${params.toString()}`);
+    // push 대신 replace 사용하여 히스토리 방지
+    router.replace(`${targetPath}?${params.toString()}`);
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -64,9 +64,9 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
       const params = new URLSearchParams();
       Object.entries(finalData).forEach(([key, value]) => params.append(key, String(value)));
       onClose();
-      // 타입에 따라 다른 경로로 이동
       const targetPath = type === 'unse' ? '/unse/result' : '/saju';
-      router.push(`${targetPath}?${params.toString()}`);
+      // push 대신 replace 사용하여 히스토리 방지
+      router.replace(`${targetPath}?${params.toString()}`);
     } catch (error) {
       alert('프로필 저장 중 오류가 발생했습니다.');
     }
@@ -81,7 +81,6 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
-        
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
             {type === 'unse' ? <Moon className="w-6 h-6 text-primary-500 fill-primary-500" /> : <Sparkles className="w-6 h-6 text-primary-500 fill-primary-500" />}
@@ -114,7 +113,6 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                   <p className="text-primary-200 font-bold text-sm">아직 등록된 정보가 없어요!</p>
                 </div>
               )}
-
               <button onClick={() => setView('form')} className="w-full flex items-center gap-4 p-5 rounded-[1.5rem] bg-white border-2 border-dashed border-pink-100 hover:border-primary-200 transition-all group">
                 <div className="w-12 h-12 rounded-xl bg-pink-50 group-hover:bg-primary-50 flex items-center justify-center transition-colors">
                   <Plus className="w-6 h-6 text-primary-300 group-hover:text-primary-500" />
@@ -127,7 +125,6 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
           <form onSubmit={handleFormSubmit} className="space-y-8">
             <div className="space-y-6">
               <input type="text" placeholder="성함을 알려주세요" className={inputClasses} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
-              
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex p-1 bg-[#FFF5F7] rounded-2xl border border-pink-50">
                   <button type="button" onClick={() => setFormData({...formData, gender: 'male'})} className={radioBtnClasses(formData.gender === 'male')}>남성</button>
@@ -138,9 +135,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                   <button type="button" onClick={() => setFormData({...formData, calendarType: 'lunar'})} className={radioBtnClasses(formData.calendarType === 'lunar')}>음력</button>
                 </div>
               </div>
-
               <input type="date" className={inputClasses} value={formData.birthDate} onChange={e => setFormData({...formData, birthDate: e.target.value})} required />
-
               <div className="space-y-6 pt-4 border-t border-pink-50">
                 <div className="space-y-3">
                   <label className="text-sm font-black text-primary-900 ml-1 flex items-center gap-2">
@@ -168,7 +163,6 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                 )}
               </div>
             </div>
-
             <div className="flex gap-3 pt-4">
               <button type="button" onClick={() => setView('selection')} className="flex-1 bg-pink-50 text-primary-300 py-5 rounded-2xl font-black text-lg">뒤로</button>
               <button type="submit" className="flex-[2] bg-primary-600 hover:bg-primary-700 text-white py-5 rounded-2xl font-black text-lg shadow-xl active:scale-[0.98]">
