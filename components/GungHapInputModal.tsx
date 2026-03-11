@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Heart, Users, Plus, ChevronRight, Trash2, Clock } from 'lucide-react';
+import { X, Heart, Users, Plus, ChevronRight, Trash2, Clock, Smile, Flame, Users2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -16,15 +16,28 @@ interface GungHapInputModalProps {
   onClose: () => void;
 }
 
+const RELATIONSHIPS = [
+  { id: 'couple', label: '연인', icon: '💖' },
+  { id: 'some', label: '썸남/썸녀', icon: '✨' },
+  { id: 'spouse', label: '배우자', icon: '💍' },
+  { id: 'ex-couple', label: '전연인', icon: '💔' },
+  { id: 'friend', label: '친구', icon: '🤝' },
+  { id: 'colleague', label: '직장/사업', icon: '💼' },
+  { id: 'idol', label: '팬심/덕질', icon: '⭐' },
+  { id: 'etc', label: '기타', icon: '🔮' },
+];
+
 export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModalProps) {
   const router = useRouter();
   const { profiles, deleteProfile, addProfile } = useAuth();
   
-  const [view, setView] = useState<'me' | 'partner' | 'form'>('me');
+  // me: 나 선택, partner: 상대 선택, relation: 관계 선택, form: 새 정보 입력
+  const [view, setView] = useState<'me' | 'partner' | 'relation' | 'form'>('me');
   const [formType, setFormType] = useState<'me' | 'partner'>('me');
   
   const [me, setMe] = useState<SajuProfile | null>(null);
   const [partner, setPartner] = useState<SajuProfile | null>(null);
+  const [selectedRelation, setSelectedRelation] = useState<string>('couple');
   
   const [formData, setFormData] = useState<SajuProfile>({
     name: '',
@@ -45,7 +58,12 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
 
   const handlePartnerSelect = (profile: SajuProfile) => {
     setPartner(profile);
-    startAnalysis(me!, profile);
+    setView('relation'); // 관계 선택 화면으로 이동
+  };
+
+  const handleRelationSelect = (relId: string) => {
+    setSelectedRelation(relId);
+    startAnalysis(me!, partner!, relId);
   };
 
   const handleDelete = async (e: React.MouseEvent, id?: string) => {
@@ -69,16 +87,19 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
         setMe(finalData);
         setView('partner');
       } else {
-        startAnalysis(me!, finalData);
+        setPartner(finalData);
+        setView('relation');
       }
     } catch (err) {
       alert('저장 실패');
     }
   };
 
-  const startAnalysis = (user1: SajuProfile, user2: SajuProfile) => {
+  const startAnalysis = (user1: SajuProfile, user2: SajuProfile, rel: string) => {
     const params = new URLSearchParams();
     params.append('type', 'compatibility');
+    params.append('relation', rel); // 관계 정보 추가
+    
     params.append('u1_name', user1.name);
     params.append('u1_date', user1.birthDate);
     params.append('u1_time', user1.birthTime || 'unknown');
@@ -109,13 +130,14 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
           <div className="flex items-center gap-2">
             <Heart className="w-6 h-6 text-primary-500 fill-primary-500" />
             <h3 className="text-2xl font-black text-primary-900 tracking-tight">
-              {view === 'me' ? '나는 누구인가요?' : view === 'partner' ? '상대방은 누구인가요?' : '정보 등록하기'}
+              {view === 'me' ? '나는 누구인가요?' : view === 'partner' ? '상대방은 누구인가요?' : view === 'relation' ? '어떤 관계인가요?' : '정보 등록하기'}
             </h3>
           </div>
           <button onClick={onClose} className="p-2 rounded-full bg-pink-50 hover:bg-pink-100 transition-colors"><X className="w-5 h-5 text-primary-300" /></button>
         </div>
 
         <div className="space-y-6">
+          {/* 1. 나/상대 프로필 선택 뷰 */}
           {(view === 'me' || view === 'partner') && (
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-3 max-h-[40vh] overflow-y-auto pr-1 no-scrollbar">
@@ -148,6 +170,27 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
             </div>
           )}
 
+          {/* 2. 관계 선택 뷰 */}
+          {view === 'relation' && (
+            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300 pb-6">
+              <p className="text-center text-primary-300 font-bold text-sm">두 사람의 인연을 정의해주세요</p>
+              <div className="grid grid-cols-2 gap-3">
+                {RELATIONSHIPS.map((rel) => (
+                  <button
+                    key={rel.id}
+                    onClick={() => handleRelationSelect(rel.id)}
+                    className="flex flex-col items-center gap-2 p-5 bg-white border-2 border-pink-50 rounded-[1.5rem] hover:border-primary-400 hover:bg-primary-50 transition-all group active:scale-95"
+                  >
+                    <span className="text-3xl group-hover:scale-110 transition-transform">{rel.icon}</span>
+                    <span className="font-black text-primary-900 text-sm">{rel.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setView('partner')} className="w-full text-center text-primary-300 font-bold text-xs underline mt-4">이전 단계로</button>
+            </div>
+          )}
+
+          {/* 3. 새 정보 등록 폼 */}
           {view === 'form' && (
             <form onSubmit={handleFormSubmit} className="space-y-6 pb-10">
               <div className="space-y-4">
@@ -164,7 +207,6 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
                 </div>
                 <input type="date" className={inputClasses} value={formData.birthDate} onChange={e => setFormData({...formData, birthDate: e.target.value})} required />
 
-                {/* 태어난 시간 입력 섹션 추가 */}
                 <div className="space-y-4 pt-4 border-t border-pink-50">
                   <div className="space-y-2">
                     <label className="text-[11px] font-black text-primary-900 ml-1 flex items-center gap-2">
