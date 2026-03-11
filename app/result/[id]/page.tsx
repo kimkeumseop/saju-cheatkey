@@ -93,18 +93,27 @@ function ElementsChart({ counts }: { counts: any }) {
   );
 }
 
+// 오행별 감성 키워드 매핑
+const ELEMENT_INFO: Record<string, { emoji: string; keyword: string; desc: string }> = {
+  '木': { emoji: '🌱', keyword: '성장', desc: '새로운 시작과 성장' },
+  '火': { emoji: '🔥', keyword: '열정', desc: '확산하는 에너지와 열정' },
+  '土': { emoji: '⛰️', keyword: '안정', desc: '든든한 기반과 안정' },
+  '金': { emoji: '💎', keyword: '결실', desc: '단호한 결단과 결실' },
+  '水': { emoji: '💧', keyword: '지혜', desc: '깊은 통찰과 지혜' },
+};
+
 export default function SajuResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedDaeunIdx, setSelectedDaeunIdx] = useState<number | null>(null);
 
   // 뒤로가기 감지 시 홈으로 이동
   useEffect(() => {
     const handlePopState = () => {
       window.location.href = '/';
     };
-    // 현재 상태를 히스토리에 하나 더 쌓아서 뒤로가기 발생 시 이벤트를 가로챔
     window.history.pushState(null, '', window.location.href);
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -121,7 +130,16 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
           const docSnap = await getDoc(doc(db, 'sajuResults', id));
           if (docSnap.exists()) fetchedData = docSnap.data();
         }
-        if (fetchedData) setData(fetchedData);
+        if (fetchedData) {
+          setData(fetchedData);
+          // 현재 나이에 해당하는 대운 찾기
+          const userAge = 25; // 기본값 (실제 로직에서는 생년월일로 계산 가능)
+          const currentIdx = fetchedData.sajuData?.daYun?.findIndex((dy: any, i: number, arr: any[]) => {
+            const nextAge = arr[i+1]?.age || 100;
+            return userAge >= dy.age && userAge < nextAge;
+          });
+          setSelectedDaeunIdx(currentIdx !== -1 ? currentIdx : 0);
+        }
         else router.push('/');
       } catch (error) {
         router.push('/');
@@ -142,7 +160,6 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   if (!data) return null;
 
   const isCompatibility = data.type === 'compatibility';
-  const isUnlocked = true;
   const saju = isCompatibility ? data.saju1 : data.sajuData;
 
   return (
@@ -153,6 +170,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
           <GungHapPreview data={{...data, isPaid: true}} resultId={id} />
         ) : (
           <div className="space-y-12">
+            {/* 상단 타이틀 생략 (동일) */}
             <div className="text-center space-y-6">
               <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary-100 text-primary-700 text-sm font-bold shadow-sm">
                 <Moon className="w-4 h-4 fill-primary-400 text-primary-400" />
@@ -163,6 +181,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
               </h1>
             </div>
 
+            {/* 만세력 설계도 생략 (동일) */}
             <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-xl border border-pink-50 space-y-10 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50/50 rounded-full blur-3xl -mr-32 -mt-32" />
               <div className="text-center space-y-1 relative z-10"><h3 className="text-2xl font-black text-primary-900 tracking-tight text-serif">인생 설계도 (만세력)</h3><p className="text-[10px] font-black text-primary-200 uppercase tracking-[0.3em]">Manseyrok INFOGRAPHIC</p></div>
@@ -181,30 +200,93 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
               </div>
             </div>
 
-            <div className="bg-white p-8 md:p-10 rounded-[3rem] shadow-lg border border-pink-50 space-y-8">
+            {/* 개편된 대운 UI */}
+            <div className="bg-white p-8 md:p-10 rounded-[3rem] shadow-lg border border-pink-50 space-y-8 relative overflow-hidden">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <History className="w-5 h-5 text-primary-500" />
                   <h3 className="text-xl font-black text-primary-900">대운 (10년 주기의 흐름)</h3>
                 </div>
                 <p className="text-[13px] text-gray-400 font-medium leading-relaxed ml-7">
-                  💡 대운(大運)이란? 10년마다 내 인생에 깔리는 '배경화면'이에요. <br className="hidden md:block" />
-                  지금 나는 인생의 어떤 계절을 걷고 있는지 색상으로 확인해 보세요!
+                  💡 대운(大運)은 내 인생의 **'계절과 배경'**이 변하는 시점이에요. <br className="hidden md:block" />
+                  박스를 클릭해 각 시기별 에너지를 확인해 보세요!
                 </p>
               </div>
-              <div className="flex overflow-x-auto pb-4 gap-4 no-scrollbar">                {saju?.daYun?.map((dy: any, idx: number) => {
-                  const style = dy.ganColor || getSafeColor(dy.ganElement);
+
+              <div className="flex overflow-x-auto pb-4 gap-4 no-scrollbar -mx-2 px-2">
+                {saju?.daYun?.map((dy: any, idx: number) => {
+                  const ganInfo = ELEMENT_INFO[dy.ganElement] || { emoji: '✨', keyword: '기운', desc: '' };
+                  const zhiInfo = ELEMENT_INFO[dy.zhiElement] || { emoji: '✨', keyword: '기운', desc: '' };
+                  const isSelected = selectedDaeunIdx === idx;
+                  const ganStyle = dy.ganColor || getSafeColor(dy.ganElement);
+                  const zhiStyle = dy.zhiColor || getSafeColor(dy.zhiElement);
+
                   return (
-                    <div key={idx} className="flex-shrink-0 w-24 space-y-3">
-                      <div className="text-center text-[10px] font-black text-primary-300">{dy.age}세~</div>
-                      <div className="space-y-1.5">
-                        <div className={cn(style.bg, style.text, "h-12 rounded-xl flex items-center justify-center font-black text-lg border border-white shadow-sm")}>{dy.ganKo}</div>
-                        <div className={cn(style.bg, style.text, "h-12 rounded-xl flex items-center justify-center font-black text-lg border border-white shadow-sm")}>{dy.zhiKo}</div>
+                    <button 
+                      key={idx} 
+                      onClick={() => setSelectedDaeunIdx(idx)}
+                      className={cn(
+                        "flex-shrink-0 w-28 md:w-32 transition-all duration-300 rounded-[2rem] p-4 border-2 group",
+                        isSelected 
+                          ? "bg-rose-50/50 border-rose-300 shadow-lg scale-105 z-10" 
+                          : "bg-white border-pink-50 hover:border-pink-200"
+                      )}
+                    >
+                      <div className={cn(
+                        "text-center text-[11px] font-black mb-3 transition-colors",
+                        isSelected ? "text-rose-500" : "text-gray-300"
+                      )}>
+                        {dy.age}세~
                       </div>
-                    </div>
+                      
+                      <div className="space-y-3">
+                        {/* 천간 키워드 박스 */}
+                        <div className={cn(
+                          ganStyle.bg, ganStyle.text, 
+                          "h-14 rounded-2xl flex flex-col items-center justify-center border border-white shadow-sm relative overflow-hidden"
+                        )}>
+                          <span className="text-sm opacity-50 absolute top-1 right-1 font-bold">{dy.ganKo}</span>
+                          <span className="text-lg mb-0.5">{ganInfo.emoji}</span>
+                          <span className="text-xs font-black tracking-tighter">{ganInfo.keyword}</span>
+                        </div>
+                        
+                        {/* 지지 키워드 박스 */}
+                        <div className={cn(
+                          zhiStyle.bg, zhiStyle.text, 
+                          "h-14 rounded-2xl flex flex-col items-center justify-center border border-white shadow-sm relative overflow-hidden"
+                        )}>
+                          <span className="text-sm opacity-50 absolute top-1 right-1 font-bold">{dy.zhiKo}</span>
+                          <span className="text-lg mb-0.5">{zhiInfo.emoji}</span>
+                          <span className="text-xs font-black tracking-tighter">{zhiInfo.keyword}</span>
+                        </div>
+                      </div>
+                    </button>
                   );
                 })}
               </div>
+
+              {/* 시각적 피드백 문장 영역 */}
+              {selectedDaeunIdx !== null && saju?.daYun?.[selectedDaeunIdx] && (
+                <div className="mt-4 p-6 bg-rose-50/30 rounded-[2rem] border border-rose-100/50 animate-in fade-in slide-in-from-top-2 duration-500">
+                  <div className="flex flex-col md:flex-row items-center justify-center gap-3 text-center">
+                    <div className="flex -space-x-2">
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-pink-100 text-xl">
+                        {ELEMENT_INFO[saju.daYun[selectedDaeunIdx].ganElement]?.emoji}
+                      </div>
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-pink-100 text-xl">
+                        {ELEMENT_INFO[saju.daYun[selectedDaeunIdx].zhiElement]?.emoji}
+                      </div>
+                    </div>
+                    <p className="text-rose-900 font-bold text-lg md:text-xl break-keep">
+                      "<span className="text-rose-500">{ELEMENT_INFO[saju.daYun[selectedDaeunIdx].ganElement]?.keyword}</span>"을(를) 기반으로 
+                      "<span className="text-rose-500">{ELEMENT_INFO[saju.daYun[selectedDaeunIdx].zhiElement]?.keyword}</span>"을(를) 쏟아붓는 시기네요!
+                    </p>
+                  </div>
+                  <p className="mt-2 text-center text-xs text-rose-400 font-medium opacity-80">
+                    {saju.daYun[selectedDaeunIdx].age}세부터 10년 동안 당신의 삶에 흐르는 주된 에너지입니다.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-8 relative">
@@ -212,11 +294,16 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
               <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
                 {(() => {
                   const result = data.aiResult || {};
-                  const sectionKeys = ['section1', 'section2', 'section3', 'section4', 'section5', 'section6', 'section7'];
-                  const displayData = sectionKeys.map(key => {
-                    const section = result[key];
-                    return { theme: section?.title || '신비로운 분석', title: '', content: section?.content || '분석 내용을 불러오고 있어요.' };
-                  });
+                  const displayData = result.sections || [
+                    { title: result.section1?.title || '기질 분석', content: result.section1?.content || '' },
+                    { title: result.section2?.title || '연애운', content: result.section2?.content || '' },
+                    { title: result.section3?.title || '재물운', content: result.section3?.content || '' },
+                    { title: result.section4?.title || '인간관계', content: result.section4?.content || '' },
+                    { title: result.section5?.title || '위로의 메시지', content: result.section5?.content || '' },
+                    { title: result.section6?.title || '미래 전망', content: result.section6?.content || '' },
+                    { title: result.section7?.title || '행운의 팁', content: result.section7?.content || '' }
+                  ].filter(s => s.content);
+
                   return <AnalysisAccordion data={displayData} />;
                 })()}
               </div>
