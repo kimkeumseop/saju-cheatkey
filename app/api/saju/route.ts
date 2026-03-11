@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
-// Vercel 타임아웃 제한 증가
+// 1. Edge 런타임 적용 (Vercel 10초 제한 회피)
+export const runtime = 'edge';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, birthDate, birthTime, calendarType, gender } = body;
 
-    console.log(`[API/Saju] Processing request for: ${name}, ${birthDate}`);
+    console.log(`[API/Saju] Processing: ${name}, ${birthDate}`);
 
     const sajuData = calculateSaju(birthDate, birthTime, calendarType, gender);
     
@@ -42,8 +43,7 @@ export async function POST(req: Request) {
     const elementDist = `목:${sajuData.elementsCount['木']}, 화:${sajuData.elementsCount['火']}, 토:${sajuData.elementsCount['土']}, 금:${sajuData.elementsCount['金']}, 수:${sajuData.elementsCount['水']}`;
 
     if (!apiKey) {
-      console.error('[API/Saju] Missing GEMINI_API_KEY');
-      return NextResponse.json({ success: false, error: 'API 키 설정이 누락되었습니다.' }, { status: 500 });
+      return NextResponse.json({ success: false, error: 'API 키 누락' }, { status: 500 });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -77,65 +77,49 @@ export async function POST(req: Request) {
       - 오행 분포: ${elementDist}
 
       [필수 지시사항]
-      1. 말투: 절대 존댓말 금지. 반말, 명령조, 아주 직설적이고 자극적인 말투를 유지해.
-      2. 분량: 각 섹션은 최소 300자~500자 이상으로 아주 길고 상세하게 쥐어짜서 써. 짧으면 실패야.
-      3. 금기: 한자(漢字)는 절대로, 단 한 글자도 쓰지 마. 100% 한글로만 대답해.
-      4. 형식: 반드시 아래 구조의 순수한 JSON 데이터만 응답해. 설명이나 앞뒤 인사말은 생략해. 마크다운 기호 없이 순수 JSON만 보내.
+      1. 말투: 절대 존댓말 금지. 반말, 명령조, 직설적이고 자극적인 말투 유지.
+      2. 분량: 각 섹션은 최소 300자~500자 이상으로 상세하게 작성.
+      3. 금기: 한자(漢字) 절대 금지. 100% 한글만 사용.
+      4. 형식: 반드시 아래 JSON 구조만 응답. 마크다운 기호 없이 순수 JSON만 보내.
 
       {
-        "headline": "인생 요약 한 줄 팩폭 (강점과 약점)",
-        "mbtiAnalysis": "사주 원국과 MBTI의 소름 돋는 연결고리 분석. 성격의 모순점을 해부해.",
-        "wealthGrade": "자본주의 생존 등급. 재물 그릇의 크기를 계급이나 자산 규모로 비유해서 냉정하게 평가해.",
-        "careerStrategy": "직업 및 커리어 전략. 사주에 맞는 직종과 피해야 할 업종, 연봉 올리는 행동 지침.",
-        "relationshipList": "인간관계 살생부. 손절해야 할 인간상과 귀인의 특징을 아주 구체적으로 묘사해.",
-        "selfDestruct": "스스로 망하는 자폭 패턴. 인생 결정적 순간에 저지르는 무의식적인 오류를 지적해.",
-        "cheatKey2026": "2026년(병오년) 월별 행동 강령. 투자, 이직, 연애의 구체적인 타이밍을 지시해."
+        "headline": "인생 요약 한 줄 팩폭",
+        "mbtiAnalysis": "사주 원국과 MBTI 연결 분석",
+        "wealthGrade": "재물 그릇의 크기와 계급 평가",
+        "careerStrategy": "커리어 전략 및 행동 지침",
+        "relationshipList": "인간관계 살생부",
+        "selfDestruct": "자폭 패턴 지적",
+        "cheatKey2026": "2026년 월별 행동 강령"
       }
     `;
 
     responseText = await generateWithRetry(model, prompt);
     
-    console.log('[API/Saju] Gemini response received. Length:', responseText.length);
-
-    // JSON 마크다운 방어 로직 (정규식 추가)
-    const cleanText = responseText
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
-    
+    // 2. JSON 마크다운 방어 (정규식 강화)
+    const cleanText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     const startIndex = cleanText.indexOf('{');
     const endIndex = cleanText.lastIndexOf('}');
     
     if (startIndex === -1 || endIndex === -1) {
-      console.error('[API/Saju] No JSON found in response:', responseText);
-      throw new Error('AI가 유효한 JSON 형식을 생성하지 못했습니다.');
+      throw new Error('AI 응답에서 JSON 구조를 찾을 수 없습니다.');
     }
 
     const jsonString = cleanText.substring(startIndex, endIndex + 1);
     
     try {
       const analysis = JSON.parse(jsonString);
-      return NextResponse.json({ 
-        success: true, 
-        saju: sajuData,
-        analysis: analysis 
-      });
-    } catch (parseError) {
-      console.error('[API/Saju] JSON Parse Failed:', parseError);
-      console.error('[API/Saju] Raw Response Text:', responseText);
-      throw new Error('AI 응답 데이터 파싱에 실패했습니다.');
+      return NextResponse.json({ success: true, saju: sajuData, analysis });
+    } catch (e) {
+      console.error('[API/Saju] JSON Parse Error. Raw:', responseText);
+      throw new Error('AI 응답 파싱 실패');
     }
 
   } catch (error: any) {
-    console.error('[API/Saju] Critical Error:', error.message || error);
-    if (responseText) {
-      console.error('[API/Saju] Response Text at Error:', responseText);
-    }
+    console.error('[API/Saju] Error:', error.message);
     return NextResponse.json({ 
       success: false, 
-      error: error.message || '알 수 없는 서버 오류',
-      details: responseText.substring(0, 500) // 에러 발생 시 원본 텍스트 일부 포함 (보안 주의)
+      error: error.message || '분석 중 오류 발생',
+      debug: responseText.substring(0, 200)
     }, { status: 500 });
   }
 }
-
