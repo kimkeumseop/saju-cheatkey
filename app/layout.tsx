@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import { AuthProvider } from "@/lib/auth";
@@ -14,6 +15,9 @@ export const metadata: Metadata = {
     siteName: "사주 치트키",
     locale: "ko_KR",
     type: "website",
+  },
+  other: {
+    "google-adsense-account": "ca-pub-1059415497859090",
   },
 };
 
@@ -31,20 +35,22 @@ export default function RootLayout({
           crossOrigin="anonymous"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
         />
-        {/* Google AdSense */}
-        <script 
-          async 
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1059415497859090"
-          crossOrigin="anonymous"
-        ></script>
-        <meta name="google-adsense-account" content="ca-pub-1059415497859090" />
-        
-        <script 
-          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" 
-          async
-        ></script>
       </head>
       <body className="antialiased min-h-screen relative pb-20">
+        {/* Google AdSense Script */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1059415497859090"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+        
+        {/* Kakao SDK */}
+        <Script 
+          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" 
+          strategy="afterInteractive"
+        />
+
         <AuthProvider>
           <div className="fixed inset-0 bg-texture z-[-1]" />
           {children}
