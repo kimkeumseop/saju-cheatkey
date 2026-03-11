@@ -8,9 +8,11 @@ import {
   signInWithPopup, 
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  updateProfile
+  updateProfile,
+  signInWithCustomToken,
+  OAuthProvider
 } from 'firebase/auth';
-import { auth, googleProvider, db } from './firebase';
+import { auth, googleProvider, naverProvider, db } from './firebase';
 import { collection, query, getDocs, addDoc, serverTimestamp, orderBy, doc, onSnapshot, deleteDoc } from 'firebase/firestore';
 
 export type SajuProfile = {
@@ -31,9 +33,10 @@ interface AuthContextType {
   profiles: SajuProfile[];
   userCheatKeys: number;
   addProfile: (profile: SajuProfile) => Promise<void>;
-  deleteProfile: (profileId: string) => Promise<void>; // 삭제 함수 추가
+  deleteProfile: (profileId: string) => Promise<void>; 
   refreshProfiles: () => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  loginWithNaver: () => Promise<void>;
   loginWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -107,7 +110,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // 프로필 삭제 함수 구현
   const deleteProfile = async (profileId: string) => {
     try {
       if (user) {
@@ -132,6 +134,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try { await signInWithPopup(auth, googleProvider); } catch (error) { throw error; }
   };
 
+  const loginWithNaver = async () => {
+    try {
+      // 1. 네이버 팝업 로그인으로 Access Token 획득
+      const result = await signInWithPopup(auth, naverProvider);
+      const credential = OAuthProvider.credentialFromResult(result);
+      const accessToken = credential?.accessToken;
+
+      if (!accessToken) {
+        throw new Error('네이버 인증 정보를 가져오지 못했습니다.');
+      }
+
+      // 2. 백엔드 API를 통해 Custom Token 발급 (OIDC sub 매핑 에러 해결용)
+      const response = await fetch('/api/auth/naver', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success || !data.customToken) {
+        throw new Error(data.error || '커스텀 토큰 발급에 실패했습니다.');
+      }
+
+      // 3. 발급받은 Custom Token으로 로그인
+      await signInWithCustomToken(auth, data.customToken);
+
+    } catch (error: any) {
+      console.error('네이버 로그인 실패:', error);
+      // 에러 핸들링 보강: 유저에게 알림 표시
+      alert("네이버 로그인 연동에 실패했습니다. 관리자에게 문의하세요.");
+      throw error;
+    }
+  };
+
   const loginWithEmail = async (email: string, pass: string) => {
     try { await signInWithEmailAndPassword(auth, email, pass); } catch (error) { throw error; }
   };
@@ -151,7 +188,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, profiles, userCheatKeys, addProfile, deleteProfile, refreshProfiles, loginWithGoogle, loginWithEmail, signUpWithEmail, logout }}>
+    <AuthContext.Provider value={{ user, loading, profiles, userCheatKeys, addProfile, deleteProfile, refreshProfiles, loginWithGoogle, loginWithNaver, loginWithEmail, signUpWithEmail, logout }}>
       {children}
     </AuthContext.Provider>
   );
