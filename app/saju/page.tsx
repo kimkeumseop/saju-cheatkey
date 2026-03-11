@@ -3,20 +3,21 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { calculateSaju } from '@/lib/saju';
 import { Sparkles, Loader2, Moon, Heart } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 
 function SajuProcessingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [loadingStep, setLoadingStep] = useState('사주 원국 계산 중...');
 
   useEffect(() => {
     const type = searchParams.get('type') || 'saju';
     
     if (type === 'compatibility') {
-      // 🛠️ 버그 수정: 모달에서 넘어오는 파라미터명과 일치시킴
       const user1 = {
         name: searchParams.get('u1_name') || '인물1',
         birthDate: searchParams.get('u1_date'),
@@ -38,7 +39,6 @@ function SajuProcessingContent() {
       if (user1.birthDate && user2.birthDate) {
         processCompatibilityAnalysis(user1, user2, relation);
       } else {
-        console.error('Missing dates:', { user1, user2 });
         handleAnalysisError(new Error('생년월일 정보가 부족합니다.'));
       }
     } else {
@@ -75,6 +75,7 @@ function SajuProcessingContent() {
       const resData = await response.json();
       const finalResult = {
         type: 'saju',
+        userId: user?.uid || 'anonymous', // 유저 ID 필수로 포함
         userName: name,
         birthDate,
         birthTime: isTimeUnknown ? 'unknown' : birthTime,
@@ -82,8 +83,8 @@ function SajuProcessingContent() {
         gender,
         sajuData,
         aiResult: resData.analysis,
-        isPaid: true, // 전면 무료화
-        createdAt: new Date().toISOString()
+        isPaid: true,
+        createdAt: serverTimestamp() // Firestore 서버 시간 사용
       };
 
       await saveAndRedirect(finalResult);
@@ -110,14 +111,15 @@ function SajuProcessingContent() {
       const resData = await response.json();
       const finalResult = {
         type: 'compatibility',
+        userId: user?.uid || 'anonymous', // 유저 ID 필수로 포함
         user1,
         user2,
         saju1,
         saju2,
         relation,
         aiResult: resData.analysis,
-        isPaid: true, // 전면 무료화
-        createdAt: new Date().toISOString()
+        isPaid: true,
+        createdAt: serverTimestamp()
       };
 
       await saveAndRedirect(finalResult);
@@ -127,20 +129,25 @@ function SajuProcessingContent() {
   };
 
   const saveAndRedirect = async (result: any) => {
-    const localId = `local_${Date.now()}`;
-    localStorage.setItem(`saju_result_${localId}`, JSON.stringify(result));
     try {
+      setLoadingStep('분석 리포트를 기록하고 있어요...');
+      // 1. Firestore에 먼저 저장 시도
       const docRef = await addDoc(collection(db, 'sajuResults'), result);
-      // router.replace 사용하여 히스토리 방지 (뒤로가기 시 홈으로)
+      
+      // 2. 결과 페이지로 이동 (Firestore 문서 ID 기반)
       router.replace(`/result/${docRef.id}`);
-    } catch (dbError) {
+    } catch (dbError: any) {
+      console.error('❌ DB 저장 실패:', dbError);
+      // DB 저장 실패 시에만 로컬 스토리지 백업
+      const localId = `local_${Date.now()}`;
+      localStorage.setItem(`saju_result_${localId}`, JSON.stringify(result));
       router.replace(`/result/${localId}`);
     }
   };
 
   const handleAnalysisError = (error: any) => {
     console.error('❌ 분석 오류:', error);
-    alert(`운명의 속삭임을 듣지 못했습니다: ${error.message || '잠시 후 다시 시도해주세요.'}`);
+    alert(`오류: ${error.message || '잠시 후 다시 시도해주세요.'}`);
     router.replace('/');
   };
 
@@ -149,7 +156,6 @@ function SajuProcessingContent() {
   return (
     <div className="min-h-screen bg-[#FFF5F7] flex flex-col items-center justify-center p-6 text-center overflow-hidden">
       <div className="relative mb-12">
-        {/* 핑크 테마 로딩 UI */}
         <div className="w-32 h-32 bg-white rounded-[3rem] flex items-center justify-center shadow-2xl relative z-10">
           <Loader2 className="w-12 h-12 text-primary-400 animate-spin stroke-[3]" />
         </div>
@@ -160,7 +166,6 @@ function SajuProcessingContent() {
           <Moon className="w-12 h-12 text-primary-400 fill-primary-400 absolute -top-6 -right-6 animate-bounce" />
         )}
       </div>
-      
       <div className="space-y-6 relative z-10">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white text-primary-600 text-xs font-black shadow-sm">
           <Sparkles className="w-3.5 h-3.5 fill-primary-400 text-primary-400" />
