@@ -38,6 +38,5 @@ try {
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 const kakaoProvider = new OAuthProvider('oidc.kakao');
-const naverProvider = new OAuthProvider('oidc.naver');
 
-export { db, auth, googleProvider, kakaoProvider, naverProvider };
+export { db, auth, googleProvider, kakaoProvider };
