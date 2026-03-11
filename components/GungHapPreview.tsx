@@ -101,7 +101,7 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {[{ label: '나', user: user1, saju: saju1, color: 'blue' }, { label: '그대', user: user2, saju: saju2, color: 'pink' }].map((item, idx) => (
+        {[{ label: '나', user: user1, saju: saju1 }, { label: '그대', user: user2, saju: saju2 }].map((item, idx) => (
           <div key={idx} className="bg-white p-5 rounded-[2rem] border border-pink-50 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2"><div className={cn("w-2 h-2 rounded-full", idx === 0 ? "bg-blue-400" : "bg-pink-400")} /><span className="text-[10px] font-black text-primary-200 uppercase tracking-widest">{item.label}</span></div>
@@ -127,11 +127,23 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
       </div>
 
       <div className="space-y-8">
-        <div className="flex items-center gap-3 ml-2"><Moon className="w-6 h-6 text-primary-600 fill-primary-600" /><h3 className="text-2xl font-bold text-gray-900">운명의 속삭임 (궁합)</h3></div>
+        <div className="flex items-center gap-3 ml-2"><Moon className="w-6 h-6 text-primary-600 fill-primary-600" /><h3 className="text-2xl font-bold text-gray-900">신령님의 공수 리포트</h3></div>
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
           {(() => {
-            const themes = [{ key: 'deepAnalysis', theme: '시너지 분석', icon: '🧬' }, { key: 'secretThought', theme: '속마음 팩폭', icon: '🧠' }, { key: 'cheatKey', theme: '관계의 치트키', icon: '🗓️' }];
-            const displayData = themes.map(t => ({ theme: t.theme, title: '', icon: t.icon, content: aiResult[t.key] || '분석 내용을 불러오고 있어요.' }));
+            const themes = [
+              { key: 'energyHarmony', theme: '기운의 조화', icon: '🔮' },
+              { key: 'pastLifeKarma', theme: '전생의 인연', icon: '🔗' },
+              { key: 'livingHarmony', theme: '현실적 풍파', icon: '🏠' },
+              { key: 'hiddenSoul', theme: '숨겨진 진심', icon: '🧠' },
+              { key: 'destiny2026', theme: '2026년 운명', icon: '🔥' },
+              { key: 'shamanCheatKey', theme: '신령님 비방', icon: '🪄' }
+            ];
+            const displayData = themes.map(t => ({
+              theme: t.theme,
+              title: '',
+              icon: t.icon,
+              content: aiResult[t.key] || '신령님의 공수를 기다리는 중입니다...'
+            }));
             return <AnalysisAccordion data={displayData} />;
           })()}
         </div>
