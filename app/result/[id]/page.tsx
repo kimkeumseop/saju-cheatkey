@@ -19,6 +19,11 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// 안전하게 색상을 가져오는 헬퍼 함수
+const getSafeColor = (elementKey: string) => {
+  return ELEMENT_STYLE[elementKey] || { bg: 'bg-gray-50', text: 'text-gray-400', border: 'border-gray-100', color: '#999999' };
+};
+
 function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
   return (
     <div className="space-y-6">
@@ -26,6 +31,9 @@ function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
       <div className="grid grid-cols-4 gap-2 md:gap-4 relative z-10">
         {pillars.map((p: any, colIdx: number) => {
           const isDayPillar = p.label === '일주';
+          const ganStyle = p.ganColor || getSafeColor(p.ganElement);
+          const zhiStyle = p.zhiColor || getSafeColor(p.zhiElement);
+          
           return (
             <div key={colIdx} className="space-y-3">
               <div className="text-center space-y-1">
@@ -40,7 +48,7 @@ function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
                   isDayPillar ? "scale-105 z-20" : "hover:scale-[1.02]"
                 )}>
                   <div className={cn(
-                    p.ganColor.bg, p.ganColor.text,
+                    ganStyle.bg, ganStyle.text,
                     "p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center gap-1 md:gap-2 shadow-md border-[2px] md:border-[4px] transition-all duration-300",
                     isDayPillar ? "border-primary-300 shadow-xl shadow-primary-200/20" : "border-white"
                   )}>
@@ -53,7 +61,7 @@ function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
                 {/* 지지 */}
                 <div className="relative group transition-all duration-500 hover:scale-[1.02]">
                   <div className={cn(
-                    p.zhiColor.bg, p.zhiColor.text,
+                    zhiStyle.bg, zhiStyle.text,
                     "p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center gap-1 md:gap-2 shadow-md border-[2px] md:border-[4px] border-white transition-all duration-300 overflow-hidden"
                   )}>
                     <span className="text-xl absolute top-1 right-1 opacity-20">{p.zodiacIcon}</span>
@@ -78,11 +86,11 @@ function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
 
 function ElementsChart({ counts }: { counts: any }) {
   const elements = [
-    { label: '목', key: '木', color: ELEMENT_STYLE['木'].color, bg: 'bg-[#E8F5E9]' },
-    { label: '화', key: '火', color: ELEMENT_STYLE['火'].color, bg: 'bg-[#FFEBEE]' },
-    { label: '토', key: '土', color: ELEMENT_STYLE['土'].color, bg: 'bg-[#FFF8E1]' },
-    { label: '금', key: '金', color: ELEMENT_STYLE['金'].color, bg: 'bg-[#FAFAFA]' },
-    { label: '수', key: '水', color: ELEMENT_STYLE['수'].color, bg: 'bg-[#E3F2FD]' },
+    { label: '목', key: '木', color: getSafeColor('木').color, bg: 'bg-[#E8F5E9]' },
+    { label: '화', key: '火', color: getSafeColor('火').color, bg: 'bg-[#FFEBEE]' },
+    { label: '토', key: '土', color: getSafeColor('土').color, bg: 'bg-[#FFF8E1]' },
+    { label: '금', key: '金', color: getSafeColor('金').color, bg: 'bg-[#FAFAFA]' },
+    { label: '수', key: '水', color: getSafeColor('水').color, bg: 'bg-[#E3F2FD]' },
   ];
 
   const total = Object.values(counts).reduce((a: any, b: any) => a + b, 0) as number;
@@ -90,7 +98,7 @@ function ElementsChart({ counts }: { counts: any }) {
   return (
     <div className="grid grid-cols-5 gap-2">
       {elements.map((el) => {
-        const count = counts[el.key] || 0;
+        const count = counts[el.key] || counts[el.label] || 0; // 한글/한자 키 대응
         const percent = total > 0 ? (count / total) * 100 : 0;
         return (
           <div key={el.key} className={cn(el.bg, "p-3 rounded-2xl space-y-2 border border-white/50 text-center")}>
@@ -183,17 +191,17 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50/50 rounded-full blur-3xl -mr-32 -mt-32" />
               <div className="text-center space-y-1 relative z-10"><h3 className="text-2xl font-black text-primary-900 tracking-tight">인생 설계도 (만세력)</h3><p className="text-[10px] font-black text-primary-200 uppercase tracking-[0.3em]">Manseyrok INFOGRAPHIC</p></div>
 
-              <PillarChart pillars={saju.pillars} />
+              {saju && <PillarChart pillars={saju.pillars} />}
 
               <div className="pt-8 border-t border-pink-50 grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 ml-1"><BarChart3 className="w-4 h-4 text-primary-400" /><span className="text-sm font-black text-primary-800">오행 분포</span></div>
-                  <ElementsChart counts={saju.elementsCount} />
+                  {saju && <ElementsChart counts={saju.elementsCount} />}
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 ml-1"><Star className="w-4 h-4 text-primary-400" /><span className="text-sm font-black text-primary-800">핵심 귀인 & 신살</span></div>
                   <div className="flex flex-wrap gap-2">
-                    {saju.keyShinsal.map((s: string) => <div key={s} className="px-4 py-2 rounded-2xl bg-primary-50 text-primary-600 text-[11px] font-black border border-primary-100 shadow-sm">#{s}</div>)}
+                    {saju?.keyShinsal?.map((s: string) => <div key={s} className="px-4 py-2 rounded-2xl bg-primary-50 text-primary-600 text-[11px] font-black border border-primary-100 shadow-sm">#{s}</div>)}
                   </div>
                 </div>
               </div>
@@ -202,15 +210,18 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             <div className="bg-white p-8 md:p-10 rounded-[3rem] shadow-lg border border-pink-50 space-y-8">
               <div className="flex items-center gap-2"><History className="w-5 h-5 text-primary-500" /><h3 className="text-xl font-black text-primary-900">대운 (10년 주기의 흐름)</h3></div>
               <div className="flex overflow-x-auto pb-4 gap-4 no-scrollbar">
-                {saju.daYun.map((dy: any, idx: number) => (
-                  <div key={idx} className="flex-shrink-0 w-24 space-y-3">
-                    <div className="text-center text-[10px] font-black text-primary-300">{dy.age}세~</div>
-                    <div className="space-y-1.5">
-                      <div className={cn(dy.ganColor.bg, dy.ganColor.text, "h-12 rounded-xl flex items-center justify-center font-black text-lg border border-white shadow-sm")}>{dy.ganKo}</div>
-                      <div className={cn(dy.zhiColor.bg, dy.zhiColor.text, "h-12 rounded-xl flex items-center justify-center font-black text-lg border border-white shadow-sm")}>{dy.zhiKo}</div>
+                {saju?.daYun?.map((dy: any, idx: number) => {
+                  const style = dy.ganColor || getSafeColor(dy.ganElement);
+                  return (
+                    <div key={idx} className="flex-shrink-0 w-24 space-y-3">
+                      <div className="text-center text-[10px] font-black text-primary-300">{dy.age}세~</div>
+                      <div className="space-y-1.5">
+                        <div className={cn(style.bg, style.text, "h-12 rounded-xl flex items-center justify-center font-black text-lg border border-white shadow-sm")}>{dy.ganKo}</div>
+                        <div className={cn(style.bg, style.text, "h-12 rounded-xl flex items-center justify-center font-black text-lg border border-white shadow-sm")}>{dy.zhiKo}</div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -220,15 +231,14 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
               {isUnlocked ? (
                 <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
                   {(() => {
-                    const result = data.aiResult;
+                    const result = data.aiResult || {};
                     const sectionKeys = ['section1', 'section2', 'section3', 'section4', 'section5', 'section6', 'section7'];
                     
-                    // 새로운 7대 섹션 구조로 매핑 (동적 제목 지원)
                     const displayData = sectionKeys.map(key => {
                       const section = result[key];
                       return {
                         theme: section?.title || '신비로운 분석',
-                        title: '', // 제목은 theme에 포함됨
+                        title: '',
                         content: section?.content || '분석 내용을 불러오고 있어요.'
                       };
                     });
@@ -243,7 +253,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                       <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center"><Coins className="w-5 h-5 text-primary-500" /></div>
                       <div><p className="text-[10px] font-black text-primary-300 uppercase tracking-widest">보유 치트키</p><p className="text-lg font-black text-primary-800">{userCheatKeys} 개</p></div>
                     </div>
-                    <div className="h-10 w-px bg-primary-100" /><div className="text-right"><p className="text-[10px] font-black text-primary-300 uppercase tracking-widest">필요 치트키</p><p className="text-lg font-black text-primary-800">1 개</p></div>
+                    <div className="h-10 w-px bg-primary-100" /><div className="text-right"><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">필요 치트키</p><p className="text-lg font-black text-primary-800">1 개</p></div>
                   </div>
                   <div className="space-y-4 text-center sm:text-left">
                     <div className="flex items-center justify-center sm:justify-start gap-2 text-primary-500 font-black text-sm"><Sparkles className="w-4 h-4 fill-primary-400" /><span>당신을 기다리고 있는 영혼의 목소리</span></div>
