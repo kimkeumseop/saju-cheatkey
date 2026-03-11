@@ -11,7 +11,7 @@ function cn(...inputs: ClassValue[]) {
 
 interface AnalysisItem {
   theme: string;
-  icon: string;
+  icon?: string;
   title: string;
   content: string;
 }
@@ -35,8 +35,8 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
           className={cn(
             "group overflow-hidden rounded-[2rem] border transition-all duration-300",
             openIndex === index 
-              ? "bg-white border-[#FEE500] shadow-[0_10px_30px_-10px_rgba(254,229,0,0.3)]" 
-              : "bg-[#F7F8FA] border-transparent hover:border-gray-200"
+              ? "bg-white border-primary-200 shadow-[0_10px_30px_-10px_rgba(230,73,128,0.15)]" 
+              : "bg-white border-pink-50/50 hover:border-pink-100"
           )}
         >
           <button
@@ -46,25 +46,25 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
             <div className="flex items-center gap-4">
               <div className={cn(
                 "w-12 h-12 rounded-2xl flex items-center justify-center transition-all text-2xl shadow-sm",
-                openIndex === index ? "bg-[#FEE500] scale-110" : "bg-gray-200 group-hover:bg-gray-300"
+                openIndex === index ? "bg-primary-100 scale-110" : "bg-primary-50 group-hover:bg-primary-100"
               )}>
-                {item.icon}
+                {item.icon || '✨'}
               </div>
               <div className="space-y-1">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">
+                <p className="text-[10px] font-black text-primary-300 uppercase tracking-widest leading-none">
                   {item.theme}
                 </p>
                 <h4 className={cn(
                   "text-lg md:text-xl font-black tracking-tight",
-                  openIndex === index ? "text-[#3C1E1E]" : "text-gray-700"
+                  openIndex === index ? "text-primary-900" : "text-gray-600"
                 )}>
-                  {item.title}
+                  {item.title || item.theme}
                 </h4>
               </div>
             </div>
             <ChevronDown className={cn(
               "w-6 h-6 transition-transform duration-300 shrink-0",
-              openIndex === index ? "rotate-180 text-[#3C1E1E]" : "text-gray-400"
+              openIndex === index ? "rotate-180 text-primary-600" : "text-primary-200"
             )} />
           </button>
 
