@@ -7,6 +7,8 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import SajuModal from './SajuModal';
 import GungHapInputModal from './GungHapInputModal';
+import LoginModal from './LoginModal';
+import { useAuth } from '@/lib/auth';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,9 +16,18 @@ function cn(...inputs: ClassValue[]) {
 
 export default function BottomNav() {
   const router = useRouter();
-  const pathname = usePathname();
+  const { user } = useAuth();
   const [isSajuModalOpen, setIsSajuModalOpen] = useState(false);
   const [isGungHapModalOpen, setIsGungHapModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const handleTabClick = (action: () => void) => {
+    if (!user) {
+      setIsLoginModalOpen(true);
+    } else {
+      action();
+    }
+  };
 
   const tabs = [
     { 
@@ -43,10 +54,10 @@ export default function BottomNav() {
             return (
               <button
                 key={tab.id}
-                onClick={tab.action}
+                onClick={() => handleTabClick(tab.action)}
                 className="flex-1 flex flex-col items-center justify-center transition-all relative"
               >
-                <div className="w-[90%] py-2.5 rounded-2xl transition-all duration-300 flex flex-col items-center justify-center gap-0.5 hover:bg-primary-50/50">
+                <div className="w-[90%] py-2.5 rounded-2xl transition-all duration-300 flex flex-col items-center justify-center gap-0.5 hover:bg-primary-50/50 active:scale-95">
                   <span className="text-2xl mb-0.5">{tab.emoji}</span>
                   <div className="text-center leading-tight">
                     <p className="text-[14px] font-black tracking-tighter text-primary-700">
@@ -70,6 +81,10 @@ export default function BottomNav() {
       <GungHapInputModal
         isOpen={isGungHapModalOpen}
         onClose={() => setIsGungHapModalOpen(false)}
+      />
+      <LoginModal 
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
     </>
   );
