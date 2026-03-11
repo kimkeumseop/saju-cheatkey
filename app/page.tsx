@@ -1,50 +1,50 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { BookOpen, BarChart3, Shield, Info, Sparkles, Quote } from 'lucide-react';
+import { BookOpen, BarChart3, Shield, Info, Sparkles, Quote, Heart } from 'lucide-react';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#F7F8FA] pt-20 pb-32 overflow-x-hidden">
+    <main className="min-h-screen bg-[#FFF5F7] pt-20 pb-32 overflow-x-hidden">
       <Navbar />
       
       {/* 히어로 섹션 */}
       <section className="relative px-6 py-12 md:py-24 max-w-7xl mx-auto flex flex-col items-center gap-12">
         <div className="w-full text-center space-y-8">
           <div className="space-y-6">
-            <p className="text-[#3C1E1E] bg-[#FEE500] inline-block px-4 py-1.5 rounded-full text-xs md:text-sm font-black tracking-wider uppercase shadow-sm">
-              Trend-Forward Saju Analysis
+            <p className="text-primary-700 bg-primary-100 inline-block px-4 py-1.5 rounded-full text-xs md:text-sm font-black tracking-wider uppercase shadow-sm">
+              Premium Destiny Analysis
             </p>
             <h1 className="font-black text-gray-900 leading-[1.1] tracking-tight break-keep">
-              <span className="block text-[10vw] sm:text-5xl md:text-6xl lg:text-7xl text-[#3C1E1E]">
-                조선시대 MBTI로
+              <span className="block text-[10vw] sm:text-5xl md:text-6xl lg:text-7xl text-primary-900">
+                가장 완벽한
               </span>
               <span className="block text-[12vw] sm:text-6xl md:text-7xl lg:text-8xl mt-2">
-                <span className="text-[#FEE500] drop-shadow-[0_4px_0_rgba(60,30,30,1)]">팩폭 당할 준비</span> 됐나요?
+                <span className="text-primary-500 drop-shadow-[0_4px_0_rgba(255,192,203,1)]">인생 팩폭 리포트</span>
               </span>
             </h1>
           </div>
 
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-[1.7] font-medium break-keep">
-            어려운 한자는 싹 빼고, 요즘 언어로 소름 돋게 풀어주는 명리학 전문가의 풀이. <br className="hidden md:block"/>
-            답답한 인생의 <span className="text-gray-900 font-bold underline decoration-[#FEE500] decoration-8 underline-offset-[-4px]">'치트키'</span>를 켜 드립니다.
+            어려운 명리학 용어 대신, 당신의 성향과 미래를 감각적으로 풀어드립니다. <br className="hidden md:block"/>
+            답답한 일상에 소름 돋는 <span className="text-primary-600 font-bold underline decoration-primary-200 decoration-8 underline-offset-[-4px]">'치트키'</span>를 선물할게요.
           </p>
         </div>
 
         {/* 오늘의 무료 팩폭 한 줄 (오늘의 운세) */}
         <div className="w-full max-w-md mx-auto">
-          <div className="relative p-1 rounded-[3rem] bg-gradient-to-br from-[#FEE500] to-[#FDD000] shadow-2xl group transition-transform hover:scale-[1.02]">
+          <div className="relative p-1 rounded-[3rem] bg-gradient-to-br from-primary-200 to-primary-400 shadow-2xl group transition-transform hover:scale-[1.02]">
             <div className="bg-white rounded-[2.8rem] p-8 md:p-10 space-y-6 relative overflow-hidden">
               {/* 장식 요소 */}
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#FEE500]/10 rounded-full blur-2xl" />
-              <Quote className="absolute top-6 right-8 w-12 h-12 text-[#FEE500]/20" />
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary-50 rounded-full blur-2xl" />
+              <Quote className="absolute top-6 right-8 w-12 h-12 text-primary-100" />
               
-              <div className="flex items-center gap-2 text-[#3C1E1E]">
-                <Sparkles className="w-5 h-5 fill-[#FEE500] text-[#FEE500]" />
+              <div className="flex items-center gap-2 text-primary-600">
+                <Sparkles className="w-5 h-5 fill-primary-400 text-primary-400" />
                 <span className="font-black text-sm uppercase tracking-widest">Today's Fortune</span>
               </div>
               
               <div className="space-y-4 relative z-10">
-                <h3 className="text-2xl font-black text-[#3C1E1E] leading-tight break-keep">
+                <h3 className="text-2xl font-black text-gray-800 leading-tight break-keep">
                   "오늘은 지갑 단속 필수! <br/> 홧김 비용이 당신의 통장을 스캔 중입니다."
                 </h3>
                 <p className="text-gray-500 font-medium leading-relaxed text-sm break-keep">
@@ -55,58 +55,58 @@ export default function Home() {
               <div className="pt-4 flex items-center justify-between border-t border-gray-50">
                 <div className="flex -space-x-2">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200" />
+                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-primary-100" />
                   ))}
-                  <div className="w-8 h-8 rounded-full border-2 border-white bg-[#FEE500] flex items-center justify-center text-[10px] font-black text-[#3C1E1E]">
+                  <div className="w-8 h-8 rounded-full border-2 border-white bg-primary-500 flex items-center justify-center text-[10px] font-black text-white">
                     +1.2k
                   </div>
                 </div>
-                <p className="text-[10px] font-bold text-gray-400">지금 1,240명이 팩폭 맞는 중</p>
+                <p className="text-[10px] font-bold text-gray-400">지금 1,240명이 위로받는 중</p>
               </div>
             </div>
           </div>
           
-          <p className="text-center mt-6 text-gray-400 text-xs font-bold animate-bounce">
-            👇 아래 탭에서 진짜 내 사주를 분석해보세요!
+          <p className="text-center mt-6 text-primary-400 text-xs font-bold animate-bounce">
+            👇 아래 탭에서 진짜 내 운명을 확인해보세요!
           </p>
         </div>
       </section>
 
       {/* 특징 섹션 */}
-      <section className="bg-white border-y border-gray-100 py-20 px-6 relative overflow-hidden">
+      <section className="bg-white border-y border-pink-50 py-20 px-6 relative overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             
             {/* 정보 1 */}
-            <div className="space-y-4 p-6 rounded-3xl hover:bg-[#F7F8FA] transition-colors group">
-              <div className="w-14 h-14 rounded-2xl bg-[#FEE500] flex items-center justify-center shadow-sm group-hover:rotate-6 transition-transform">
-                <BookOpen className="w-7 h-7 text-[#3C1E1E]" />
+            <div className="space-y-4 p-6 rounded-3xl hover:bg-primary-50 transition-colors group">
+              <div className="w-14 h-14 rounded-2xl bg-primary-100 flex items-center justify-center shadow-sm group-hover:rotate-6 transition-transform">
+                <Heart className="w-7 h-7 text-primary-500" />
               </div>
-              <h3 className="text-2xl font-black text-gray-900 tracking-tight">소름 돋는 팩폭 성격</h3>
+              <h3 className="text-2xl font-black text-gray-900 tracking-tight">소름 돋는 성격 분석</h3>
               <p className="text-gray-500 font-medium leading-relaxed text-sm break-keep">
-                내 안의 또 다른 나를 스캔. 겉바속촉 기질부터 숨겨진 똘끼까지 가차 없이 털어드립니다.
+                내 안의 또 다른 나를 스캔. 겉바속촉 기질부터 숨겨진 매력까지 가차 없이 털어드립니다.
               </p>
             </div>
 
             {/* 정보 2 */}
-            <div className="space-y-4 p-6 rounded-3xl hover:bg-[#F7F8FA] transition-colors group">
-              <div className="w-14 h-14 rounded-2xl bg-[#FEE500] flex items-center justify-center shadow-sm group-hover:rotate-6 transition-transform">
-                <BarChart3 className="w-7 h-7 text-[#3C1E1E]" />
+            <div className="space-y-4 p-6 rounded-3xl hover:bg-primary-50 transition-colors group">
+              <div className="w-14 h-14 rounded-2xl bg-primary-100 flex items-center justify-center shadow-sm group-hover:rotate-6 transition-transform">
+                <BarChart3 className="w-7 h-7 text-primary-500" />
               </div>
-              <h3 className="text-2xl font-black text-gray-900 tracking-tight">답답할 때 고민 해결소</h3>
+              <h3 className="text-2xl font-black text-gray-900 tracking-tight">연애와 인간관계 치트키</h3>
               <p className="text-gray-500 font-medium leading-relaxed text-sm break-keep">
-                명리학 전문가와 1:1 심야 상담을 하듯. 연애 고민부터 퇴사 타이밍까지, 밤잠 설치게 하는 고민들을 명쾌하게 풀어보세요.
+                내 마음도 모르겠는데 상대방 마음은? 연애 고민부터 귀인 판별까지, 밤잠 설치게 하는 고민들을 명쾌하게 풀어보세요.
               </p>
             </div>
 
             {/* 정보 3 */}
-            <div className="space-y-4 p-6 rounded-3xl hover:bg-[#F7F8FA] transition-colors group">
-              <div className="w-14 h-14 rounded-2xl bg-[#FEE500] flex items-center justify-center shadow-sm group-hover:rotate-6 transition-transform">
-                <Shield className="w-7 h-7 text-[#3C1E1E]" />
+            <div className="space-y-4 p-6 rounded-3xl hover:bg-primary-50 transition-colors group">
+              <div className="w-14 h-14 rounded-2xl bg-primary-100 flex items-center justify-center shadow-sm group-hover:rotate-6 transition-transform">
+                <Shield className="w-7 h-7 text-primary-500" />
               </div>
-              <h3 className="text-2xl font-black text-gray-900 tracking-tight">2026 버티기 가이드</h3>
+              <h3 className="text-2xl font-black text-gray-900 tracking-tight">2026 인생 가이드</h3>
               <p className="text-gray-500 font-medium leading-relaxed text-sm break-keep">
-                통장을 스쳐 지나가는 월급, 어떻게 묶어둘까? 2026년 병오년의 흐름을 타고 돈과 운을 끌어당기는 치트키를 확인하세요.
+                다가오는 병오년의 흐름을 미리 체크하세요. 돈과 운을 끌어당기는 구체적인 타이밍과 행동 요령을 알려드립니다.
               </p>
             </div>
 
@@ -114,31 +114,31 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 사주 기초 섹션 */}
+      {/* 명리학 가이드 섹션 */}
       <section className="py-20 px-6 max-w-4xl mx-auto space-y-12">
         <div className="text-center space-y-4">
-          <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">인생을 바꾸는 8글자의 마법</h2>
-          <div className="w-20 h-2 bg-[#FEE500] mx-auto rounded-full" />
+          <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">운명을 바꾸는 8글자의 비밀</h2>
+          <div className="w-20 h-2 bg-primary-200 mx-auto rounded-full" />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-600 leading-[1.8] font-medium">
-          <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
-            <h4 className="flex items-center gap-2 text-[#3C1E1E] text-xl font-black">
-              <Info className="w-5 h-5 text-[#FEE500]" />
+          <div className="bg-white p-8 rounded-[2rem] border border-pink-50 shadow-sm space-y-4">
+            <h4 className="flex items-center gap-2 text-primary-800 text-xl font-black">
+              <Info className="w-5 h-5 text-primary-400" />
               천간과 지지란?
             </h4>
             <p className="text-sm break-keep leading-relaxed text-gray-500">
-              우리가 태어난 시간은 10개의 천간(하늘 기운)과 12개의 지지(땅 기운)로 기록됩니다. 이를 사주팔자라고 하죠. 사주 치트키는 이를 자연물 비유로 풀어내어 누구나 쉽게 이해할 수 있게 도와줍니다.
+              우리가 태어난 시간은 10개의 천간(하늘 기운)과 12개의 지지(땅 기운)로 기록됩니다. 사주 치트키는 이를 현대적 감성으로 풀어내어 누구나 쉽게 이해할 수 있게 도와줍니다.
             </p>
           </div>
           
-          <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
-            <h4 className="flex items-center gap-2 text-[#3C1E1E] text-xl font-black">
-              <Info className="w-5 h-5 text-[#FEE500]" />
-              2026년 운명 가이드
+          <div className="bg-white p-8 rounded-[2rem] border border-pink-50 shadow-sm space-y-4">
+            <h4 className="flex items-center gap-2 text-primary-800 text-xl font-black">
+              <Info className="w-5 h-5 text-primary-400" />
+              2026년 운세 미리보기
             </h4>
             <p className="text-sm break-keep leading-relaxed text-gray-500">
-              인생은 고정된 게 아닙니다. 흐르는 강물처럼 매년 새로운 기운이 찾아오죠. 2026년 병오년은 강한 불의 기운이 지배하는 해입니다. 당신의 고유한 기질이 이 기운과 만났을 때 생길 변화를 체크해보세요!
+              인생은 고정된 게 아닙니다. 2026년 병오년은 강한 불의 기운이 지배하는 해입니다. 당신의 고유한 에너지가 이 새로운 기운과 만났을 때 생길 특별한 변화를 미리 준비하세요.
             </p>
           </div>
         </div>

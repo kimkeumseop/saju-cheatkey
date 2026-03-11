@@ -6,37 +6,39 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   
-  --color-gold-50: #fdfbe9;
-  --color-gold-100: #fbf7c7;
-  --color-gold-200: #f7ed90;
-  --color-gold-300: #f1db4f;
-  --color-gold-400: #ebc523;
-  --color-gold-500: #d9ad19;
-  --color-gold-600: #bc8613;
-  --color-gold-700: #966112;
-  --color-gold-800: #7d4d16;
-  --color-gold-900: #6a4019;
-  --color-gold-950: #3e210a;
+  /* 골드 대신 소프트 피치/로즈골드 톤 */
+  --color-gold-50: #fff5f5;
+  --color-gold-100: #ffe3e3;
+  --color-gold-200: #ffc9c9;
+  --color-gold-300: #ffa8a8;
+  --color-gold-400: #ff8787;
+  --color-gold-500: #ff6b6b;
+  --color-gold-600: #fa5252;
+  --color-gold-700: #f03e3e;
+  --color-gold-800: #e03131;
+  --color-gold-900: #c92a2a;
+  --color-gold-950: #6d1b1b;
 
-  --color-primary-50: #f5f7ff;
-  --color-primary-100: #ebf0fe;
-  --color-primary-200: #dce5fe;
-  --color-primary-300: #c2d1fd;
-  --color-primary-400: #9db4fb;
-  --color-primary-500: #758ef7;
-  --color-primary-600: #5466f0;
-  --color-primary-700: #434ee1;
-  --color-primary-800: #3941b6;
-  --color-primary-900: #323a91;
-  --color-primary-950: #212555;
+  /* 메인 핑크/로즈 테마 */
+  --color-primary-50: #fff0f6;
+  --color-primary-100: #ffdeeb;
+  --color-primary-200: #fcc2d7;
+  --color-primary-300: #faa2c1;
+  --color-primary-400: #f783ac;
+  --color-primary-500: #f06595;
+  --color-primary-600: #e64980;
+  --color-primary-700: #d6336c;
+  --color-primary-800: #c2255c;
+  --color-primary-900: #a61e4d;
+  --color-primary-950: #4a0c23;
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
+  --background: #fffafa; /* 아주 연한 핑크빛 화이트 */
+  --foreground: #2d1b1e; /* 딥 브라운/버건디 계열 텍스트 */
   --kakao-yellow: #FEE500;
   --kakao-brown: #3C1E1E;
-  --soft-gray: #F2F2F2;
+  --soft-gray: #FCEFF0;
 }
 
 body {
@@ -53,28 +55,28 @@ body {
   font-weight: 700;
 }
 
-/* 프리미엄 텍shadow - 가독성 강화 */
+/* 프리미엄 텍스트 쉐도우 - 핑크 테마에 맞게 조정 */
 .text-shadow-sm {
-  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  text-shadow: 0 1px 2px rgba(230, 73, 128, 0.1);
 }
 
 .bg-texture {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.03;
+  opacity: 0.04;
   pointer-events: none;
 }
 
-/* 밝은 배경에 최적화된 패널 */
+/* 핑크 테마 최적화 패널 */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.8); 
+  background: rgba(255, 250, 250, 0.85); 
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(230, 73, 128, 0.1);
+  box-shadow: 0 10px 30px -5px rgba(230, 73, 128, 0.08);
 }
 
 .glass-card {
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(230, 73, 128, 0.05);
+  box-shadow: 0 4px 20px 0 rgba(230, 73, 128, 0.04);
 }
