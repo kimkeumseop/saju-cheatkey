@@ -28,22 +28,22 @@ export default function BottomNav() {
     },
     { 
       id: 'saju', 
-      label: '팩폭 사주', 
-      subLabel: '소름 주의!',
-      emoji: '🦊', 
+      label: '사주 가이드', 
+      subLabel: '소름 돋는 분석',
+      emoji: '🌙', 
       action: () => setIsSajuModalOpen(true)
     },
     { 
       id: 'compatibility', 
-      label: '환승 궁합', 
-      subLabel: '우리 만날까?',
-      emoji: '💞', 
+      label: '운명적 궁합', 
+      subLabel: '우리 인연일까?',
+      emoji: '💖', 
       action: () => setIsGungHapModalOpen(true)
     },
     { 
       id: 'unse', 
-      label: '2026 운세', 
-      subLabel: '돈벼락 맞을까?',
+      label: '오늘의 운세', 
+      subLabel: '하루의 치트키',
       emoji: '✨', 
       path: '/unse' 
     },
@@ -56,8 +56,8 @@ export default function BottomNav() {
 
   return (
     <>
-      {/* 화면 전체 너비를 차지하는 하단 바 */}
-      <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] pb-safe rounded-t-[2.5rem]">
+      {/* 화면 전체 너비를 차지하는 하단 바 - 핑크 테마 적용 */}
+      <nav className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-lg border-t border-pink-50 z-50 shadow-[0_-10px_40px_rgba(230,73,128,0.06)] pb-safe rounded-t-[2.5rem]">
         <div className="flex h-24 items-stretch px-2 max-w-5xl mx-auto">
           {tabs.map((tab) => {
             const active = isActive(tab.path);
@@ -69,7 +69,7 @@ export default function BottomNav() {
               >
                 <div className={cn(
                   "w-[90%] py-2.5 rounded-2xl transition-all duration-300 flex flex-col items-center justify-center gap-0.5",
-                  active ? "bg-[#FEE500] scale-105 shadow-md" : "hover:bg-gray-50"
+                  active ? "bg-primary-100 scale-105 shadow-sm shadow-pink-50" : "hover:bg-primary-50/50"
                 )}>
                   {/* 아이콘 크기 확대 */}
                   <span className="text-2xl mb-0.5">{tab.emoji}</span>
@@ -78,14 +78,14 @@ export default function BottomNav() {
                     {/* 주 텍스트: 크게 */}
                     <p className={cn(
                       "text-[13px] font-black tracking-tighter transition-colors",
-                      active ? "text-[#3C1E1E]" : "text-gray-700"
+                      active ? "text-primary-700" : "text-gray-400"
                     )}>
                       {tab.label}
                     </p>
                     {/* 부 텍스트: 작게 (2단 구조) */}
                     <p className={cn(
                       "text-[9px] font-bold opacity-60",
-                      active ? "text-[#3C1E1E]" : "text-gray-400"
+                      active ? "text-primary-600/70" : "text-gray-300"
                     )}>
                       {tab.subLabel}
                     </p>
@@ -94,7 +94,7 @@ export default function BottomNav() {
                 
                 {/* 활성화 표시 바 (상단) */}
                 {active && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-[#FEE500] rounded-full" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-primary-400 rounded-full" />
                 )}
               </button>
             );
