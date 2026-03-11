@@ -2,15 +2,20 @@ import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
+// Vercel 타임아웃 제한 증가
+export const maxDuration = 60;
+
 const apiKey = process.env.GEMINI_API_KEY;
 
 async function generateWithRetry(model: any, prompt: string, maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     try {
-      console.log(`[Gemini] Attempting to generate content (Attempt ${i + 1}/${maxRetries})...`);
-      return await model.generateContent(prompt);
+      console.log(`[Gemini/Saju] Attempting to generate (Attempt ${i + 1}/${maxRetries})...`);
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
     } catch (error: any) {
-      console.error(`[Gemini] Error during generation (Attempt ${i + 1}):`, error.message);
+      console.error(`[Gemini/Saju] Error (Attempt ${i + 1}):`, error.message);
       const isServiceUnavailable = error.message?.includes('503') || error.message?.includes('Service Unavailable');
       const isLastRetry = i === maxRetries - 1;
       
@@ -24,6 +29,7 @@ async function generateWithRetry(model: any, prompt: string, maxRetries = 3) {
 }
 
 export async function POST(req: Request) {
+  let responseText = '';
   try {
     const body = await req.json();
     const { name, birthDate, birthTime, calendarType, gender } = body;
@@ -42,7 +48,6 @@ export async function POST(req: Request) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // 안전 설정 추가: '살생부', '자폭' 등 자극적인 단어 차단 방지
     const safetySettings = [
       { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
       { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
@@ -75,7 +80,7 @@ export async function POST(req: Request) {
       1. 말투: 절대 존댓말 금지. 반말, 명령조, 아주 직설적이고 자극적인 말투를 유지해.
       2. 분량: 각 섹션은 최소 300자~500자 이상으로 아주 길고 상세하게 쥐어짜서 써. 짧으면 실패야.
       3. 금기: 한자(漢字)는 절대로, 단 한 글자도 쓰지 마. 100% 한글로만 대답해.
-      4. 형식: 반드시 아래 구조의 순수한 JSON 데이터만 응답해. 설명이나 앞뒤 인사말은 생략해.
+      4. 형식: 반드시 아래 구조의 순수한 JSON 데이터만 응답해. 설명이나 앞뒤 인사말은 생략해. 마크다운 기호 없이 순수 JSON만 보내.
 
       {
         "headline": "인생 요약 한 줄 팩폭 (강점과 약점)",
@@ -88,20 +93,25 @@ export async function POST(req: Request) {
       }
     `;
 
-    const result = await generateWithRetry(model, prompt);
-    const responseText = result.response.text();
+    responseText = await generateWithRetry(model, prompt);
     
     console.log('[API/Saju] Gemini response received. Length:', responseText.length);
 
-    const startIndex = responseText.indexOf('{');
-    const endIndex = responseText.lastIndexOf('}');
+    // JSON 마크다운 방어 로직 (정규식 추가)
+    const cleanText = responseText
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .trim();
+    
+    const startIndex = cleanText.indexOf('{');
+    const endIndex = cleanText.lastIndexOf('}');
     
     if (startIndex === -1 || endIndex === -1) {
       console.error('[API/Saju] No JSON found in response:', responseText);
-      throw new Error('AI가 유효한 형식을 생성하지 못했습니다.');
+      throw new Error('AI가 유효한 JSON 형식을 생성하지 못했습니다.');
     }
 
-    const jsonString = responseText.substring(startIndex, endIndex + 1);
+    const jsonString = cleanText.substring(startIndex, endIndex + 1);
     
     try {
       const analysis = JSON.parse(jsonString);
@@ -111,16 +121,21 @@ export async function POST(req: Request) {
         analysis: analysis 
       });
     } catch (parseError) {
-      console.error('[API/Saju] JSON Parse Failed:', responseText);
-      throw new Error('AI 응답 데이터 구조가 올바르지 않습니다.');
+      console.error('[API/Saju] JSON Parse Failed:', parseError);
+      console.error('[API/Saju] Raw Response Text:', responseText);
+      throw new Error('AI 응답 데이터 파싱에 실패했습니다.');
     }
 
   } catch (error: any) {
     console.error('[API/Saju] Critical Error:', error.message || error);
+    if (responseText) {
+      console.error('[API/Saju] Response Text at Error:', responseText);
+    }
     return NextResponse.json({ 
       success: false, 
       error: error.message || '알 수 없는 서버 오류',
-      details: error.stack // 디버깅을 위해 에러 상세 정보 포함
+      details: responseText.substring(0, 500) // 에러 발생 시 원본 텍스트 일부 포함 (보안 주의)
     }, { status: 500 });
   }
 }
+
