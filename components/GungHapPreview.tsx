@@ -127,9 +127,13 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
       </div>
 
       <div className="space-y-8">
-        <div className="flex items-center gap-3 ml-2"><Moon className="w-6 h-6 text-primary-600 fill-primary-600" /><h3 className="text-2xl font-bold text-gray-900">신령님의 공수 리포트</h3></div>
+        <div className="flex items-center gap-3 ml-2"><Moon className="w-6 h-6 text-primary-600 fill-primary-600" /><h3 className="text-2xl font-bold text-gray-900">운명적인 인연의 리포트</h3></div>
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
           {(() => {
+            if (aiResult.sections && Array.isArray(aiResult.sections)) {
+              return <AnalysisAccordion data={aiResult.sections} />;
+            }
+
             const themes = [
               { key: 'energyHarmony', theme: '기운의 조화', icon: '🔮' },
               { key: 'pastLifeKarma', theme: '전생의 인연', icon: '🔗' },
@@ -140,7 +144,7 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
             ];
             const displayData = themes.map(t => ({
               title: `${t.icon} ${t.theme}`,
-              content: aiResult[t.key] || '신령님의 공수를 기다리는 중입니다...'
+              content: aiResult[t.key] || '인연의 속삭임을 분석 중입니다...'
             }));
             return <AnalysisAccordion data={displayData} />;
           })()}
