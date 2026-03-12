@@ -12,7 +12,7 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
-  const { loginWithGoogle, loginWithEmail, signUpWithEmail } = useAuth();
+  const { loginWithGoogle, loginWithNaver, loginWithEmail, signUpWithEmail } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,8 +28,11 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     try {
       if (providerName === 'google') {
         await loginWithGoogle();
+      } else if (providerName === 'naver') {
+        await loginWithNaver();
       } else {
-        const providerId = providerName === 'kakao' ? 'oidc.kakao' : 'oidc.naver';
+        // Kakao or other OIDC providers
+        const providerId = 'oidc.kakao';
         const provider = new OAuthProvider(providerId);
         await signInWithPopup(auth, provider);
       }
