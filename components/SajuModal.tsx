@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, User, Plus, Sparkles, ChevronRight, Calendar, Clock, Moon, Heart, ChevronDown } from 'lucide-react';
+import { X, User, Plus, Sparkles, ChevronRight, Calendar, Clock, Moon, Heart, ChevronDown, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -19,7 +19,7 @@ interface SajuModalProps {
 
 export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalProps) {
   const router = useRouter();
-  const { profiles, addProfile } = useAuth();
+  const { profiles, addProfile, deleteProfile } = useAuth();
   const [view, setView] = useState<'selection' | 'form'>('selection');
   
   const [formData, setFormData] = useState<SajuProfile>({
@@ -119,6 +119,14 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
     router.replace(`${targetPath}?${params.toString()}`);
   };
 
+  const handleDelete = async (e: React.MouseEvent, id?: string) => {
+    e.stopPropagation();
+    if (!id) return;
+    if (confirm('이 프로필을 삭제하시겠습니까?')) {
+      try { await deleteProfile(id); } catch (err) { alert('삭제 실패'); }
+    }
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.birthDate) {
@@ -177,7 +185,12 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                           <p className="font-black text-sm text-primary-900">{profile.name || '무명'}</p>
                           <p className="text-[10px] text-primary-300 font-bold">{profile.birthDate} · {profile.gender === 'male' ? '남성' : '여성'}</p>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-primary-200 group-hover:text-primary-500 transition-colors" />
+                        <div className="flex items-center gap-1">
+                          <button onClick={(e) => handleDelete(e, profile.id)} className="p-2 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 text-red-300 hover:text-red-500 transition-all">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <ChevronRight className="w-5 h-5 text-primary-200 group-hover:text-primary-500 transition-colors" />
+                        </div>
                       </button>
                     ))}
                   </div>
