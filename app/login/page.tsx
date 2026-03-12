@@ -9,7 +9,7 @@ import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const { loginWithGoogle, loginWithEmail, signUpWithEmail, user } = useAuth();
+  const { loginWithGoogle, loginWithNaver, loginWithEmail, signUpWithEmail, user } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,8 +30,11 @@ export default function LoginPage() {
     try {
       if (providerName === 'google') {
         await loginWithGoogle();
+      } else if (providerName === 'naver') {
+        await loginWithNaver();
       } else {
-        const providerId = providerName === 'kakao' ? 'oidc.kakao' : 'oidc.naver';
+        // Kakao or other OIDC providers
+        const providerId = 'oidc.kakao';
         const provider = new OAuthProvider(providerId);
         await signInWithPopup(auth, provider);
       }
