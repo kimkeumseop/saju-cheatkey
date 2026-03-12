@@ -30,8 +30,14 @@ export async function POST(req: Request) {
     const saju1 = calculateSaju(user1.birthDate, user1.birthTime, user1.calendarType, user1.gender);
     const saju2 = calculateSaju(user2.birthDate, user2.birthTime, user2.calendarType, user2.gender);
     
-    const pillars1 = saju1.pillars.map(p => `${p.ganKo}${p.zhiKo}(${p.tenGodGan}/${p.tenGodZhi})`).join(' ');
-    const pillars2 = saju2.pillars.map(p => `${p.ganKo}${p.zhiKo}(${p.tenGodGan}/${p.tenGodZhi})`).join(' ');
+    const pillars1 = saju1.pillars
+      .filter(p => p.ganKo && p.zhiKo)
+      .map(p => `${p.ganKo}${p.zhiKo}(${p.tenGodGan}/${p.tenGodZhi})`)
+      .join(' ');
+    const pillars2 = saju2.pillars
+      .filter(p => p.ganKo && p.zhiKo)
+      .map(p => `${p.ganKo}${p.zhiKo}(${p.tenGodGan}/${p.tenGodZhi})`)
+      .join(' ');
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const safetySettings = [

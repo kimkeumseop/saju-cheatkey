@@ -32,8 +32,11 @@ export async function POST(req: Request) {
     const { name, birthDate, birthTime, calendarType, gender } = body;
 
     const sajuData = calculateSaju(birthDate, birthTime, calendarType, gender);
-    const pillarsText = sajuData.pillars.map(p => `${p.ganKo}${p.zhiKo}(${p.tenGodGan}/${p.tenGodZhi})`).join(' ');
-    const elementDist = `목:${sajuData.elementsCount['木']}, 화:${sajuData.elementsCount['火']}, 토:${sajuData.elementsCount['土']}, 금:${sajuData.elementsCount['金']}, 수:${sajuData.elementsCount['水']}`;
+    const pillarsText = sajuData.pillars
+      .filter(p => p.ganKo && p.zhiKo)
+      .map(p => `${p.ganKo}${p.zhiKo}(${p.tenGodGan}/${p.tenGodZhi})`)
+      .join(' ');
+    const elementDist = `목:${sajuData.elementsCount['목']}, 화:${sajuData.elementsCount['화']}, 토:${sajuData.elementsCount['토']}, 금:${sajuData.elementsCount['금']}, 수:${sajuData.elementsCount['수']}`;
 
     if (!apiKey) return NextResponse.json({ success: false, error: 'API 키 누락' }, { status: 500 });
 
