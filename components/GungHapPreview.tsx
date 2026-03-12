@@ -139,9 +139,7 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
               { key: 'shamanCheatKey', theme: '신령님 비방', icon: '🪄' }
             ];
             const displayData = themes.map(t => ({
-              theme: t.theme,
-              title: '',
-              icon: t.icon,
+              title: `${t.icon} ${t.theme}`,
               content: aiResult[t.key] || '신령님의 공수를 기다리는 중입니다...'
             }));
             return <AnalysisAccordion data={displayData} />;
