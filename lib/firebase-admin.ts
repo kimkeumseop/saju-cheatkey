@@ -1,25 +1,27 @@
 import * as admin from 'firebase-admin';
 
+// Initialize Firebase Admin only if no apps exist
 if (!admin.apps.length) {
   try {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : null;
+    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
-    if (serviceAccount) {
+    if (serviceAccountKey) {
+      const serviceAccount = JSON.parse(serviceAccountKey);
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        // databaseURL: `https://${serviceAccount.project_id}.firebaseio.com` // 필요 시 추가
+        projectId: serviceAccount.project_id
       });
+      console.log('Firebase Admin initialized with Service Account Key');
     } else {
-      // 환경변수가 없는 경우 기본 앱 초기화 (GCP 환경 등)
+      // For Vercel/Firebase Studio or other cloud environments
       admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        projectId: projectId
       });
+      console.log('Firebase Admin initialized with Project ID:', projectId);
     }
   } catch (error) {
-    console.error('Firebase Admin Error:', error);
+    console.error('Firebase Admin Initialization Error:', error);
   }
 }
 
