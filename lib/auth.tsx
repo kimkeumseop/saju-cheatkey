@@ -135,15 +135,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithNaver = async () => {
     try {
-      // 1. 네이버 인증 팝업 열기
-      const clientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID;
+      // 1. 네이버 인증 팝업 열기 (클라이언트 ID 하드코딩 적용)
+      const clientId = 'LLHPh6fs2bvlW54wQ3pw';
       
       // 동적으로 현재 접속 중인 도메인 기반 Redirect URI 생성
       const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
       const fullRedirectUri = `${currentOrigin}/api/auth/callback/naver`;
       
       // [Naver Login] 디버깅 로그 강제 출력
-      console.log("[Naver Login] Client ID:", clientId);
+      console.log("[Naver Login] Client ID (Hardcoded):", clientId);
       console.log("[Naver Login] 요청하는 Redirect URI:", fullRedirectUri);
 
       const redirectUri = encodeURIComponent(fullRedirectUri);
