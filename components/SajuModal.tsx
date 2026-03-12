@@ -117,10 +117,10 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
     }
   };
 
-  const inputClasses = "w-full bg-[#FFF5F7] !text-black border border-pink-50 rounded-2xl py-3 sm:py-4 px-4 focus:ring-4 focus:ring-primary-100 focus:border-primary-200 outline-none transition-all placeholder:text-gray-300 font-medium [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer appearance-none";
+  const inputClasses = "w-full bg-[#FFF5F7] text-gray-400 border border-pink-50 rounded-2xl py-3 sm:py-4 px-4 focus:ring-4 focus:ring-primary-100 focus:border-primary-200 outline-none transition-all placeholder:text-gray-400 font-medium [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer appearance-none";
   const radioBtnClasses = (active: boolean) => cn(
     "flex-1 py-2.5 sm:py-3.5 rounded-xl font-black transition-all flex items-center justify-center gap-2 border-2 text-sm",
-    active ? "bg-primary-900 border-primary-900 text-white shadow-md" : "bg-white border-pink-50 text-gray-300 hover:bg-pink-50/50"
+    active ? "bg-primary-900 border-primary-900 text-white shadow-md" : "bg-white border-pink-50 text-gray-400 hover:bg-pink-50/50"
   );
 
   return (
@@ -253,7 +253,6 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                         <input 
                           type="time" 
                           className={inputClasses} 
-                          style={{ color: '#000000' }}
                           value={formData.birthTime} 
                           onChange={e => setFormData({...formData, birthTime: e.target.value})} 
                           required={formData.isExactTime} 
