@@ -50,9 +50,20 @@ export async function POST(req: Request) {
     }
 
     // 4. Firebase Custom Token 발급
-    const customToken = await adminAuth.createCustomToken(firebaseUid);
-
-    return NextResponse.json({ success: true, customToken });
+    try {
+      const customToken = await adminAuth.createCustomToken(firebaseUid);
+      return NextResponse.json({ success: true, customToken });
+    } catch (tokenError: any) {
+      console.error('❌ [Naver Auth] Custom Token Generation Failed:', tokenError);
+      
+      // 구체적인 에러 메시지 반환
+      return NextResponse.json({ 
+        success: false, 
+        error: '서버 인증 권한 오류가 발생했습니다.',
+        detail: tokenError.message,
+        hint: 'FIREBASE_SERVICE_ACCOUNT_KEY 환경변수가 올바른 JSON 형식인지 확인하세요.'
+      }, { status: 500 });
+    }
   } catch (error: any) {
     console.error('Naver Auth Error:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
