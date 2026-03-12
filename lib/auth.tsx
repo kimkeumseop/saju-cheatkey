@@ -143,6 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const fullRedirectUri = `${currentOrigin}/api/auth/callback/naver`;
       
       // [Naver Login] 디버깅 로그 강제 출력
+      console.log("[Naver Login] Client ID:", clientId);
       console.log("[Naver Login] 요청하는 Redirect URI:", fullRedirectUri);
 
       const redirectUri = encodeURIComponent(fullRedirectUri);
