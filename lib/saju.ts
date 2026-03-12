@@ -157,7 +157,14 @@ export function calculateSaju(
   };
 
   const pillarsData = [
-    { label: '시주', gan: eightChar.getTimeGan(), zhi: eightChar.getTimeZhi(), tenGodGan: getSafeTenGodGan('time'), tenGodZhi: getSafeTenGodZhi('time'), unSeong: getSafeUnSeong('time') },
+    { 
+      label: '시주', 
+      gan: isUnknownTime ? '' : eightChar.getTimeGan(), 
+      zhi: isUnknownTime ? '' : eightChar.getTimeZhi(), 
+      tenGodGan: isUnknownTime ? '' : getSafeTenGodGan('time'), 
+      tenGodZhi: isUnknownTime ? '' : getSafeTenGodZhi('time'), 
+      unSeong: isUnknownTime ? '' : getSafeUnSeong('time') 
+    },
     { label: '일주', gan: eightChar.getDayGan(), zhi: eightChar.getDayZhi(), tenGodGan: '일간', tenGodZhi: getSafeTenGodZhi('day'), unSeong: getSafeUnSeong('day') },
     { label: '월주', gan: eightChar.getMonthGan(), zhi: eightChar.getMonthZhi(), tenGodGan: getSafeTenGodGan('month'), tenGodZhi: getSafeTenGodZhi('month'), unSeong: getSafeUnSeong('month') },
     { label: '연주', gan: eightChar.getYearGan(), zhi: eightChar.getYearZhi(), tenGodGan: getSafeTenGodGan('year'), tenGodZhi: getSafeTenGodZhi('year'), unSeong: getSafeUnSeong('year') },
@@ -165,22 +172,22 @@ export function calculateSaju(
 
   const pillars = pillarsData.map(p => ({
     ...p,
-    ganKo: HANJA_TO_KO[p.gan],
-    zhiKo: HANJA_TO_KO[p.zhi],
-    zodiacIcon: ZODIAC_ICONS[p.zhi],
-    ganElement: getElement(p.gan),
-    zhiElement: getElement(p.zhi),
-    ganColor: ELEMENT_STYLE[getElement(p.gan)],
-    zhiColor: ELEMENT_STYLE[getElement(p.zhi)],
+    ganKo: p.gan ? HANJA_TO_KO[p.gan] : '',
+    zhiKo: p.zhi ? HANJA_TO_KO[p.zhi] : '',
+    zodiacIcon: p.zhi ? ZODIAC_ICONS[p.zhi] : '',
+    ganElement: p.gan ? getElement(p.gan) : '',
+    zhiElement: p.zhi ? getElement(p.zhi) : '',
+    ganColor: p.gan ? ELEMENT_STYLE[getElement(p.gan)] : null,
+    zhiColor: p.zhi ? ELEMENT_STYLE[getElement(p.zhi)] : null,
     isUnknown: p.label === '시주' && isUnknownTime
   }));
 
   const elementsCount: Record<string, number> = { '목': 0, '화': 0, '토': 0, '금': 0, '수': 0 };
   const ELE_MAP: Record<string, string> = { '木': '목', '火': '화', '土': '토', '金': '금', '水': '수' };
   pillars.forEach(p => {
-    if (p.isUnknown) return;
-    elementsCount[ELE_MAP[p.ganElement]]++;
-    elementsCount[ELE_MAP[p.zhiElement]]++;
+    if (p.isUnknown || !p.ganElement || !p.zhiElement) return;
+    if (ELE_MAP[p.ganElement]) elementsCount[ELE_MAP[p.ganElement]]++;
+    if (ELE_MAP[p.zhiElement]) elementsCount[ELE_MAP[p.zhiElement]]++;
   });
 
   const keyShinsal = calculateKeyShinsal(dayGan, pillarsData);

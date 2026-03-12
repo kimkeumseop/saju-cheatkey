@@ -36,7 +36,7 @@ function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
             <div key={colIdx} className="space-y-3">
               <div className="text-center space-y-1">
                 <div className="text-[10px] font-black text-primary-200 tracking-tighter opacity-80 uppercase">{p.label}</div>
-                <div className="text-[11px] font-black text-primary-800">{p.tenGodGan}</div>
+                <div className="text-[11px] font-black text-primary-800">{p.isUnknown ? '?' : p.tenGodGan}</div>
               </div>
               
               <div className="space-y-2 md:space-y-4">
@@ -47,15 +47,15 @@ function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
                 </div>
                 <div className="relative transition-all duration-500">
                   <div className={cn(zhiStyle.bg, zhiStyle.text, "p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center border-[2px] md:border-[4px] border-white shadow-sm overflow-hidden relative")}>
-                    <span className="text-xl absolute top-1 right-1 opacity-20">{p.zodiacIcon}</span>
+                    {!p.isUnknown && <span className="text-xl absolute top-1 right-1 opacity-20">{p.zodiacIcon}</span>}
                     <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight relative z-10">{p.isUnknown ? '?' : p.zhiKo}</span>
                   </div>
                 </div>
               </div>
 
               <div className="text-center space-y-1 mt-2">
-                <div className="text-[11px] font-black text-primary-800">{p.tenGodZhi}</div>
-                <div className="text-[10px] font-bold text-primary-300">{p.unSeong}</div>
+                <div className="text-[11px] font-black text-primary-800">{p.isUnknown ? '?' : p.tenGodZhi}</div>
+                <div className="text-[10px] font-bold text-primary-300">{p.isUnknown ? '시간 모름' : p.unSeong}</div>
               </div>
             </div>
           );

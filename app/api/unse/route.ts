@@ -15,7 +15,10 @@ export async function POST(req: Request) {
     if (!apiKey) return NextResponse.json({ success: false, error: 'API 키 누락' }, { status: 500 });
 
     const userSaju = calculateSaju(birthDate, birthTime, calendarType, gender);
-    const userPillars = userSaju.pillars.map(p => `${p.ganKo}${p.zhiKo}`).join(' ');
+    const userPillars = userSaju.pillars
+      .filter(p => p.ganKo && p.zhiKo)
+      .map(p => `${p.ganKo}${p.zhiKo}`)
+      .join(' ');
 
     const now = new Date();
     const kstOffset = 9 * 60 * 60 * 1000;

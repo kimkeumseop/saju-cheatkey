@@ -31,20 +31,20 @@ function PillarChart({ pillars, title, themeColor = 'primary' }: { pillars: any[
             <div key={colIdx} className="space-y-2">
               <div className="text-center space-y-0.5">
                 <div className="text-[8px] md:text-[10px] font-black text-gray-300 tracking-tighter opacity-80 uppercase">{p.label}</div>
-                <div className="text-[9px] md:text-[11px] font-black text-primary-800">{p.tenGodGan}</div>
+                <div className="text-[9px] md:text-[11px] font-black text-primary-800">{p.isUnknown ? '?' : p.tenGodGan}</div>
               </div>
               <div className="space-y-1.5 md:space-y-3">
                 <div className={cn(ganStyle.bg, ganStyle.text, "p-2.5 md:p-6 rounded-[1.2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center border-[2px] md:border-[3px] transition-all", isDayPillar ? cn("scale-105 z-10", borderColor) : "border-white shadow-sm")}>
                   <span className="text-xl md:text-5xl font-sans font-black leading-none tracking-tight">{p.isUnknown ? '?' : p.ganKo}</span>
                 </div>
                 <div className={cn(zhiStyle.bg, zhiStyle.text, "p-2.5 md:p-6 rounded-[1.2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center border-[2px] md:border-[3px] border-white shadow-sm overflow-hidden relative")}>
-                  <span className="text-xs md:text-xl absolute top-1 right-1 opacity-10">{p.zodiacIcon}</span>
+                  {!p.isUnknown && <span className="text-xs md:text-xl absolute top-1 right-1 opacity-10">{p.zodiacIcon}</span>}
                   <span className="text-xl md:text-5xl font-sans font-black leading-none tracking-tight relative z-10">{p.isUnknown ? '?' : p.zhiKo}</span>
                 </div>
               </div>
               <div className="text-center space-y-0.5 mt-1">
-                <div className="text-[9px] md:text-[11px] font-black text-primary-800">{p.tenGodZhi}</div>
-                <div className="text-[8px] md:text-[10px] font-bold text-primary-300">{p.unSeong}</div>
+                <div className="text-[9px] md:text-[11px] font-black text-primary-800">{p.isUnknown ? '?' : p.tenGodZhi}</div>
+                <div className="text-[8px] md:text-[10px] font-bold text-primary-300">{p.isUnknown ? '시간 모름' : p.unSeong}</div>
               </div>
             </div>
           );
