@@ -97,17 +97,14 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
   };
 
   const isUnknownTimeValue = (value: any) => {
-    if (value === null || value === undefined) return true;
+    if (value === null || value === undefined) return false;
     if (typeof value !== 'string') return false;
     const normalized = value.trim().toLowerCase();
     return normalized === '' || normalized === 'unknown' || normalized === '모름';
   };
 
-  const isTimeUnknown = (user: any) => (
-    Boolean(user?.isTimeUnknown) ||
-    isUnknownTimeValue(user?.birthTime) ||
-    isUnknownTimeValue(user?.time)
-  );
+  const isUser1TimeUnknown = Boolean(user1?.isTimeUnknown) || isUnknownTimeValue(user1?.birthTime) || isUnknownTimeValue(user1?.time);
+  const isUser2TimeUnknown = Boolean(user2?.isTimeUnknown) || isUnknownTimeValue(user2?.birthTime) || isUnknownTimeValue(user2?.time);
 
   const getFilteredElements = (sajuObj: any, unknown: boolean) => {
     if (!unknown) return sajuObj?.elementsCount;
@@ -121,10 +118,8 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
     return counts;
   };
 
-  const isTimeUnknown1 = isTimeUnknown(user1);
-  const isTimeUnknown2 = isTimeUnknown(user2);
-  const normalizedSaju1 = { ...saju1, elementsCount: getFilteredElements(saju1, isTimeUnknown1) };
-  const normalizedSaju2 = { ...saju2, elementsCount: getFilteredElements(saju2, isTimeUnknown2) };
+  const normalizedSaju1 = { ...saju1, elementsCount: getFilteredElements(saju1, isUser1TimeUnknown) };
+  const normalizedSaju2 = { ...saju2, elementsCount: getFilteredElements(saju2, isUser2TimeUnknown) };
   const getDisplayTime = (user: any, unknown: boolean) => (unknown ? '' : (user?.birthTime || user?.time || ''));
 
   return (
@@ -136,7 +131,7 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {[{ label: '나', user: user1, saju: normalizedSaju1, unknown: isTimeUnknown1 }, { label: '그대', user: user2, saju: normalizedSaju2, unknown: isTimeUnknown2 }].map((item, idx) => (
+        {[{ label: '나', user: user1, saju: normalizedSaju1, unknown: isUser1TimeUnknown }, { label: '그대', user: user2, saju: normalizedSaju2, unknown: isUser2TimeUnknown }].map((item, idx) => (
           <div key={idx} className="bg-white p-5 rounded-[2rem] border border-pink-50 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2"><div className={cn("w-2 h-2 rounded-full", idx === 0 ? "bg-blue-400" : "bg-pink-400")} /><span className="text-[10px] font-black text-primary-200 uppercase tracking-widest">{item.label}</span></div>
@@ -160,9 +155,9 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
       <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-xl border border-pink-50 space-y-12">
         <div className="text-center space-y-1"><h3 className="text-2xl font-black text-primary-900 tracking-tight text-serif">영혼의 설계도 대조</h3><p className="text-[10px] font-black text-primary-200 uppercase tracking-[0.3em]">Manseyrok Comparison</p></div>
         <div className="space-y-16">
-          <PillarChart pillars={normalizedSaju1.pillars} title={`${user1.name}님의 기운`} themeColor="blue" isTimeUnknown={isTimeUnknown1} />
+          <PillarChart pillars={normalizedSaju1.pillars} title={`${user1.name}님의 기운`} themeColor="blue" isTimeUnknown={isUser1TimeUnknown} />
           <div className="flex items-center justify-center py-2 relative"><div className="h-px bg-pink-100 flex-1" /><div className="px-6 py-2 bg-primary-50 rounded-full text-[10px] font-black text-primary-400 italic flex items-center gap-2 shadow-sm border border-pink-100"><Moon className="w-3 h-3 fill-primary-300" /> WHISPER OF FATE</div><div className="h-px bg-pink-100 flex-1" /></div>
-          <PillarChart pillars={normalizedSaju2.pillars} title={`${user2.name}님의 기운`} themeColor="pink" isTimeUnknown={isTimeUnknown2} />
+          <PillarChart pillars={normalizedSaju2.pillars} title={`${user2.name}님의 기운`} themeColor="pink" isTimeUnknown={isUser2TimeUnknown} />
         </div>
       </div>
 
