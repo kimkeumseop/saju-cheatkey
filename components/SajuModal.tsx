@@ -39,11 +39,19 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
     day: ''
   });
 
+  // 태어난 시각 분리 상태
+  const [timeParts, setTimeParts] = useState({
+    ampm: 'AM',
+    hour: '',
+    minute: '0'
+  });
+
   useEffect(() => {
     if (isOpen) {
       setView('selection');
       // 모달 열릴 때 상태 초기화
       setBirthParts({ year: '', month: '', day: '' });
+      setTimeParts({ ampm: 'AM', hour: '', minute: '0' });
     }
   }, [isOpen]);
 
@@ -58,6 +66,23 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
       }));
     }
   }, [birthParts]);
+
+  // 태어난 시각 상태 변경 시 formData.birthTime 업데이트 (HH:mm 형식)
+  useEffect(() => {
+    if (timeParts.hour) {
+      let h = parseInt(timeParts.hour);
+      if (timeParts.ampm === 'PM' && h < 12) h += 12;
+      if (timeParts.ampm === 'AM' && h === 12) h = 0;
+      
+      const formattedHour = String(h).padStart(2, '0');
+      const formattedMinute = timeParts.minute.padStart(2, '0');
+      
+      setFormData(prev => ({
+        ...prev,
+        birthTime: `${formattedHour}:${formattedMinute}`
+      }));
+    }
+  }, [timeParts]);
 
   // 월/년 변경 시 일자 유효성 체크
   useEffect(() => {
@@ -74,6 +99,8 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: currentYear - 1930 + 1 }, (_, i) => String(currentYear - i));
   const months = Array.from({ length: 12 }, (_, i) => String(i + 1));
+  const hours = Array.from({ length: 12 }, (_, i) => String(i + 1));
+  const minutes = Array.from({ length: 60 }, (_, i) => String(i));
   
   const getDaysInMonth = (year: string, month: string) => {
     if (!year || !month) return 31;
@@ -248,15 +275,43 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                   {formData.isTimeKnown && formData.isExactTime && (
                     <div className="space-y-2 sm:space-y-3 animate-in slide-in-from-top-2 duration-300">
                       <label className="text-sm font-black text-primary-900 ml-1">태어난 시각 입력</label>
-                      <div className="relative">
-                        <Clock className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-primary-300 pointer-events-none hidden sm:block" />
-                        <input 
-                          type="time" 
-                          className={inputClasses} 
-                          value={formData.birthTime} 
-                          onChange={e => setFormData({...formData, birthTime: e.target.value})} 
-                          required={formData.isExactTime} 
-                        />
+                      <div className="flex gap-2">
+                        <div className="flex-1 relative">
+                          <select 
+                            className={cn(inputClasses, "pr-8")} 
+                            value={timeParts.ampm} 
+                            onChange={e => setTimeParts(prev => ({ ...prev, ampm: e.target.value }))}
+                            required
+                          >
+                            <option value="AM">오전</option>
+                            <option value="PM">오후</option>
+                          </select>
+                          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 pointer-events-none" />
+                        </div>
+                        <div className="flex-1 relative">
+                          <select 
+                            className={cn(inputClasses, "pr-8")} 
+                            value={timeParts.hour} 
+                            onChange={e => setTimeParts(prev => ({ ...prev, hour: e.target.value }))}
+                            required
+                          >
+                            <option value="" disabled>시</option>
+                            {hours.map(h => <option key={h} value={h}>{h}시</option>)}
+                          </select>
+                          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 pointer-events-none" />
+                        </div>
+                        <div className="flex-1 relative">
+                          <select 
+                            className={cn(inputClasses, "pr-8")} 
+                            value={timeParts.minute} 
+                            onChange={e => setTimeParts(prev => ({ ...prev, minute: e.target.value }))}
+                            required
+                          >
+                            <option value="" disabled>분</option>
+                            {minutes.map(m => <option key={m} value={m}>{m}분</option>)}
+                          </select>
+                          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 pointer-events-none" />
+                        </div>
                       </div>
                     </div>
                   )}
