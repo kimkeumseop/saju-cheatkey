@@ -43,7 +43,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
   const [timeParts, setTimeParts] = useState({
     ampm: 'AM',
     hour: '',
-    minute: '0'
+    minute: ''
   });
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
       setView('selection');
       // 모달 열릴 때 상태 초기화
       setBirthParts({ year: '', month: '', day: '' });
-      setTimeParts({ ampm: 'AM', hour: '', minute: '0' });
+      setTimeParts({ ampm: 'AM', hour: '', minute: '' });
     }
   }, [isOpen]);
 
@@ -69,7 +69,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
 
   // 태어난 시각 상태 변경 시 formData.birthTime 업데이트 (HH:mm 형식)
   useEffect(() => {
-    if (timeParts.hour) {
+    if (timeParts.hour && timeParts.minute) {
       let h = parseInt(timeParts.hour);
       if (timeParts.ampm === 'PM' && h < 12) h += 12;
       if (timeParts.ampm === 'AM' && h === 12) h = 0;
@@ -308,7 +308,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                             required
                           >
                             <option value="" disabled>분</option>
-                            {minutes.map(m => <option key={m} value={m}>{m}분</option>)}
+                            {minutes.map(m => <option key={m} value={m}>{m.padStart(2, '0')}분</option>)}
                           </select>
                           <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 pointer-events-none" />
                         </div>
