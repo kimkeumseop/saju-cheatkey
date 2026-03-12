@@ -22,13 +22,17 @@ const getSafeColor = (elementKey: string) => {
   return ELEMENT_STYLE[elementKey] || { bg: 'bg-gray-50', text: 'text-gray-400', border: 'border-gray-100', color: '#999999' };
 };
 
-function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
+function PillarChart({ pillars, title, isTimeUnknown }: { pillars: any[], title?: string, isTimeUnknown?: boolean }) {
   return (
     <div className="space-y-6">
       {title && <h4 className="text-center font-black text-primary-900 text-lg">{title}</h4>}
       <div className="grid grid-cols-4 gap-2 md:gap-4 relative z-10">
         {pillars.map((p: any, colIdx: number) => {
           const isDayPillar = p.label === '일주';
+          const isTimePillar = p.label === '시주';
+          const forceHide = isTimePillar && isTimeUnknown;
+          const showDash = p.isUnknown || forceHide;
+          
           const ganStyle = p.ganColor || getSafeColor(p.ganElement);
           const zhiStyle = p.zhiColor || getSafeColor(p.zhiElement);
           
@@ -36,26 +40,26 @@ function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
             <div key={colIdx} className="space-y-3">
               <div className="text-center space-y-1">
                 <div className="text-[10px] font-black text-primary-200 tracking-tighter opacity-80 uppercase">{p.label}</div>
-                <div className="text-[11px] font-black text-primary-800">{p.isUnknown ? '-' : p.tenGodGan}</div>
+                <div className="text-[11px] font-black text-primary-800">{showDash ? '-' : p.tenGodGan}</div>
               </div>
               
               <div className="space-y-2 md:space-y-4">
                 <div className={cn("relative transition-all duration-500", isDayPillar ? "scale-105 z-20" : "")}>
                   <div className={cn(ganStyle.bg, ganStyle.text, "p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center border-[2px] md:border-[4px]", isDayPillar ? "border-primary-300 shadow-xl shadow-primary-200/20" : "border-white shadow-sm")}>
-                    <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight">{p.isUnknown ? '-' : p.ganKo}</span>
+                    <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight">{showDash ? '-' : p.ganKo}</span>
                   </div>
                 </div>
                 <div className="relative transition-all duration-500">
                   <div className={cn(zhiStyle.bg, zhiStyle.text, "p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center border-[2px] md:border-[4px] border-white shadow-sm overflow-hidden relative")}>
-                    {!p.isUnknown && <span className="text-xl absolute top-1 right-1 opacity-20">{p.zodiacIcon}</span>}
-                    <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight relative z-10">{p.isUnknown ? '-' : p.zhiKo}</span>
+                    {!showDash && <span className="text-xl absolute top-1 right-1 opacity-20">{p.zodiacIcon}</span>}
+                    <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight relative z-10">{showDash ? '-' : p.zhiKo}</span>
                   </div>
                 </div>
               </div>
 
               <div className="text-center space-y-1 mt-2">
-                <div className="text-[11px] font-black text-primary-800">{p.isUnknown ? '-' : p.tenGodZhi}</div>
-                <div className="text-[10px] font-bold text-primary-300">{p.isUnknown ? '-' : p.unSeong}</div>
+                <div className="text-[11px] font-black text-primary-800">{showDash ? '-' : p.tenGodZhi}</div>
+                <div className="text-[10px] font-bold text-primary-300">{showDash ? '-' : p.unSeong}</div>
               </div>
             </div>
           );
@@ -161,6 +165,22 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
 
   const isCompatibility = data.type === 'compatibility';
   const saju = isCompatibility ? data.saju1 : data.sajuData;
+  const isTimeUnknown = data.birthTime === 'unknown' || !data.birthTime;
+
+  // 오행 데이터 필터링 (시간 모를 경우 시주 제외하고 다시 계산)
+  const getFilteredElements = (sajuObj: any, unknown: boolean) => {
+    if (!unknown) return sajuObj.elementsCount;
+    const counts: Record<string, number> = { '목': 0, '화': 0, '토': 0, '금': 0, '수': 0 };
+    const ELE_MAP: Record<string, string> = { '木': '목', '火': '화', '土': '토', '金': '금', '水': '수' };
+    sajuObj.pillars.forEach((p: any) => {
+      if (p.label === '시주') return;
+      if (ELE_MAP[p.ganElement]) counts[ELE_MAP[p.ganElement]]++;
+      if (ELE_MAP[p.zhiElement]) counts[ELE_MAP[p.zhiElement]]++;
+    });
+    return counts;
+  };
+
+  const filteredElements = saju ? getFilteredElements(saju, isTimeUnknown) : null;
 
   return (
     <div className="min-h-screen bg-[#FFF5F7] pt-24 pb-32 px-4 md:px-6">
@@ -190,11 +210,11 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-xl border border-pink-50 space-y-10 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50/50 rounded-full blur-3xl -mr-32 -mt-32" />
               <div className="text-center space-y-1 relative z-10"><h3 className="text-2xl font-black text-primary-900 tracking-tight text-serif">인생 설계도 (만세력)</h3><p className="text-[10px] font-black text-primary-200 uppercase tracking-[0.3em]">Manseyrok INFOGRAPHIC</p></div>
-              {saju && <PillarChart pillars={saju.pillars} />}
+              {saju && <PillarChart pillars={saju.pillars} isTimeUnknown={isTimeUnknown} />}
               <div className="pt-8 border-t border-pink-50 grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 ml-1"><BarChart3 className="w-4 h-4 text-primary-400" /><span className="text-sm font-black text-primary-800">오행 분포</span></div>
-                  {saju && <ElementsChart counts={saju.elementsCount} />}
+                  {filteredElements && <ElementsChart counts={filteredElements} />}
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 ml-1"><Star className="w-4 h-4 text-primary-400" /><span className="text-sm font-black text-primary-800">핵심 귀인 & 신살</span></div>
