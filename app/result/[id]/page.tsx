@@ -36,26 +36,26 @@ function PillarChart({ pillars, title }: { pillars: any[], title?: string }) {
             <div key={colIdx} className="space-y-3">
               <div className="text-center space-y-1">
                 <div className="text-[10px] font-black text-primary-200 tracking-tighter opacity-80 uppercase">{p.label}</div>
-                <div className="text-[11px] font-black text-primary-800">{p.isUnknown ? '?' : p.tenGodGan}</div>
+                <div className="text-[11px] font-black text-primary-800">{p.isUnknown ? '-' : p.tenGodGan}</div>
               </div>
               
               <div className="space-y-2 md:space-y-4">
                 <div className={cn("relative transition-all duration-500", isDayPillar ? "scale-105 z-20" : "")}>
                   <div className={cn(ganStyle.bg, ganStyle.text, "p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center border-[2px] md:border-[4px]", isDayPillar ? "border-primary-300 shadow-xl shadow-primary-200/20" : "border-white shadow-sm")}>
-                    <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight">{p.isUnknown ? '?' : p.ganKo}</span>
+                    <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight">{p.isUnknown ? '-' : p.ganKo}</span>
                   </div>
                 </div>
                 <div className="relative transition-all duration-500">
                   <div className={cn(zhiStyle.bg, zhiStyle.text, "p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center border-[2px] md:border-[4px] border-white shadow-sm overflow-hidden relative")}>
                     {!p.isUnknown && <span className="text-xl absolute top-1 right-1 opacity-20">{p.zodiacIcon}</span>}
-                    <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight relative z-10">{p.isUnknown ? '?' : p.zhiKo}</span>
+                    <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight relative z-10">{p.isUnknown ? '-' : p.zhiKo}</span>
                   </div>
                 </div>
               </div>
 
               <div className="text-center space-y-1 mt-2">
-                <div className="text-[11px] font-black text-primary-800">{p.isUnknown ? '?' : p.tenGodZhi}</div>
-                <div className="text-[10px] font-bold text-primary-300">{p.isUnknown ? '시간 모름' : p.unSeong}</div>
+                <div className="text-[11px] font-black text-primary-800">{p.isUnknown ? '-' : p.tenGodZhi}</div>
+                <div className="text-[10px] font-bold text-primary-300">{p.isUnknown ? '-' : p.unSeong}</div>
               </div>
             </div>
           );
@@ -176,9 +176,14 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                 <Moon className="w-4 h-4 fill-primary-400 text-primary-400" />
                 신비로운 영혼의 리포트
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
-                <span className="text-primary-900 px-2">{data.userName}</span> 님의 운명
-              </h1>
+              <div className="space-y-2">
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
+                  <span className="text-primary-900 px-2">{data.userName}</span> 님의 운명
+                </h1>
+                <p className="text-sm font-bold text-primary-300 italic opacity-80">
+                  {data.birthDate} {data.birthTime && data.birthTime !== 'unknown' ? data.birthTime : ''}
+                </p>
+              </div>
             </div>
 
             {/* 만세력 설계도 생략 (동일) */}
