@@ -31,20 +31,20 @@ function PillarChart({ pillars, title, themeColor = 'primary' }: { pillars: any[
             <div key={colIdx} className="space-y-2">
               <div className="text-center space-y-0.5">
                 <div className="text-[8px] md:text-[10px] font-black text-gray-300 tracking-tighter opacity-80 uppercase">{p.label}</div>
-                <div className="text-[9px] md:text-[11px] font-black text-primary-800">{p.isUnknown ? '?' : p.tenGodGan}</div>
+                <div className="text-[9px] md:text-[11px] font-black text-primary-800">{p.isUnknown ? '-' : p.tenGodGan}</div>
               </div>
               <div className="space-y-1.5 md:space-y-3">
                 <div className={cn(ganStyle.bg, ganStyle.text, "p-2.5 md:p-6 rounded-[1.2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center border-[2px] md:border-[3px] transition-all", isDayPillar ? cn("scale-105 z-10", borderColor) : "border-white shadow-sm")}>
-                  <span className="text-xl md:text-5xl font-sans font-black leading-none tracking-tight">{p.isUnknown ? '?' : p.ganKo}</span>
+                  <span className="text-xl md:text-5xl font-sans font-black leading-none tracking-tight">{p.isUnknown ? '-' : p.ganKo}</span>
                 </div>
                 <div className={cn(zhiStyle.bg, zhiStyle.text, "p-2.5 md:p-6 rounded-[1.2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center border-[2px] md:border-[3px] border-white shadow-sm overflow-hidden relative")}>
                   {!p.isUnknown && <span className="text-xs md:text-xl absolute top-1 right-1 opacity-10">{p.zodiacIcon}</span>}
-                  <span className="text-xl md:text-5xl font-sans font-black leading-none tracking-tight relative z-10">{p.isUnknown ? '?' : p.zhiKo}</span>
+                  <span className="text-xl md:text-5xl font-sans font-black leading-none tracking-tight relative z-10">{p.isUnknown ? '-' : p.zhiKo}</span>
                 </div>
               </div>
               <div className="text-center space-y-0.5 mt-1">
-                <div className="text-[9px] md:text-[11px] font-black text-primary-800">{p.isUnknown ? '?' : p.tenGodZhi}</div>
-                <div className="text-[8px] md:text-[10px] font-bold text-primary-300">{p.isUnknown ? '시간 모름' : p.unSeong}</div>
+                <div className="text-[9px] md:text-[11px] font-black text-primary-800">{p.isUnknown ? '-' : p.tenGodZhi}</div>
+                <div className="text-[8px] md:text-[10px] font-bold text-primary-300">{p.isUnknown ? '-' : p.unSeong}</div>
               </div>
             </div>
           );
@@ -107,7 +107,12 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
               <div className="flex items-center gap-2"><div className={cn("w-2 h-2 rounded-full", idx === 0 ? "bg-blue-400" : "bg-pink-400")} /><span className="text-[10px] font-black text-primary-200 uppercase tracking-widest">{item.label}</span></div>
               <span className="text-[10px] font-black text-primary-800">{item.saju.dayGanKo}일간</span>
             </div>
-            <div className="space-y-1"><p className="text-lg font-black text-primary-900">{item.user.name}</p><p className="text-[10px] text-primary-300 font-bold">{item.user.birthDate}</p></div>
+            <div className="space-y-1">
+              <p className="text-lg font-black text-primary-900">{item.user.name}</p>
+              <p className="text-[10px] text-primary-300 font-bold">
+                {item.user.birthDate} {item.user.birthTime && item.user.birthTime !== 'unknown' ? item.user.birthTime : ''}
+              </p>
+            </div>
           </div>
         ))}
       </div>
