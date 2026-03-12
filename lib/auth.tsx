@@ -162,8 +162,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }, 1000);
 
         const handleMessage = (event: MessageEvent) => {
+          // 보안을 위해 오리진 확인
           if (event.origin !== window.location.origin) return;
+          
+          console.log("[Naver Login] Message Received:", event.data);
+
           if (event.data?.type === 'NAVER_AUTH_SUCCESS' && event.data.accessToken) {
+            console.log("[Naver Login] Access Token Received, proceeding to backend...");
             clearInterval(timer);
             window.removeEventListener('message', handleMessage);
             resolve(event.data.accessToken);
