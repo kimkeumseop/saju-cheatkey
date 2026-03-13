@@ -57,25 +57,28 @@ function validateGunghapAnalysis(data: any) {
     typeof data.compatibilityScore !== 'number' ||
     typeof data.headline !== 'string' ||
     !data.headline.trim() ||
-    !Array.isArray(data.sections) ||
-    data.sections.length !== 6
+    !Array.isArray(data.sections)
   ) {
     throw new Error('AI 응답 형식이 올바르지 않습니다.');
   }
 
-  for (const section of data.sections) {
-    if (
-      !section ||
-      typeof section.title !== 'string' ||
-      !section.title.trim() ||
-      typeof section.content !== 'string' ||
-      !section.content.trim()
-    ) {
-      throw new Error('AI 응답 섹션 형식이 올바르지 않습니다.');
-    }
+  const sections = data.sections
+    .map((section: any) => ({
+      title: typeof section?.title === 'string' ? section.title.trim() : '',
+      content: typeof section?.content === 'string' ? section.content.trim() : '',
+    }))
+    .filter((section: any) => section.title && section.content)
+    .slice(0, 6);
+
+  if (sections.length === 0) {
+    throw new Error('AI 응답 섹션 형식이 올바르지 않습니다.');
   }
 
-  return data;
+  return {
+    ...data,
+    headline: data.headline.trim(),
+    sections,
+  };
 }
 
 const relationLabels: Record<string, string> = {
@@ -188,11 +191,12 @@ export async function POST(req: Request) {
         saju1,
         saju2
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Gunghap API JSON parse error:', {
+        message: error?.message,
         responsePreview: responseText.slice(0, 1000),
       });
-      throw new Error('AI 응답 파싱 실패');
+      throw new Error(error?.message || 'AI 응답 파싱 실패');
     }
 
   } catch (error: any) {
