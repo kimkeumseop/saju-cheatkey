@@ -154,8 +154,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithNaver = async () => {
     try {
-      // 1. 네이버 인증 팝업 열기 (환경변수 사용)
-      const clientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID;
+      // 1. 네이버 인증 팝업 열기 (환경변수 사용, 미설정 시 기본값 폴백)
+      const clientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID || 'LLHPh6fs2bvlW54wQ3pw';
       
       if (!clientId) {
         throw new Error('네이버 클라이언트 ID가 설정되지 않았습니다.');
