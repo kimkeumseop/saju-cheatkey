@@ -1,94 +1,11 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SchemaType } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
-
-const sajuAnalysisSchema: any = {
-  type: SchemaType.OBJECT,
-  properties: {
-    sections: {
-      type: SchemaType.ARRAY,
-      items: {
-        type: SchemaType.OBJECT,
-        properties: {
-          title: { type: SchemaType.STRING },
-          content: { type: SchemaType.STRING },
-        },
-        required: ['title', 'content'],
-      },
-    },
-  },
-  required: ['sections'],
-};
-
-function parseJsonResponse(text: string) {
-  const trimmed = text.trim();
-  const withoutCodeFence = trimmed
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/, '')
-    .trim();
-
-  const candidates = [
-    withoutCodeFence,
-    ...(withoutCodeFence.match(/\{[\s\S]*\}/g) || []),
-  ];
-
-  for (const candidate of candidates) {
-    try {
-      return JSON.parse(candidate);
-    } catch {
-      continue;
-    }
-  }
-
-  throw new Error('AI 응답에서 JSON 구조를 찾을 수 없습니다.');
-}
-
-function buildSajuFallbackAnalysis(text: string) {
-  const cleaned = text
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/g, '')
-    .trim();
-
-  const chunks = cleaned
-    .split(/\n\s*\n/)
-    .map((chunk) => chunk.trim())
-    .filter(Boolean)
-    .slice(0, 6);
-
-  const sections = (chunks.length > 0 ? chunks : [cleaned || '분석 내용을 불러오지 못했습니다.']).map((content, index) => ({
-    title: `분석 ${index + 1}`,
-    content,
-  }));
-
-  return { sections };
-}
-
-function validateSajuAnalysis(data: any) {
-  if (!data || !Array.isArray(data.sections)) {
-    throw new Error('AI 응답 형식이 올바르지 않습니다.');
-  }
-
-  const sections = data.sections
-    .map((section: any) => ({
-      title: typeof section?.title === 'string' ? section.title.trim() : '',
-      content: typeof section?.content === 'string' ? section.content.trim() : '',
-    }))
-    .filter((section: any) => section.title && section.content)
-    .slice(0, 6);
-
-  if (sections.length === 0) {
-    throw new Error('AI 응답 섹션 형식이 올바르지 않습니다.');
-  }
-
-  return { ...data, sections };
-}
 
 async function generateWithRetry(model: any, prompt: string, maxRetries = 2) {
   for (let i = 0; i < maxRetries; i++) {
@@ -141,8 +58,6 @@ export async function POST(req: Request) {
         temperature: 0.85,
         maxOutputTokens: 3072, // 분량 유지와 속도 사이의 균형점
         topP: 0.95,
-        responseMimeType: 'application/json',
-        responseSchema: sajuAnalysisSchema,
       },
       safetySettings,
     });
@@ -178,39 +93,14 @@ export async function POST(req: Request) {
          ④ 연애운 & 인간관계 (나의 인연이 머무는 곳과 관계의 비결)
          ⑤ 숨겨진 아픔과 다정한 위로 (지친 영혼을 위한 따뜻한 응원)
          ⑥ 2026년 운세 흐름 & 럭키 포인트 (올해 꼭 잡아야 할 기회)
-
-      6. 형식: 반드시 아래와 같이 **배열(Array)** 구조의 JSON으로만 응답해.
-
-      {
-        "sections": [
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." }
-        ]
-      }
+      6. 응답은 절대 JSON 구조나 중괄호 { }를 사용하지 마라.
+      7. 반드시 일반 텍스트(Markdown) 형식으로만 작성해라.
+      8. 각 소제목은 반드시 "### "로 시작하고, 소제목 아래에 자연스럽게 본문을 이어서 작성해라.
+      9. 코드 블록, 백틱, 배열 기호, 키-값 구조를 쓰지 마라.
     `;
 
     responseText = await generateWithRetry(model, prompt);
-    try {
-      const analysis = validateSajuAnalysis(parseJsonResponse(responseText));
-      return NextResponse.json({ success: true, saju: sajuData, analysis });
-    } catch (e: any) {
-      console.error('Saju API JSON parse error:', {
-        message: e?.message,
-        responsePreview: responseText.slice(0, 1000),
-      });
-      if (responseText.trim()) {
-        return NextResponse.json({
-          success: true,
-          saju: sajuData,
-          analysis: buildSajuFallbackAnalysis(responseText),
-        });
-      }
-      throw new Error(e?.message || 'AI 응답 파싱 실패');
-    }
+    return NextResponse.json({ success: true, saju: sajuData, analysis: responseText.trim() });
 
   } catch (error: any) {
     console.error('Saju API Error:', {
