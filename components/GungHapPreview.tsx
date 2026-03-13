@@ -126,15 +126,15 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
 
   return (
     <div className="space-y-10">
-      <div className="bg-white rounded-[3rem] p-8 shadow-xl border border-pink-50 relative overflow-hidden mt-8">
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 shadow-xl border border-pink-50 relative overflow-hidden mt-8">
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 rounded-full -mr-16 -mt-16 blur-3xl opacity-50" />
         <ScoreGauge score={score} />
         <div className="text-center pb-4"><p className="text-primary-900 font-black text-lg leading-tight break-keep">"{aiResult.headline || '두 사람의 운명이 선명하게 겹쳐지네요.'}"</p></div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 md:gap-4">
         {[{ label: '나', user: user1, saju: normalizedSaju1, unknown: isUser1TimeUnknown }, { label: '그대', user: user2, saju: normalizedSaju2, unknown: isUser2TimeUnknown }].map((item, idx) => (
-          <div key={idx} className="bg-white p-5 rounded-[2rem] border border-pink-50 shadow-sm space-y-4">
+          <div key={idx} className="bg-white p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] border border-pink-50 shadow-sm space-y-3 md:space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2"><div className={cn("w-2 h-2 rounded-full", idx === 0 ? "bg-blue-400" : "bg-pink-400")} /><span className="text-[10px] font-black text-primary-200 uppercase tracking-widest">{item.label}</span></div>
               <span className="text-[10px] font-black text-primary-800">{item.saju.dayGanKo}일간</span>
@@ -154,7 +154,7 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
         <span className="font-black text-primary-900 leading-none mt-0.5">관계: {relationLabels[relation] || '궁합'}</span>
       </div>
 
-      <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-xl border border-pink-50 space-y-12">
+      <div className="bg-white p-5 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-xl border border-pink-50 space-y-12">
         <div className="text-center space-y-1"><h3 className="text-2xl font-black text-primary-900 tracking-tight text-serif">영혼의 설계도 대조</h3><p className="text-[10px] font-black text-primary-200 uppercase tracking-[0.3em]">Manseyrok Comparison</p></div>
         <div className="space-y-16">
           <PillarChart pillars={normalizedSaju1.pillars} title={`${user1.name}님의 기운`} themeColor="blue" isTimeUnknown={isUser1TimeUnknown} />
@@ -170,7 +170,7 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
         </div>
       </div>
 
-      <div className="mt-12 bg-white p-8 rounded-[2.5rem] border border-pink-50 shadow-sm text-center"><ShareButtons name={`${user1.name} & ${user2.name}`} /></div>
+      <div className="mt-12 bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-pink-50 shadow-sm text-center"><ShareButtons name={`${user1.name} & ${user2.name}`} /></div>
     </div>
   );
 }
