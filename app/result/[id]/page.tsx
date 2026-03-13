@@ -11,6 +11,7 @@ import GungHapPreview from '@/components/GungHapPreview';
 import { Loader2, Sparkles, Layout, BarChart3, Star, History, Moon, Gift } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { ELEMENT_STYLE } from '@/lib/saju';
+import { normalizeSajuAiResult } from '@/lib/ai-result';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -318,18 +319,8 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
               <div className="flex items-center gap-3 ml-2"><Moon className="w-6 h-6 text-primary-600 fill-primary-600" /><h3 className="text-2xl font-bold text-gray-900">운명의 속삭임 리포트</h3></div>
               <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
                 {(() => {
-                  const result = data.aiResult || {};
-                  const displayData = result.sections || [
-                    { title: result.section1?.title || '기질 분석', content: result.section1?.content || '' },
-                    { title: result.section2?.title || '연애운', content: result.section2?.content || '' },
-                    { title: result.section3?.title || '재물운', content: result.section3?.content || '' },
-                    { title: result.section4?.title || '인간관계', content: result.section4?.content || '' },
-                    { title: result.section5?.title || '위로의 메시지', content: result.section5?.content || '' },
-                    { title: result.section6?.title || '미래 전망', content: result.section6?.content || '' },
-                    { title: result.section7?.title || '행운의 팁', content: result.section7?.content || '' }
-                  ].filter(s => s.content);
-
-                  return <AnalysisAccordion data={displayData} />;
+                  const result = normalizeSajuAiResult(data.aiResult);
+                  return <AnalysisAccordion data={result.sections} />;
                 })()}
               </div>
               <div className="mt-12 bg-white p-8 rounded-[2.5rem] border border-pink-50 shadow-sm text-center"><ShareButtons name={data.userName} /></div>

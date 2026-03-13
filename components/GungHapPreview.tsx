@@ -7,6 +7,7 @@ import ShareButtons from './ShareButtons';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { ELEMENT_STYLE } from '@/lib/saju';
+import { normalizeGunghapAiResult } from '@/lib/ai-result';
 import { motion } from 'framer-motion';
 
 function cn(...inputs: ClassValue[]) {
@@ -89,8 +90,9 @@ function ScoreGauge({ score = 0 }: { score: number }) {
 }
 
 export default function GungHapPreview({ data }: { data: any, resultId: string }) {
-  const { user1, user2, saju1, saju2, aiResult, relation } = data;
-  const score = aiResult?.compatibilityScore || 0;
+  const { user1, user2, saju1, saju2, relation } = data;
+  const aiResult = normalizeGunghapAiResult(data.aiResult);
+  const score = aiResult.compatibilityScore || 0;
   const relationLabels: Record<string, string> = {
     friend: '친구', some: '썸남 썸녀', couple: '연인', spouse: '배우자', 'ex-couple': '전여친 전남친', 'ex-spouse': '전아내 전남편',
     family: '부모와 자녀', siblings: '형제/자매', colleague: '직장 동료', partner: '사업 파트너', idol: '아이돌과 팬', etc: '기타'
@@ -127,7 +129,7 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
       <div className="bg-white rounded-[3rem] p-8 shadow-xl border border-pink-50 relative overflow-hidden mt-8">
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 rounded-full -mr-16 -mt-16 blur-3xl opacity-50" />
         <ScoreGauge score={score} />
-        <div className="text-center pb-4"><p className="text-primary-900 font-black text-lg leading-tight break-keep">"{aiResult?.headline || '두 사람의 운명이 선명하게 겹쳐지네요.'}"</p></div>
+        <div className="text-center pb-4"><p className="text-primary-900 font-black text-lg leading-tight break-keep">"{aiResult.headline || '두 사람의 운명이 선명하게 겹쳐지네요.'}"</p></div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -164,25 +166,7 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
       <div className="space-y-8">
         <div className="flex items-center gap-3 ml-2"><Moon className="w-6 h-6 text-primary-600 fill-primary-600" /><h3 className="text-2xl font-bold text-gray-900">운명적인 인연의 리포트</h3></div>
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          {(() => {
-            if (aiResult.sections && Array.isArray(aiResult.sections)) {
-              return <AnalysisAccordion data={aiResult.sections} />;
-            }
-
-            const themes = [
-              { key: 'energyHarmony', theme: '기운의 조화', icon: '🔮' },
-              { key: 'pastLifeKarma', theme: '전생의 인연', icon: '🔗' },
-              { key: 'livingHarmony', theme: '현실적 풍파', icon: '🏠' },
-              { key: 'hiddenSoul', theme: '숨겨진 진심', icon: '🧠' },
-              { key: 'destiny2026', theme: '2026년 운명', icon: '🔥' },
-              { key: 'shamanCheatKey', theme: '신령님 비방', icon: '🪄' }
-            ];
-            const displayData = themes.map(t => ({
-              title: `${t.icon} ${t.theme}`,
-              content: aiResult[t.key] || '인연의 속삭임을 분석 중입니다...'
-            }));
-            return <AnalysisAccordion data={displayData} />;
-          })()}
+          <AnalysisAccordion data={aiResult.sections} />
         </div>
       </div>
 
