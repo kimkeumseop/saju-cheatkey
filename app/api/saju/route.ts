@@ -1,11 +1,94 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SchemaType } from '@google/generative-ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
+
+const sajuAnalysisSchema: any = {
+  type: SchemaType.OBJECT,
+  properties: {
+    sections: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          title: { type: SchemaType.STRING },
+          content: { type: SchemaType.STRING },
+        },
+        required: ['title', 'content'],
+      },
+    },
+  },
+  required: ['sections'],
+};
+
+function parseJsonResponse(text: string) {
+  const trimmed = text.trim();
+  const withoutCodeFence = trimmed
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/g, '')
+    .trim();
+
+  const candidates = [
+    withoutCodeFence,
+    ...(withoutCodeFence.match(/\{[\s\S]*\}/g) || []),
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error('AI 응답에서 JSON 구조를 찾을 수 없습니다.');
+}
+
+function buildSajuFallbackAnalysis(text: string) {
+  const cleaned = text
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/g, '')
+    .trim();
+
+  const chunks = cleaned
+    .split(/\n\s*\n/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  return {
+    sections: (chunks.length > 0 ? chunks : [cleaned || '분석 내용을 불러오지 못했습니다.']).map((content, index) => ({
+      title: `분석 ${index + 1}`,
+      content,
+    })),
+  };
+}
+
+function validateSajuAnalysis(data: any) {
+  if (!data || !Array.isArray(data.sections)) {
+    throw new Error('AI 응답 형식이 올바르지 않습니다.');
+  }
+
+  const sections = data.sections
+    .map((section: any) => ({
+      title: typeof section?.title === 'string' ? section.title.trim() : '',
+      content: typeof section?.content === 'string' ? section.content.trim() : '',
+    }))
+    .filter((section: any) => section.title && section.content)
+    .slice(0, 6);
+
+  if (sections.length === 0) {
+    throw new Error('AI 응답 섹션 형식이 올바르지 않습니다.');
+  }
+
+  return { sections };
+}
 
 async function generateWithRetry(model: any, prompt: string, maxRetries = 2) {
   for (let i = 0; i < maxRetries; i++) {
@@ -58,6 +141,8 @@ export async function POST(req: Request) {
         temperature: 0.85,
         maxOutputTokens: 3072, // 분량 유지와 속도 사이의 균형점
         topP: 0.95,
+        responseMimeType: 'application/json',
+        responseSchema: sajuAnalysisSchema,
       },
       safetySettings,
     });
@@ -81,26 +166,59 @@ export async function POST(req: Request) {
       1. 말투: "~해요", "~네요" 스타일의 아주 다정하고 부드러운 경어체.
       2. 분량: 각 섹션은 **350자 이상** 아주 상세하고 풍성하게 작성해줘. (전체 리포트가 매우 길고 정성스럽게 느껴져야 함)
       3. 분위기: 유저의 장점을 극대화해주고 고민을 보듬어주는 '공감과 응원'의 분위기 유지.
-      4. **초개인화 제목 생성 규칙 (매우 중요)**: 
+      4. 가독성 최우선:
+         - 스마트폰에서 읽기 편하도록 한 문단은 절대 2~3문장을 넘기지 마.
+         - 문단과 문단 사이는 반드시 "\\n\\n" 줄바꿈으로 분리해 시각적인 여백을 만들어.
+         - 어려운 명리학 용어는 직접 쓰지 말고, 2030 세대가 일상에서 쓰는 편안한 단어로 바꿔.
+         - 설명할 때 나무, 불, 흙, 금속, 물 같은 자연물 비유를 자주 활용해 부드럽게 풀어줘.
+         - 글이 빽빽해 보이지 않도록 문단의 호흡을 짧게 유지하고, 섹션마다 이모지 1~2개를 자연스럽게 섞어줘.
+         - 중요한 포인트는 본문 안에서 짧은 독립 문장으로 한 번 더 분리해 눈에 잘 들어오게 해줘.
+      5. **초개인화 제목 생성 규칙 (매우 중요)**: 
          - 제목 형식: **[이모지 1개] [시적이고 감성적인 비유], [명확한 운세 키워드]**
          - 예시 1: 🚀 거침없이 나아가는 당신의 커리어와 직업운
          - 예시 2: 🌊 깊고 고요한 호수처럼, 당신이 품은 재물과 타고난 그릇
          - 예시 3: 💖 차가운 밤 모닥불이 되어줄 당신의 인연과 연애운
-      5. **구성 섹션 (6개 고정)**:
+      6. **구성 섹션 (6개 고정)**:
          ① 타고난 기질과 본성 (나도 몰랐던 나의 진짜 모습)
          ② 재물운 (나에게 찾아올 부의 크기와 그릇)
          ③ 직업운 (내가 가장 빛날 수 있는 커리어 무대와 성공 전략)
          ④ 연애운 & 인간관계 (나의 인연이 머무는 곳과 관계의 비결)
          ⑤ 숨겨진 아픔과 다정한 위로 (지친 영혼을 위한 따뜻한 응원)
          ⑥ 2026년 운세 흐름 & 럭키 포인트 (올해 꼭 잡아야 할 기회)
-      6. 응답은 절대 JSON 구조나 중괄호 { }를 사용하지 마라.
-      7. 반드시 일반 텍스트(Markdown) 형식으로만 작성해라.
-      8. 각 소제목은 반드시 "### "로 시작하고, 소제목 아래에 자연스럽게 본문을 이어서 작성해라.
-      9. 코드 블록, 백틱, 배열 기호, 키-값 구조를 쓰지 마라.
+      7. 응답은 반드시 JSON만 반환해. 코드 블록, 백틱, 마크다운, 설명 문장, 주석을 붙이지 마.
+      8. 각 content 값은 순수 문자열로 작성하고, 문단 구분은 반드시 "\\n\\n"만 사용해.
+      9. JSON 구조는 아래 스키마를 정확히 따라야 해.
+
+      {
+        "sections": [
+          { "title": "...", "content": "..." },
+          { "title": "...", "content": "..." },
+          { "title": "...", "content": "..." },
+          { "title": "...", "content": "..." },
+          { "title": "...", "content": "..." },
+          { "title": "...", "content": "..." }
+        ]
+      }
     `;
 
     responseText = await generateWithRetry(model, prompt);
-    return NextResponse.json({ success: true, saju: sajuData, analysis: responseText.trim() });
+    try {
+      const analysis = validateSajuAnalysis(parseJsonResponse(responseText));
+      return NextResponse.json({ success: true, saju: sajuData, analysis });
+    } catch (e: any) {
+      console.error('Saju API JSON parse error:', {
+        message: e?.message,
+        responsePreview: responseText.slice(0, 1000),
+      });
+      if (responseText.trim()) {
+        return NextResponse.json({
+          success: true,
+          saju: sajuData,
+          analysis: buildSajuFallbackAnalysis(responseText),
+        });
+      }
+      throw new Error(e?.message || 'AI 응답 파싱 실패');
+    }
 
   } catch (error: any) {
     console.error('Saju API Error:', {

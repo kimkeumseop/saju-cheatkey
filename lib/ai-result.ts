@@ -2,35 +2,67 @@
 
 const SOFT_ERROR_MESSAGE = '운명의 흐름을 정리하는 중입니다. 다시 시도해주세요.';
 
-type AnalysisSection = {
+export type AnalysisSection = {
   title: string;
   content: string;
 };
 
-function toPlainText(value: unknown) {
-  if (typeof value === 'string') return value.trim();
+type ParsedSectionsResult = {
+  rawText: string;
+  sections: AnalysisSection[];
+};
 
-  if (value && typeof value === 'object') {
-    const record = value as Record<string, any>;
+type ParsedGunghapResult = ParsedSectionsResult & {
+  compatibilityScore?: number;
+  headline?: string;
+};
 
-    if (Array.isArray(record.sections)) {
-      return record.sections
-        .map((section) => {
-          const title = typeof section?.title === 'string' ? section.title.trim() : '';
-          const content = typeof section?.content === 'string' ? section.content.trim() : '';
-          return title && content ? `### ${title}\n${content}` : '';
-        })
-        .filter(Boolean)
-        .join('\n\n');
+function stripCodeFence(text: string) {
+  return text
+    .trim()
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/g, '')
+    .trim();
+}
+
+function normalizeSection(section: unknown): AnalysisSection | null {
+  if (!section || typeof section !== 'object') return null;
+
+  const record = section as Record<string, unknown>;
+  const title = typeof record.title === 'string' ? record.title.trim() : '';
+  const content = typeof record.content === 'string' ? record.content.trim() : '';
+
+  if (!title || !content) return null;
+
+  return {
+    title,
+    content,
+  };
+}
+
+function normalizeSections(sections: unknown): AnalysisSection[] {
+  if (!Array.isArray(sections)) return [];
+
+  return sections
+    .map((section) => normalizeSection(section))
+    .filter((section): section is AnalysisSection => Boolean(section))
+    .slice(0, 6);
+}
+
+function parsePossibleJson(value: string) {
+  const cleaned = stripCodeFence(value);
+  const candidates = [cleaned, ...(cleaned.match(/\{[\s\S]*\}/g) || [])];
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      continue;
     }
-
-    return Object.values(record)
-      .filter((item) => typeof item === 'string' && item.trim())
-      .join('\n\n')
-      .trim();
   }
 
-  return '';
+  return null;
 }
 
 function splitMarkdownSections(text: string): AnalysisSection[] {
@@ -87,35 +119,97 @@ function splitMarkdownSections(text: string): AnalysisSection[] {
     });
   }
 
-  return sections.filter((section) => section.content) || [
-    { title: '분석 준비 중', content: SOFT_ERROR_MESSAGE },
-  ];
+  const normalizedSections = sections.filter((section) => section.content);
+  return normalizedSections.length > 0
+    ? normalizedSections
+    : [{ title: '분석 준비 중', content: SOFT_ERROR_MESSAGE }];
 }
 
-export function normalizeSajuAiResult(value: unknown) {
-  const text = toPlainText(value);
+function normalizeRawText(value: unknown) {
+  if (typeof value === 'string') return stripCodeFence(value);
+
+  if (value && typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+
+  return '';
+}
+
+function parseSectionsResult(value: unknown): ParsedSectionsResult {
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    const sections = normalizeSections(record.sections);
+    if (sections.length > 0) {
+      return {
+        rawText: normalizeRawText(value),
+        sections,
+      };
+    }
+  }
+
+  const text = typeof value === 'string' ? value : '';
+  const parsed = parsePossibleJson(text);
+
+  if (parsed && typeof parsed === 'object') {
+    const record = parsed as Record<string, unknown>;
+    const sections = normalizeSections(record.sections);
+    if (sections.length > 0) {
+      return {
+        rawText: stripCodeFence(text),
+        sections,
+      };
+    }
+  }
+
+  const plainText = normalizeRawText(value);
 
   return {
-    rawText: text,
-    sections: splitMarkdownSections(text),
+    rawText: plainText,
+    sections: splitMarkdownSections(plainText),
   };
 }
 
-export function normalizeGunghapAiResult(value: unknown) {
-  const text = toPlainText(value);
-  const lines = text
+export function normalizeSajuAiResult(value: unknown): ParsedSectionsResult {
+  return parseSectionsResult(value);
+}
+
+export function normalizeGunghapAiResult(value: unknown): ParsedGunghapResult {
+  const normalized = parseSectionsResult(value);
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    return {
+      ...normalized,
+      compatibilityScore: typeof record.compatibilityScore === 'number' ? Math.min(100, record.compatibilityScore) : 80,
+      headline: typeof record.headline === 'string' && record.headline.trim()
+        ? record.headline.trim()
+        : normalized.sections[0]?.content || SOFT_ERROR_MESSAGE,
+    };
+  }
+
+  const parsed = typeof value === 'string' ? parsePossibleJson(value) : null;
+  if (parsed && typeof parsed === 'object') {
+    const record = parsed as Record<string, unknown>;
+    return {
+      ...normalized,
+      compatibilityScore: typeof record.compatibilityScore === 'number' ? Math.min(100, record.compatibilityScore) : 80,
+      headline: typeof record.headline === 'string' && record.headline.trim()
+        ? record.headline.trim()
+        : normalized.sections[0]?.content || SOFT_ERROR_MESSAGE,
+    };
+  }
+
+  const lines = normalized.rawText
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
   const scoreLine = lines.find((line) => /점/.test(line));
   const headlineLine = lines.find((line) => !line.startsWith('###') && !/점/.test(line));
   const scoreMatch = scoreLine?.match(/(\d{1,3})\s*점/);
-  const sections = splitMarkdownSections(text);
 
   return {
-    rawText: text,
+    ...normalized,
     compatibilityScore: scoreMatch ? Math.min(100, Number(scoreMatch[1])) : 80,
-    headline: headlineLine || sections[0]?.content || SOFT_ERROR_MESSAGE,
-    sections,
+    headline: headlineLine || normalized.sections[0]?.content || SOFT_ERROR_MESSAGE,
   };
 }
