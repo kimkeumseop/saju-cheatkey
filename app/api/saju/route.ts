@@ -1,94 +1,11 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SchemaType } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
-
-const sajuAnalysisSchema: any = {
-  type: SchemaType.OBJECT,
-  properties: {
-    sections: {
-      type: SchemaType.ARRAY,
-      items: {
-        type: SchemaType.OBJECT,
-        properties: {
-          title: { type: SchemaType.STRING },
-          content: { type: SchemaType.STRING },
-        },
-        required: ['title', 'content'],
-      },
-    },
-  },
-  required: ['sections'],
-};
-
-function parseJsonResponse(text: string) {
-  const trimmed = text.trim();
-  const withoutCodeFence = trimmed
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/g, '')
-    .trim();
-
-  const candidates = [
-    withoutCodeFence,
-    ...(withoutCodeFence.match(/\{[\s\S]*\}/g) || []),
-  ];
-
-  for (const candidate of candidates) {
-    try {
-      return JSON.parse(candidate);
-    } catch {
-      continue;
-    }
-  }
-
-  throw new Error('AI 응답에서 JSON 구조를 찾을 수 없습니다.');
-}
-
-function buildSajuFallbackAnalysis(text: string) {
-  const cleaned = text
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/g, '')
-    .trim();
-
-  const chunks = cleaned
-    .split(/\n\s*\n/)
-    .map((chunk) => chunk.trim())
-    .filter(Boolean)
-    .slice(0, 6);
-
-  return {
-    sections: (chunks.length > 0 ? chunks : [cleaned || '분석 내용을 불러오지 못했습니다.']).map((content, index) => ({
-      title: `분석 ${index + 1}`,
-      content,
-    })),
-  };
-}
-
-function validateSajuAnalysis(data: any) {
-  if (!data || !Array.isArray(data.sections)) {
-    throw new Error('AI 응답 형식이 올바르지 않습니다.');
-  }
-
-  const sections = data.sections
-    .map((section: any) => ({
-      title: typeof section?.title === 'string' ? section.title.trim() : '',
-      content: typeof section?.content === 'string' ? section.content.trim() : '',
-    }))
-    .filter((section: any) => section.title && section.content)
-    .slice(0, 6);
-
-  if (sections.length === 0) {
-    throw new Error('AI 응답 섹션 형식이 올바르지 않습니다.');
-  }
-
-  return { sections };
-}
 
 async function generateWithRetry(model: any, prompt: string, maxRetries = 2) {
   for (let i = 0; i < maxRetries; i++) {
@@ -141,8 +58,6 @@ export async function POST(req: Request) {
         temperature: 0.85,
         maxOutputTokens: 3072, // 분량 유지와 속도 사이의 균형점
         topP: 0.95,
-        responseMimeType: 'application/json',
-        responseSchema: sajuAnalysisSchema,
       },
       safetySettings,
     });
@@ -174,7 +89,7 @@ export async function POST(req: Request) {
          - 글이 빽빽해 보이지 않도록 문단의 호흡을 짧게 유지하고, 섹션마다 이모지 1~2개를 자연스럽게 섞어줘.
          - 중요한 포인트는 본문 안에서 짧은 독립 문장으로 한 번 더 분리해 눈에 잘 들어오게 해줘.
       5. **초개인화 제목 생성 규칙 (매우 중요)**: 
-         - 제목 형식: **[이모지 1개] [시적이고 감성적인 비유], [명확한 운세 키워드]**
+         - 제목 형식: **## [이모지 1개] [시적이고 감성적인 비유], [명확한 운세 키워드]**
          - 예시 1: 🚀 거침없이 나아가는 당신의 커리어와 직업운
          - 예시 2: 🌊 깊고 고요한 호수처럼, 당신이 품은 재물과 타고난 그릇
          - 예시 3: 💖 차가운 밤 모닥불이 되어줄 당신의 인연과 연애운
@@ -185,40 +100,14 @@ export async function POST(req: Request) {
          ④ 연애운 & 인간관계 (나의 인연이 머무는 곳과 관계의 비결)
          ⑤ 숨겨진 아픔과 다정한 위로 (지친 영혼을 위한 따뜻한 응원)
          ⑥ 2026년 운세 흐름 & 럭키 포인트 (올해 꼭 잡아야 할 기회)
-      7. 응답은 반드시 JSON만 반환해. 코드 블록, 백틱, 마크다운, 설명 문장, 주석을 붙이지 마.
-      8. 각 content 값은 순수 문자열로 작성하고, 문단 구분은 반드시 "\\n\\n"만 사용해.
-      9. JSON 구조는 아래 스키마를 정확히 따라야 해.
-
-      {
-        "sections": [
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." }
-        ]
-      }
+      7. 절대 JSON 포맷이나 중괄호 { }를 사용하지 마라.
+      8. 대신 각 분석 섹션을 시작할 때 반드시 "## [이모지] [제목]" 형태로 작성하고, 다음 줄부터 본문 내용을 다정하게 작성해라.
+      9. 섹션과 섹션 사이에는 반드시 빈 줄을 넣어라.
+      10. 코드 블록, 백틱, 배열 기호를 쓰지 마라.
     `;
 
     responseText = await generateWithRetry(model, prompt);
-    try {
-      const analysis = validateSajuAnalysis(parseJsonResponse(responseText));
-      return NextResponse.json({ success: true, saju: sajuData, analysis });
-    } catch (e: any) {
-      console.error('Saju API JSON parse error:', {
-        message: e?.message,
-        responsePreview: responseText.slice(0, 1000),
-      });
-      if (responseText.trim()) {
-        return NextResponse.json({
-          success: true,
-          saju: sajuData,
-          analysis: buildSajuFallbackAnalysis(responseText),
-        });
-      }
-      throw new Error(e?.message || 'AI 응답 파싱 실패');
-    }
+    return NextResponse.json({ success: true, saju: sajuData, analysis: responseText.trim() });
 
   } catch (error: any) {
     console.error('Saju API Error:', {
