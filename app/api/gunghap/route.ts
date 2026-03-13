@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
@@ -31,7 +31,12 @@ export async function POST(req: Request) {
     const { user1, user2, relationship } = await req.json();
     const relationLabel = relationLabels[relationship] || '인연';
     
-    if (!apiKey) return NextResponse.json({ success: false, error: 'API 키 누락' }, { status: 500 });
+    if (!apiKey) {
+      return NextResponse.json(
+        { success: false, error: 'GEMINI_API_KEY 환경변수가 설정되지 않았습니다.' },
+        { status: 500 }
+      );
+    }
 
     const saju1 = calculateSaju(user1.birthDate, user1.birthTime, user1.calendarType, user1.gender);
     const saju2 = calculateSaju(user2.birthDate, user2.birthTime, user2.calendarType, user2.gender);
@@ -101,15 +106,27 @@ export async function POST(req: Request) {
     responseText = await generateWithRetry(model, prompt);
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('JSON 구조를 찾을 수 없습니다.');
-    
-    return NextResponse.json({ 
-      success: true, 
-      analysis: JSON.parse(jsonMatch[0]),
-      saju1,
-      saju2
-    });
+
+    try {
+      return NextResponse.json({
+        success: true,
+        analysis: JSON.parse(jsonMatch[0]),
+        saju1,
+        saju2
+      });
+    } catch (error) {
+      console.error('Gunghap API JSON parse error:', {
+        extractedJson: jsonMatch[0].slice(0, 1000),
+      });
+      throw new Error('AI 응답 파싱 실패');
+    }
 
   } catch (error: any) {
+    console.error('Gunghap API Error:', {
+      message: error?.message,
+      stack: error?.stack,
+      responsePreview: responseText ? responseText.slice(0, 1000) : null,
+    });
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

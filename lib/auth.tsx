@@ -152,14 +152,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const popup = window.open(naverAuthUrl, 'naverLoginPopup', 'width=500,height=600');
 
+      if (!popup) {
+        throw new Error('로그인 팝업을 열지 못했습니다. 팝업 차단을 확인해주세요.');
+      }
+
       // 2. 팝업으로부터 엑세스 토큰 수신 (postMessage 활용)
       const accessToken = await new Promise<string>((resolve, reject) => {
-        const timer = setInterval(() => {
-          if (popup?.closed) {
-            clearInterval(timer);
-            reject(new Error('로그인 창이 닫혔습니다.'));
-          }
-        }, 1000);
+        const timeout = window.setTimeout(() => {
+          window.removeEventListener('message', handleMessage);
+          reject(new Error('네이버 로그인 시간이 초과되었습니다.'));
+        }, 120000);
 
         const handleMessage = (event: MessageEvent) => {
           // 보안을 위해 오리진 확인
@@ -169,9 +171,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (event.data?.type === 'NAVER_AUTH_SUCCESS' && event.data.accessToken) {
             console.log("[Naver Login] Access Token Received, proceeding to backend...");
-            clearInterval(timer);
+            window.clearTimeout(timeout);
             window.removeEventListener('message', handleMessage);
             resolve(event.data.accessToken);
+          } else if (event.data?.type === 'NAVER_AUTH_CLOSED') {
+            window.clearTimeout(timeout);
+            window.removeEventListener('message', handleMessage);
+            reject(new Error('로그인 창이 닫혔습니다.'));
           }
         };
         window.addEventListener('message', handleMessage);

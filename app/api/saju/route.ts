@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
-// 1. Edge 런타임 적용
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
@@ -38,7 +37,12 @@ export async function POST(req: Request) {
       .join(' ');
     const elementDist = `목:${sajuData.elementsCount['목']}, 화:${sajuData.elementsCount['화']}, 토:${sajuData.elementsCount['토']}, 금:${sajuData.elementsCount['금']}, 수:${sajuData.elementsCount['수']}`;
 
-    if (!apiKey) return NextResponse.json({ success: false, error: 'API 키 누락' }, { status: 500 });
+    if (!apiKey) {
+      return NextResponse.json(
+        { success: false, error: 'GEMINI_API_KEY 환경변수가 설정되지 않았습니다.' },
+        { status: 500 }
+      );
+    }
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const safetySettings = [
@@ -112,10 +116,18 @@ export async function POST(req: Request) {
       const analysis = JSON.parse(jsonMatch[0]);
       return NextResponse.json({ success: true, saju: sajuData, analysis });
     } catch (e) {
+      console.error('Saju API JSON parse error:', {
+        extractedJson: jsonMatch[0].slice(0, 1000),
+      });
       throw new Error('AI 응답 파싱 실패');
     }
 
   } catch (error: any) {
+    console.error('Saju API Error:', {
+      message: error?.message,
+      stack: error?.stack,
+      responsePreview: responseText ? responseText.slice(0, 1000) : null,
+    });
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
