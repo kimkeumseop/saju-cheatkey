@@ -49,6 +49,27 @@ function parseJsonResponse(text: string) {
   throw new Error('AI 응답에서 JSON 구조를 찾을 수 없습니다.');
 }
 
+function buildSajuFallbackAnalysis(text: string) {
+  const cleaned = text
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/g, '')
+    .trim();
+
+  const chunks = cleaned
+    .split(/\n\s*\n/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  const sections = (chunks.length > 0 ? chunks : [cleaned || '분석 내용을 불러오지 못했습니다.']).map((content, index) => ({
+    title: `분석 ${index + 1}`,
+    content,
+  }));
+
+  return { sections };
+}
+
 function validateSajuAnalysis(data: any) {
   if (!data || !Array.isArray(data.sections)) {
     throw new Error('AI 응답 형식이 올바르지 않습니다.');
@@ -181,6 +202,13 @@ export async function POST(req: Request) {
         message: e?.message,
         responsePreview: responseText.slice(0, 1000),
       });
+      if (responseText.trim()) {
+        return NextResponse.json({
+          success: true,
+          saju: sajuData,
+          analysis: buildSajuFallbackAnalysis(responseText),
+        });
+      }
       throw new Error(e?.message || 'AI 응답 파싱 실패');
     }
 
