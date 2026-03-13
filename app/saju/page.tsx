@@ -69,10 +69,11 @@ function SajuProcessingContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, birthDate, birthTime, calendarType, gender, isTimeUnknown }),
       });
-      
-      if (!response.ok) throw new Error('분석 서버 응답 실패');
-      
-      const resData = await response.json();
+
+      const responseBody = await response.json();
+      if (!response.ok || !responseBody.success) {
+        throw new Error(responseBody.error || '사주 분석 요청이 실패했습니다.');
+      }
       const finalResult = {
         type: 'saju',
         userId: user?.uid || 'anonymous', // 유저 ID 필수로 포함
@@ -82,7 +83,7 @@ function SajuProcessingContent() {
         calendarType,
         gender,
         sajuData,
-        aiResult: resData.analysis,
+        aiResult: responseBody.analysis,
         isPaid: true,
         createdAt: serverTimestamp() // Firestore 서버 시간 사용
       };

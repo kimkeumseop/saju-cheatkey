@@ -4,6 +4,14 @@ import { useEffect } from 'react';
 
 export default function NaverCallback() {
   useEffect(() => {
+    let completed = false;
+
+    const notifyAndFinish = (message: { type: string; accessToken?: string; state?: string }) => {
+      if (window.opener) {
+        window.opener.postMessage(message, window.location.origin);
+      }
+    };
+
     // URL 해시(#)에서 access_token 추출
     const hash = window.location.hash;
     const params = new URLSearchParams(hash.replace('#', '?'));
@@ -13,28 +21,18 @@ export default function NaverCallback() {
     console.log("[Naver Callback] Token found:", !!accessToken);
 
     if (accessToken) {
-      // 부모 창으로 토큰 전달
-      if (window.opener) {
-        window.opener.postMessage(
-          { type: 'NAVER_AUTH_SUCCESS', accessToken, state },
-          window.location.origin
-        );
-        console.log("[Naver Callback] Message sent to opener");
-        
-        // 전달 후 아주 잠시 대기 후 팝업 닫기 (통신 안정성 확보)
-        setTimeout(() => {
-          window.close();
-        }, 500);
-      } else {
-        console.error("[Naver Callback] No opener found");
-        window.close();
-      }
+      completed = true;
+      notifyAndFinish({ type: 'NAVER_AUTH_SUCCESS', accessToken, state });
+      console.log("[Naver Callback] Message sent to opener");
     } else {
       console.error("[Naver Callback] No access token found in URL");
-      setTimeout(() => {
-        window.close();
-      }, 2000);
     }
+
+    return () => {
+      if (!completed) {
+        notifyAndFinish({ type: 'NAVER_AUTH_CLOSED' });
+      }
+    };
   }, []);
 
   return (
@@ -42,6 +40,7 @@ export default function NaverCallback() {
       <div className="text-center p-8 bg-white rounded-2xl shadow-xl">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500 mx-auto mb-4"></div>
         <p className="text-rose-600 font-medium">네이버 로그인 확인 중...</p>
+        <p className="mt-3 text-sm text-rose-400">완료되면 이 창을 닫아주세요.</p>
       </div>
     </div>
   );

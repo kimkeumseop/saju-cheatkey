@@ -2,13 +2,18 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, initializeFirestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider, OAuthProvider } from "firebase/auth";
 
-// [디버깅] 환경 변수 로드 상태 확인
-if (typeof window !== "undefined") {
-  console.log("🛠️ [Firebase Debug] Config Check:", {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "✅ 로드됨" : "❌ 누락됨",
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ? "✅ 로드됨" : "❌ 누락됨",
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? "✅ 로드됨" : "❌ 누락됨",
-  });
+if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
+  const missingKeys = [
+    ["NEXT_PUBLIC_FIREBASE_API_KEY", process.env.NEXT_PUBLIC_FIREBASE_API_KEY],
+    ["NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN", process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN],
+    ["NEXT_PUBLIC_FIREBASE_PROJECT_ID", process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID],
+  ]
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  if (missingKeys.length > 0) {
+    console.warn("Firebase public env missing:", missingKeys.join(", "));
+  }
 }
 
 const firebaseConfig = {
