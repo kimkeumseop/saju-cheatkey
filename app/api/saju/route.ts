@@ -50,23 +50,23 @@ function parseJsonResponse(text: string) {
 }
 
 function validateSajuAnalysis(data: any) {
-  if (!data || !Array.isArray(data.sections) || data.sections.length !== 6) {
+  if (!data || !Array.isArray(data.sections)) {
     throw new Error('AI 응답 형식이 올바르지 않습니다.');
   }
 
-  for (const section of data.sections) {
-    if (
-      !section ||
-      typeof section.title !== 'string' ||
-      !section.title.trim() ||
-      typeof section.content !== 'string' ||
-      !section.content.trim()
-    ) {
-      throw new Error('AI 응답 섹션 형식이 올바르지 않습니다.');
-    }
+  const sections = data.sections
+    .map((section: any) => ({
+      title: typeof section?.title === 'string' ? section.title.trim() : '',
+      content: typeof section?.content === 'string' ? section.content.trim() : '',
+    }))
+    .filter((section: any) => section.title && section.content)
+    .slice(0, 6);
+
+  if (sections.length === 0) {
+    throw new Error('AI 응답 섹션 형식이 올바르지 않습니다.');
   }
 
-  return data;
+  return { ...data, sections };
 }
 
 async function generateWithRetry(model: any, prompt: string, maxRetries = 2) {
@@ -176,11 +176,12 @@ export async function POST(req: Request) {
     try {
       const analysis = validateSajuAnalysis(parseJsonResponse(responseText));
       return NextResponse.json({ success: true, saju: sajuData, analysis });
-    } catch (e) {
+    } catch (e: any) {
       console.error('Saju API JSON parse error:', {
+        message: e?.message,
         responsePreview: responseText.slice(0, 1000),
       });
-      throw new Error('AI 응답 파싱 실패');
+      throw new Error(e?.message || 'AI 응답 파싱 실패');
     }
 
   } catch (error: any) {
