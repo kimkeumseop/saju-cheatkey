@@ -11,7 +11,7 @@ import {
   updateProfile,
   signInWithCustomToken
 } from 'firebase/auth';
-import { auth, googleProvider, db } from './firebase';
+import { auth, googleProvider, db, hasFirebasePublicConfig } from './firebase';
 import { collection, query, getDocs, addDoc, serverTimestamp, orderBy, doc, onSnapshot, deleteDoc } from 'firebase/firestore';
 
 export type SajuProfile = {
@@ -49,7 +49,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profiles, setProfiles] = useState<SajuProfile[]>([]);
   const [userCheatKeys, setUserCheatKeys] = useState(0);
 
+  const loadLocalProfiles = () => {
+    try {
+      const saved = localStorage.getItem('saju_profiles');
+      if (saved) setProfiles(JSON.parse(saved));
+      else setProfiles([]);
+    } catch (error) {
+      console.error('로컬 프로필 불러오기 실패:', error);
+      setProfiles([]);
+    }
+  };
+
   const fetchProfiles = async (uid: string) => {
+    if (!db) return;
     try {
       const q = query(collection(db, 'users', uid, 'profiles'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
@@ -65,21 +77,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    if (!auth || !hasFirebasePublicConfig) {
+      loadLocalProfiles();
+      setLoading(false);
+      return;
+    }
+
     let unsubscribeUserDoc: (() => void) | undefined;
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         fetchProfiles(currentUser.uid);
-        unsubscribeUserDoc = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
-          if (docSnap.exists()) setUserCheatKeys(docSnap.data().cheatCoin || 0);
-          else setUserCheatKeys(0);
-        });
+        if (db) {
+          unsubscribeUserDoc = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
+            if (docSnap.exists()) setUserCheatKeys(docSnap.data().cheatCoin || 0);
+            else setUserCheatKeys(0);
+          });
+        }
       } else {
         setUser(null);
         setUserCheatKeys(0);
-        const saved = localStorage.getItem('saju_profiles');
-        if (saved) setProfiles(JSON.parse(saved));
-        else setProfiles([]);
+        loadLocalProfiles();
       }
       setLoading(false);
     });
@@ -91,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const addProfile = async (newProfile: SajuProfile) => {
     try {
-      if (user) {
+      if (user && db) {
         const docRef = await addDoc(collection(db, 'users', user.uid, 'profiles'), {
           ...newProfile,
           createdAt: serverTimestamp()
@@ -111,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const deleteProfile = async (profileId: string) => {
     try {
-      if (user) {
+      if (user && db) {
         await deleteDoc(doc(db, 'users', user.uid, 'profiles', profileId));
         setProfiles(prev => prev.filter(p => p.id !== profileId));
       } else {
@@ -126,10 +144,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshProfiles = async () => {
-    if (user) await fetchProfiles(user.uid);
+    if (user && db) await fetchProfiles(user.uid);
   };
 
   const loginWithGoogle = async () => {
+    if (!auth || !hasFirebasePublicConfig) throw new Error('Firebase auth is not configured.');
     try { await signInWithPopup(auth, googleProvider); } catch (error) { throw error; }
   };
 
@@ -196,6 +215,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // 4. 발급받은 Custom Token으로 파이어베이스 로그인 완료
+      if (!auth || !hasFirebasePublicConfig) {
+        throw new Error('Firebase auth is not configured.');
+      }
       await signInWithCustomToken(auth, data.customToken);
 
     } catch (error: any) {
@@ -206,10 +228,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginWithEmail = async (email: string, pass: string) => {
+    if (!auth || !hasFirebasePublicConfig) throw new Error('Firebase auth is not configured.');
     try { await signInWithEmailAndPassword(auth, email, pass); } catch (error) { throw error; }
   };
 
   const signUpWithEmail = async (email: string, pass: string, name: string) => {
+    if (!auth || !hasFirebasePublicConfig) throw new Error('Firebase auth is not configured.');
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
       await updateProfile(userCredential.user, { displayName: name });
@@ -217,6 +241,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       setProfiles([]);
