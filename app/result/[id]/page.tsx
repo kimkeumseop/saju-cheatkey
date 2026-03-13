@@ -184,7 +184,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   const filteredElements = saju ? getFilteredElements(saju, isTimeUnknown) : null;
 
   return (
-    <div className="min-h-screen bg-[#FFF5F7] pt-24 pb-32 px-4 md:px-6">
+    <div className="min-h-screen bg-[#FFF5F7] pt-24 pb-32 px-3 sm:px-4 md:px-6">
       <Navbar />
       <div className="max-w-4xl mx-auto space-y-12">
         {isCompatibility ? (
@@ -208,7 +208,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             </div>
 
             {/* 만세력 설계도 생략 (동일) */}
-            <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-xl border border-pink-50 space-y-10 relative overflow-hidden">
+            <div className="bg-white p-5 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-xl border border-pink-50 space-y-10 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50/50 rounded-full blur-3xl -mr-32 -mt-32" />
               <div className="text-center space-y-1 relative z-10"><h3 className="text-2xl font-black text-primary-900 tracking-tight text-serif">인생 설계도 (만세력)</h3><p className="text-[10px] font-black text-primary-200 uppercase tracking-[0.3em]">Manseyrok INFOGRAPHIC</p></div>
               {saju && <PillarChart pillars={saju.pillars} isTimeUnknown={isTimeUnknown} />}
@@ -227,7 +227,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             </div>
 
             {/* 개편된 대운 UI */}
-            <div className="bg-white p-8 md:p-10 rounded-[3rem] shadow-lg border border-pink-50 space-y-8 relative overflow-hidden">
+            <div className="bg-white p-5 sm:p-8 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-lg border border-pink-50 space-y-8 relative overflow-hidden">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <History className="w-5 h-5 text-primary-500" />

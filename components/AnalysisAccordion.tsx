@@ -28,11 +28,21 @@ function renderContent(content: string) {
     .split(/\n{2,}/)
     .map((paragraph) => paragraph.trim());
 
-  return paragraphs.map((paragraph, index) => (
-    <p key={index} className="whitespace-pre-wrap break-keep">
-      {paragraph}
-    </p>
-  ));
+  return paragraphs.map((paragraph, index) => {
+    // 간단한 마크다운 볼드 처리 (예: **텍스트**)
+    const parts = paragraph.split(/(\*\*.*?\*\*)/g);
+    
+    return (
+      <p key={index} className="whitespace-pre-wrap break-keep">
+        {parts.map((part, i) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={i} className="font-black text-rose-600">{part.slice(2, -2)}</strong>;
+          }
+          return part;
+        })}
+      </p>
+    );
+  });
 }
 
 export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
@@ -70,24 +80,47 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
       {liveData.map((item, index) => (
         <article
           key={`${index}-${item.title}`}
-          className="rounded-[2.5rem] border border-pink-100 bg-white/95 p-6 md:p-8 shadow-[0_18px_50px_-20px_rgba(190,24,93,0.22)]"
+          className="rounded-[2rem] md:rounded-[2.5rem] border border-pink-100 bg-white/95 p-4 md:p-8 shadow-[0_18px_50px_-20px_rgba(190,24,93,0.22)]"
         >
-          <div className="flex items-start gap-4 md:gap-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 text-lg font-black text-white shadow-lg shadow-rose-200/70 md:h-14 md:w-14 md:text-xl">
-              {index + 1}
-            </div>
-
-            <div className="min-w-0 flex-1 space-y-4">
-              <div className="flex items-start justify-between gap-4">
-                <h4 className="pr-2 text-xl font-black tracking-tight text-rose-950 break-keep md:text-2xl">
+          <div className="flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-start md:gap-5">
+            {/* Header row on mobile, left column on desktop */}
+            <div className="flex items-start gap-3 md:block md:w-auto">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 text-base font-black text-white shadow-lg shadow-rose-200/70 md:h-14 md:w-14 md:text-xl">
+                {index + 1}
+              </div>
+              
+              {/* Title & Button on Mobile (Hidden on Desktop) */}
+              <div className="flex-1 flex items-start justify-between gap-2 md:hidden pt-0.5">
+                <h4 className="text-[18px] sm:text-[19px] font-black tracking-tight text-rose-950 break-keep leading-snug">
                   {item.title}
                 </h4>
-
                 <button
                   type="button"
                   onClick={() => handleSpeak(item.content || item.title, index)}
                   className={cn(
-                    'mt-0.5 shrink-0 rounded-full border p-2.5 shadow-sm transition-all active:scale-95',
+                    'shrink-0 rounded-full border p-2 shadow-sm transition-all active:scale-95',
+                    speakingIndex === index
+                      ? 'border-rose-400 bg-rose-500 text-white'
+                      : 'border-pink-100 bg-rose-50 text-rose-400 hover:border-rose-200 hover:text-rose-600'
+                  )}
+                  aria-label={speakingIndex === index ? '음성 재생 중지' : '본문 음성 재생'}
+                >
+                  {speakingIndex === index ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="min-w-0 flex-1 space-y-3 md:space-y-4 w-full">
+              {/* Title & Button on Desktop (Hidden on Mobile) */}
+              <div className="hidden md:flex items-start justify-between gap-4">
+                <h4 className="pr-1 font-black tracking-tight text-rose-950 break-keep md:text-2xl leading-snug">
+                  {item.title}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => handleSpeak(item.content || item.title, index)}
+                  className={cn(
+                    'shrink-0 rounded-full border p-2.5 shadow-sm transition-all active:scale-95',
                     speakingIndex === index
                       ? 'border-rose-400 bg-rose-500 text-white'
                       : 'border-pink-100 bg-rose-50 text-rose-400 hover:border-rose-200 hover:text-rose-600'
@@ -98,10 +131,10 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
                 </button>
               </div>
 
-              <div className="rounded-[2rem] bg-gradient-to-br from-rose-50 via-white to-pink-50 px-5 py-4 md:px-6 md:py-5">
+              <div className="rounded-[1.5rem] md:rounded-[2rem] bg-gradient-to-br from-rose-50 via-white to-pink-50 px-4 py-4 sm:px-5 md:px-6 md:py-5">
                 <div
                   className={cn(
-                    'space-y-4 text-[15px] font-medium leading-8 text-slate-700 md:text-[17px]',
+                    'space-y-4 text-[15px] font-medium leading-relaxed text-slate-700 md:text-[17px] md:leading-8 break-keep',
                     speakingIndex === index && 'text-rose-950'
                   )}
                 >
