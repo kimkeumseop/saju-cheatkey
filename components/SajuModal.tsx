@@ -55,44 +55,49 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
     }
   }, [isOpen]);
 
-  // 분리된 상태가 변경될 때마다 formData.birthDate 업데이트
-  useEffect(() => {
-    if (birthParts.year && birthParts.month && birthParts.day) {
-      const formattedMonth = birthParts.month.padStart(2, '0');
-      const formattedDay = birthParts.day.padStart(2, '0');
+  // 분리된 상태가 변경될 때마다 formData.birthDate 업데이트하는 핸들러
+  const handleBirthChange = (field: 'year' | 'month' | 'day', value: string) => {
+    const newParts = { ...birthParts, [field]: value };
+    
+    // 월/년 변경 시 일자 유효성 체크
+    if ((field === 'year' || field === 'month') && newParts.year && newParts.month && newParts.day) {
+      const maxDays = new Date(Number(newParts.year), Number(newParts.month), 0).getDate();
+      if (Number(newParts.day) > maxDays) {
+        newParts.day = String(maxDays);
+      }
+    }
+    
+    setBirthParts(newParts);
+    
+    if (newParts.year && newParts.month && newParts.day) {
+      const formattedMonth = newParts.month.padStart(2, '0');
+      const formattedDay = newParts.day.padStart(2, '0');
       setFormData(prev => ({
         ...prev,
-        birthDate: `${birthParts.year}-${formattedMonth}-${formattedDay}`
+        birthDate: `${newParts.year}-${formattedMonth}-${formattedDay}`
       }));
     }
-  }, [birthParts]);
+  };
 
-  // 태어난 시각 상태 변경 시 formData.birthTime 업데이트 (HH:mm 형식)
-  useEffect(() => {
-    if (timeParts.hour && timeParts.minute) {
-      let h = parseInt(timeParts.hour);
-      if (timeParts.ampm === 'PM' && h < 12) h += 12;
-      if (timeParts.ampm === 'AM' && h === 12) h = 0;
+  // 태어난 시각 상태 변경 시 formData.birthTime 업데이트하는 핸들러
+  const handleTimeChange = (field: 'ampm' | 'hour' | 'minute', value: string) => {
+    const newParts = { ...timeParts, [field]: value };
+    setTimeParts(newParts);
+    
+    if (newParts.hour && newParts.minute) {
+      let h = parseInt(newParts.hour);
+      if (newParts.ampm === 'PM' && h < 12) h += 12;
+      if (newParts.ampm === 'AM' && h === 12) h = 0;
       
       const formattedHour = String(h).padStart(2, '0');
-      const formattedMinute = timeParts.minute.padStart(2, '0');
+      const formattedMinute = newParts.minute.padStart(2, '0');
       
       setFormData(prev => ({
         ...prev,
         birthTime: `${formattedHour}:${formattedMinute}`
       }));
     }
-  }, [timeParts]);
-
-  // 월/년 변경 시 일자 유효성 체크
-  useEffect(() => {
-    if (birthParts.year && birthParts.month && birthParts.day) {
-      const maxDays = new Date(Number(birthParts.year), Number(birthParts.month), 0).getDate();
-      if (Number(birthParts.day) > maxDays) {
-        setBirthParts(prev => ({ ...prev, day: String(maxDays) }));
-      }
-    }
-  }, [birthParts.year, birthParts.month]);
+  };
 
   if (!isOpen) return null;
 
@@ -231,7 +236,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                       <select 
                         className={cn(inputClasses, "pr-8")} 
                         value={birthParts.year} 
-                        onChange={e => setBirthParts(prev => ({ ...prev, year: e.target.value }))}
+                        onChange={e => handleBirthChange('year', e.target.value)}
                         required
                       >
                         <option value="" disabled>년</option>
@@ -243,7 +248,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                       <select 
                         className={cn(inputClasses, "pr-8")} 
                         value={birthParts.month} 
-                        onChange={e => setBirthParts(prev => ({ ...prev, month: e.target.value }))}
+                        onChange={e => handleBirthChange('month', e.target.value)}
                         required
                       >
                         <option value="" disabled>월</option>
@@ -255,7 +260,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                       <select 
                         className={cn(inputClasses, "pr-8")} 
                         value={birthParts.day} 
-                        onChange={e => setBirthParts(prev => ({ ...prev, day: e.target.value }))}
+                        onChange={e => handleBirthChange('day', e.target.value)}
                         required
                       >
                         <option value="" disabled>일</option>
@@ -293,7 +298,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                           <select 
                             className={cn(inputClasses, "pr-8")} 
                             value={timeParts.ampm} 
-                            onChange={e => setTimeParts(prev => ({ ...prev, ampm: e.target.value }))}
+                            onChange={e => handleTimeChange('ampm', e.target.value)}
                             required
                           >
                             <option value="AM">오전</option>
@@ -305,7 +310,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                           <select 
                             className={cn(inputClasses, "pr-8")} 
                             value={timeParts.hour} 
-                            onChange={e => setTimeParts(prev => ({ ...prev, hour: e.target.value }))}
+                            onChange={e => handleTimeChange('hour', e.target.value)}
                             required
                           >
                             <option value="" disabled>시</option>
@@ -317,7 +322,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                           <select 
                             className={cn(inputClasses, "pr-8")} 
                             value={timeParts.minute} 
-                            onChange={e => setTimeParts(prev => ({ ...prev, minute: e.target.value }))}
+                            onChange={e => handleTimeChange('minute', e.target.value)}
                             required
                           >
                             <option value="" disabled>분</option>

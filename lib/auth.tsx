@@ -154,8 +154,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithNaver = async () => {
     try {
-      // 1. 네이버 인증 팝업 열기 (클라이언트 ID 하드코딩 적용)
-      const clientId = 'LLHPh6fs2bvlW54wQ3pw';
+      // 1. 네이버 인증 팝업 열기 (환경변수 사용)
+      const clientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID;
+      
+      if (!clientId) {
+        throw new Error('네이버 클라이언트 ID가 설정되지 않았습니다.');
+      }
       
       // 동적으로 현재 접속 중인 도메인 기반 Redirect URI 생성
       const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
