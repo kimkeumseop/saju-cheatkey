@@ -17,199 +17,142 @@ type ParsedGunghapResult = ParsedSectionsResult & {
   headline?: string;
 };
 
+function normalizeLineBreaks(text: string) {
+  return text
+    .replace(/\r\n/g, '\n')
+    .replace(/\\n\\n/g, '\n\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 function stripCodeFence(text: string) {
   return text
     .trim()
-    .replace(/^```json\s*/i, '')
+    .replace(/^```markdown\s*/i, '')
+    .replace(/^```md\s*/i, '')
     .replace(/^```\s*/i, '')
     .replace(/\s*```$/g, '')
     .trim();
 }
 
-function normalizeSection(section: unknown): AnalysisSection | null {
-  if (!section || typeof section !== 'object') return null;
-
-  const record = section as Record<string, unknown>;
-  const title = typeof record.title === 'string' ? record.title.trim() : '';
-  const content = typeof record.content === 'string' ? record.content.trim() : '';
-
-  if (!title || !content) return null;
-
-  return {
-    title,
-    content,
-  };
+function cleanTitle(title: string) {
+  return title.replace(/^#+\s*/, '').trim();
 }
 
-function normalizeSections(sections: unknown): AnalysisSection[] {
-  if (!Array.isArray(sections)) return [];
+function normalizeObjectSections(value: unknown): AnalysisSection[] {
+  if (!value || typeof value !== 'object') return [];
 
-  return sections
-    .map((section) => normalizeSection(section))
+  const record = value as Record<string, unknown>;
+  if (!Array.isArray(record.sections)) return [];
+
+  return record.sections
+    .map((section, index) => {
+      if (!section || typeof section !== 'object') return null;
+      const sectionRecord = section as Record<string, unknown>;
+      const title = typeof sectionRecord.title === 'string' ? cleanTitle(sectionRecord.title) : `분석 ${index + 1}`;
+      const content = typeof sectionRecord.content === 'string' ? normalizeLineBreaks(sectionRecord.content) : '';
+
+      return {
+        title,
+        content,
+      };
+    })
     .filter((section): section is AnalysisSection => Boolean(section))
     .slice(0, 6);
 }
 
-function parsePossibleJson(value: string) {
-  const cleaned = stripCodeFence(value);
-  const candidates = [cleaned, ...(cleaned.match(/\{[\s\S]*\}/g) || [])];
-
-  for (const candidate of candidates) {
-    try {
-      return JSON.parse(candidate);
-    } catch {
-      continue;
-    }
-  }
-
-  return null;
-}
-
-function splitMarkdownSections(text: string): AnalysisSection[] {
-  const normalized = text.replace(/\r\n/g, '\n').trim();
-  if (!normalized) {
-    return [{ title: '분석 준비 중', content: SOFT_ERROR_MESSAGE }];
-  }
-
-  const lines = normalized.split('\n');
-  const sections: AnalysisSection[] = [];
-  let currentTitle = '';
-  let currentContent: string[] = [];
-  let introContent: string[] = [];
-
-  const pushSection = () => {
-    const content = currentContent.join('\n').trim();
-    if (!content) return;
-    sections.push({
-      title: currentTitle || `분석 ${sections.length + 1}`,
-      content,
-    });
-  };
-
-  for (const line of lines) {
-    if (line.startsWith('### ')) {
-      if (currentTitle || currentContent.length > 0) {
-        pushSection();
-      } else if (introContent.length > 0) {
-        sections.push({
-          title: '운명의 흐름',
-          content: introContent.join('\n').trim(),
-        });
-        introContent = [];
-      }
-
-      currentTitle = line.replace(/^###\s*/, '').trim() || `분석 ${sections.length + 1}`;
-      currentContent = [];
-      continue;
-    }
-
-    if (!currentTitle) {
-      introContent.push(line);
-    } else {
-      currentContent.push(line);
-    }
-  }
-
-  if (currentTitle || currentContent.length > 0) {
-    pushSection();
-  } else if (introContent.length > 0) {
-    sections.push({
-      title: '운명의 흐름',
-      content: introContent.join('\n').trim(),
-    });
-  }
-
-  const normalizedSections = sections.filter((section) => section.content);
-  return normalizedSections.length > 0
-    ? normalizedSections
-    : [{ title: '분석 준비 중', content: SOFT_ERROR_MESSAGE }];
-}
-
-function normalizeRawText(value: unknown) {
-  if (typeof value === 'string') return stripCodeFence(value);
-
-  if (value && typeof value === 'object') {
-    return JSON.stringify(value);
-  }
-
-  return '';
-}
-
-function parseSectionsResult(value: unknown): ParsedSectionsResult {
-  if (value && typeof value === 'object') {
+export function parseAnalysisSections(value: unknown): ParsedSectionsResult {
+  const objectSections = normalizeObjectSections(value);
+  if (objectSections.length > 0) {
     const record = value as Record<string, unknown>;
-    const sections = normalizeSections(record.sections);
-    if (sections.length > 0) {
-      return {
-        rawText: normalizeRawText(value),
-        sections,
-      };
-    }
+    const rawText = typeof record.rawText === 'string'
+      ? normalizeLineBreaks(stripCodeFence(record.rawText))
+      : objectSections.map((section) => `## ${section.title}\n${section.content}`).join('\n\n');
+
+    return {
+      rawText,
+      sections: objectSections,
+    };
   }
 
-  const text = typeof value === 'string' ? value : '';
-  const parsed = parsePossibleJson(text);
+  const rawText =
+    typeof value === 'string'
+      ? normalizeLineBreaks(stripCodeFence(value))
+      : value && typeof value === 'object'
+        ? normalizeLineBreaks(stripCodeFence(String((value as Record<string, unknown>).rawText || '')))
+        : '';
 
-  if (parsed && typeof parsed === 'object') {
-    const record = parsed as Record<string, unknown>;
-    const sections = normalizeSections(record.sections);
-    if (sections.length > 0) {
-      return {
-        rawText: stripCodeFence(text),
-        sections,
-      };
-    }
+  if (!rawText) {
+    return {
+      rawText: '',
+      sections: [{ title: '분석 준비 중', content: SOFT_ERROR_MESSAGE }],
+    };
   }
 
-  const plainText = normalizeRawText(value);
+  const splitBlocks = rawText
+    .split(/(?=^##\s+)/m)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean);
+
+  const hasSectionMarker = splitBlocks.some((block) => block.startsWith('##'));
+  const blocksToParse = hasSectionMarker ? splitBlocks.filter((block) => block.startsWith('##')) : splitBlocks;
+
+  const sections = blocksToParse
+    .map((block, index) => {
+      const normalizedBlock = block.startsWith('##') ? block.replace(/^##\s*/, '') : block;
+      const [firstLine = '', ...restLines] = normalizedBlock.split('\n');
+      const title = cleanTitle(firstLine) || `분석 ${index + 1}`;
+      const content = normalizeLineBreaks(restLines.join('\n'));
+
+      return {
+        title,
+        content,
+      };
+    })
+    .filter((section) => section.title || section.content)
+    .map((section, index) => ({
+      title: section.title || `분석 ${index + 1}`,
+      content: section.content || '',
+    }));
+
+  if (sections.length > 0) {
+    return { rawText, sections };
+  }
 
   return {
-    rawText: plainText,
-    sections: splitMarkdownSections(plainText),
+    rawText,
+    sections: [{ title: '운명의 흐름', content: rawText }],
   };
 }
 
 export function normalizeSajuAiResult(value: unknown): ParsedSectionsResult {
-  return parseSectionsResult(value);
+  return parseAnalysisSections(value);
 }
 
 export function normalizeGunghapAiResult(value: unknown): ParsedGunghapResult {
-  const normalized = parseSectionsResult(value);
-
-  if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    return {
-      ...normalized,
-      compatibilityScore: typeof record.compatibilityScore === 'number' ? Math.min(100, record.compatibilityScore) : 80,
-      headline: typeof record.headline === 'string' && record.headline.trim()
-        ? record.headline.trim()
-        : normalized.sections[0]?.content || SOFT_ERROR_MESSAGE,
-    };
-  }
-
-  const parsed = typeof value === 'string' ? parsePossibleJson(value) : null;
-  if (parsed && typeof parsed === 'object') {
-    const record = parsed as Record<string, unknown>;
-    return {
-      ...normalized,
-      compatibilityScore: typeof record.compatibilityScore === 'number' ? Math.min(100, record.compatibilityScore) : 80,
-      headline: typeof record.headline === 'string' && record.headline.trim()
-        ? record.headline.trim()
-        : normalized.sections[0]?.content || SOFT_ERROR_MESSAGE,
-    };
-  }
-
+  const normalized = parseAnalysisSections(value);
+  const legacyRecord = value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
   const lines = normalized.rawText
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
-  const scoreLine = lines.find((line) => /점/.test(line));
-  const headlineLine = lines.find((line) => !line.startsWith('###') && !/점/.test(line));
+
+  const scoreLine = lines.find((line) => /궁합\s*점수\s*[:：]?\s*\d{1,3}\s*점/.test(line) || /^\d{1,3}\s*점$/.test(line));
+  const headlineLine = lines.find((line) => !line.startsWith('##') && !/점/.test(line));
   const scoreMatch = scoreLine?.match(/(\d{1,3})\s*점/);
 
   return {
     ...normalized,
-    compatibilityScore: scoreMatch ? Math.min(100, Number(scoreMatch[1])) : 80,
-    headline: headlineLine || normalized.sections[0]?.content || SOFT_ERROR_MESSAGE,
+    compatibilityScore:
+      typeof legacyRecord?.compatibilityScore === 'number'
+        ? Math.min(100, legacyRecord.compatibilityScore)
+        : scoreMatch
+          ? Math.min(100, Number(scoreMatch[1]))
+          : 80,
+    headline:
+      typeof legacyRecord?.headline === 'string' && legacyRecord.headline.trim()
+        ? legacyRecord.headline.trim()
+        : headlineLine || normalized.sections[0]?.content || SOFT_ERROR_MESSAGE,
   };
 }

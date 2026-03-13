@@ -1,108 +1,11 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SchemaType } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
-
-const gunghapAnalysisSchema: any = {
-  type: SchemaType.OBJECT,
-  properties: {
-    compatibilityScore: { type: SchemaType.INTEGER },
-    headline: { type: SchemaType.STRING },
-    sections: {
-      type: SchemaType.ARRAY,
-      items: {
-        type: SchemaType.OBJECT,
-        properties: {
-          title: { type: SchemaType.STRING },
-          content: { type: SchemaType.STRING },
-        },
-        required: ['title', 'content'],
-      },
-    },
-  },
-  required: ['compatibilityScore', 'headline', 'sections'],
-};
-
-function parseJsonResponse(text: string) {
-  const trimmed = text.trim();
-  const withoutCodeFence = trimmed
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/g, '')
-    .trim();
-
-  const candidates = [
-    withoutCodeFence,
-    ...(withoutCodeFence.match(/\{[\s\S]*\}/g) || []),
-  ];
-
-  for (const candidate of candidates) {
-    try {
-      return JSON.parse(candidate);
-    } catch {
-      continue;
-    }
-  }
-
-  throw new Error('JSON 구조를 찾을 수 없습니다.');
-}
-
-function buildGunghapFallbackAnalysis(text: string) {
-  const cleaned = text
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/g, '')
-    .trim();
-
-  const chunks = cleaned
-    .split(/\n\s*\n/)
-    .map((chunk) => chunk.trim())
-    .filter(Boolean)
-    .slice(0, 6);
-
-  return {
-    compatibilityScore: 80,
-    headline: '두 사람의 흐름을 요약한 분석을 정리했어요.',
-    sections: (chunks.length > 0 ? chunks : [cleaned || '분석 내용을 불러오지 못했습니다.']).map((content, index) => ({
-      title: `분석 ${index + 1}`,
-      content,
-    })),
-  };
-}
-
-function validateGunghapAnalysis(data: any) {
-  if (
-    !data ||
-    typeof data.compatibilityScore !== 'number' ||
-    typeof data.headline !== 'string' ||
-    !data.headline.trim() ||
-    !Array.isArray(data.sections)
-  ) {
-    throw new Error('AI 응답 형식이 올바르지 않습니다.');
-  }
-
-  const sections = data.sections
-    .map((section: any) => ({
-      title: typeof section?.title === 'string' ? section.title.trim() : '',
-      content: typeof section?.content === 'string' ? section.content.trim() : '',
-    }))
-    .filter((section: any) => section.title && section.content)
-    .slice(0, 6);
-
-  if (sections.length === 0) {
-    throw new Error('AI 응답 섹션 형식이 올바르지 않습니다.');
-  }
-
-  return {
-    compatibilityScore: Math.min(100, Math.max(0, Math.round(data.compatibilityScore))),
-    headline: data.headline.trim(),
-    sections,
-  };
-}
 
 const relationLabels: Record<string, string> = {
   friend: '친구', some: '썸남 썸녀', couple: '연인', spouse: '배우자', 'ex-couple': '전여친 전남친', 'ex-spouse': '전아내 전남편',
@@ -161,8 +64,6 @@ export async function POST(req: Request) {
         temperature: 0.85,
         maxOutputTokens: 4096,
         topP: 0.95,
-        responseMimeType: 'application/json',
-        responseSchema: gunghapAnalysisSchema,
       },
       safetySettings,
     });
@@ -191,55 +92,27 @@ export async function POST(req: Request) {
          - 설명에는 나무, 불, 흙, 금속, 물 같은 자연물 비유를 적극 활용해.
          - 글이 빽빽해 보이지 않도록 문단 호흡을 짧게 유지하고, 섹션마다 이모지 1~2개를 자연스럽게 섞어줘.
          - 중요한 포인트는 본문 안에서 짧은 독립 문장으로 한 번 더 분리해 눈에 띄게 해줘.
-      4. **다이내믹 제목 생성 규칙 (매우 중요)**: 
-         - 제목 형식: **[이모지 1개] [시적이고 감성적인 비유], [관계에 맞는 명확한 키워드]**
+      4. 첫 줄은 두 사람의 관계를 한 문장으로 요약하는 부드러운 문장으로 작성해.
+      5. 둘째 줄은 반드시 "궁합 점수: NN점" 형식으로만 작성해.
+      6. **다이내믹 제목 생성 규칙 (매우 중요)**: 
+         - 제목 형식: **## [이모지 1개] [시적이고 감성적인 비유], [관계에 맞는 명확한 키워드]**
          - 예시 (연인): 🌸 따뜻한 봄볕과 부드러운 흙처럼 스며드는 두 사람의 인연
          - 예시 (비즈니스): 📈 불과 쇠가 만나 거대한 검을 완성하듯, 환상의 업무 시너지
          - 예시 (전연인): 🌧️ 아직 마침표를 찍지 못한 두 사람의 엇갈린 시간과 인연
-      5. headline은 두 사람의 관계를 한 문장으로 요약하는 부드러운 문장으로 작성해.
-      6. compatibilityScore는 0부터 100 사이의 정수로 작성해.
       7. 섹션 구성: 총 6개의 섹션을 생성해.
-      8. 응답은 반드시 JSON만 반환해. 코드 블록, 백틱, 마크다운, 설명 문장, 주석을 붙이지 마.
-      9. 각 content 값은 순수 문자열로 작성하고, 문단 구분은 반드시 "\\n\\n"만 사용해.
-      10. JSON 구조는 아래 스키마를 정확히 따라야 해.
-
-      {
-        "compatibilityScore": 85,
-        "headline": "두 사람의 인연을 정의하는 한 줄 메시지",
-        "sections": [
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." },
-          { "title": "...", "content": "..." }
-        ]
-      }
+      8. 절대 JSON 포맷이나 중괄호 { }를 사용하지 마라.
+      9. 대신 각 분석 섹션을 시작할 때 반드시 "## [이모지] [제목]" 형태로 작성하고, 다음 줄부터 본문 내용을 다정하게 작성해라.
+      10. 섹션과 섹션 사이에는 반드시 빈 줄을 넣어라.
+      11. 코드 블록, 백틱, 배열 기호를 쓰지 마라.
     `;
 
     responseText = await generateWithRetry(model, prompt);
-    try {
-      return NextResponse.json({
-        success: true,
-        analysis: validateGunghapAnalysis(parseJsonResponse(responseText)),
-        saju1,
-        saju2
-      });
-    } catch (error: any) {
-      console.error('Gunghap API JSON parse error:', {
-        message: error?.message,
-        responsePreview: responseText.slice(0, 1000),
-      });
-      if (responseText.trim()) {
-        return NextResponse.json({
-          success: true,
-          analysis: buildGunghapFallbackAnalysis(responseText),
-          saju1,
-          saju2,
-        });
-      }
-      throw new Error(error?.message || 'AI 응답 파싱 실패');
-    }
+    return NextResponse.json({
+      success: true,
+      analysis: responseText.trim(),
+      saju1,
+      saju2
+    });
 
   } catch (error: any) {
     console.error('Gunghap API Error:', {

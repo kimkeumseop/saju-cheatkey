@@ -18,6 +18,28 @@ interface AnalysisAccordionProps {
   data: AnalysisItem[];
 }
 
+function renderContent(content: string) {
+  const normalized = content
+    .replace(/\\n\\n/g, '\n\n')
+    .replace(/\\n/g, '\n')
+    .trim();
+
+  const paragraphs = normalized
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
+  if (paragraphs.length === 0) {
+    return <p className="whitespace-pre-wrap break-keep">작성 중...</p>;
+  }
+
+  return paragraphs.map((paragraph, index) => (
+    <p key={index} className="whitespace-pre-wrap break-keep">
+      {paragraph}
+    </p>
+  ));
+}
+
 export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
   const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
 
@@ -72,14 +94,14 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
               </div>
 
               <div className="rounded-[2rem] bg-gradient-to-br from-rose-50 via-white to-pink-50 px-5 py-4 md:px-6 md:py-5">
-                <p
+                <div
                   className={cn(
-                    'whitespace-pre-wrap break-keep text-[15px] font-medium leading-8 text-slate-700 md:text-[17px]',
+                    'space-y-4 text-[15px] font-medium leading-8 text-slate-700 md:text-[17px]',
                     speakingIndex === index && 'text-rose-950'
                   )}
                 >
-                  {item.content}
-                </p>
+                  {renderContent(item.content)}
+                </div>
               </div>
             </div>
           </div>
