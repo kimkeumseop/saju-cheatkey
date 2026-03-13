@@ -51,6 +51,29 @@ function parseJsonResponse(text: string) {
   throw new Error('JSON 구조를 찾을 수 없습니다.');
 }
 
+function buildGunghapFallbackAnalysis(text: string) {
+  const cleaned = text
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/g, '')
+    .trim();
+
+  const chunks = cleaned
+    .split(/\n\s*\n/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  return {
+    compatibilityScore: 80,
+    headline: '두 사람의 흐름을 요약한 분석을 정리했어요.',
+    sections: (chunks.length > 0 ? chunks : [cleaned || '분석 내용을 불러오지 못했습니다.']).map((content, index) => ({
+      title: `분석 ${index + 1}`,
+      content,
+    })),
+  };
+}
+
 function validateGunghapAnalysis(data: any) {
   if (
     !data ||
@@ -196,6 +219,14 @@ export async function POST(req: Request) {
         message: error?.message,
         responsePreview: responseText.slice(0, 1000),
       });
+      if (responseText.trim()) {
+        return NextResponse.json({
+          success: true,
+          analysis: buildGunghapFallbackAnalysis(responseText),
+          saju1,
+          saju2,
+        });
+      }
       throw new Error(error?.message || 'AI 응답 파싱 실패');
     }
 
