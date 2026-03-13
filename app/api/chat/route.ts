@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     }
 
     // 2. 제미나이 startChat 세션 초기화
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const chat = model.startChat({
       history: history.map((item: any) => ({
         role: item.role,

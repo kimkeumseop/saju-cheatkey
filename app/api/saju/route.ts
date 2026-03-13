@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     ];
 
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.5-flash-lite',
+      model: 'gemini-2.5-flash',
       generationConfig: {
         temperature: 0.85,
         maxOutputTokens: 3072, // 분량 유지와 속도 사이의 균형점
