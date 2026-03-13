@@ -63,25 +63,28 @@ function normalizeObjectSections(value: unknown): AnalysisSection[] {
 }
 
 export function parseAnalysisSections(value: unknown): ParsedSectionsResult {
-  const objectSections = normalizeObjectSections(value);
-  if (objectSections.length > 0) {
-    const record = value as Record<string, unknown>;
-    const rawText = typeof record.rawText === 'string'
-      ? normalizeLineBreaks(stripCodeFence(record.rawText))
-      : objectSections.map((section) => `## ${section.title}\n${section.content}`).join('\n\n');
+  const rawText = (() => {
+    if (typeof value === 'string') return normalizeLineBreaks(stripCodeFence(value));
+    if (value && typeof value === 'object') {
+      const record = value as Record<string, unknown>;
+      if (typeof record.rawText === 'string' && record.rawText.trim()) {
+        return normalizeLineBreaks(stripCodeFence(record.rawText));
+      }
+    }
+    return '';
+  })();
 
-    return {
-      rawText,
-      sections: objectSections,
-    };
+  // Streaming 중에는 rawText가 가장 최신 상태이므로 sections보다 우선 파싱한다.
+  // rawText가 없을 때만 legacy object sections를 fallback으로 사용한다.
+  if (!rawText) {
+    const objectSections = normalizeObjectSections(value);
+    if (objectSections.length > 0) {
+      return {
+        rawText: objectSections.map((section) => `## ${section.title}\n${section.content}`).join('\n\n'),
+        sections: objectSections,
+      };
+    }
   }
-
-  const rawText =
-    typeof value === 'string'
-      ? normalizeLineBreaks(stripCodeFence(value))
-      : value && typeof value === 'object'
-        ? normalizeLineBreaks(stripCodeFence(String((value as Record<string, unknown>).rawText || '')))
-        : '';
 
   if (!rawText) {
     return {
@@ -91,7 +94,7 @@ export function parseAnalysisSections(value: unknown): ParsedSectionsResult {
   }
 
   const splitBlocks = rawText
-    .split(/(?=^##\s+)/m)
+    .split(/(?=^##)/m)
     .map((chunk) => chunk.trim())
     .filter(Boolean);
 

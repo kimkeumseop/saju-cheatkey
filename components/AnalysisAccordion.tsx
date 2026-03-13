@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -22,16 +22,11 @@ function renderContent(content: string) {
   const normalized = content
     .replace(/\\n\\n/g, '\n\n')
     .replace(/\\n/g, '\n')
-    .trim();
+    .replace(/\r\n/g, '\n');
 
   const paragraphs = normalized
     .split(/\n{2,}/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-
-  if (paragraphs.length === 0) {
-    return <p className="whitespace-pre-wrap break-keep">작성 중...</p>;
-  }
+    .map((paragraph) => paragraph.trim());
 
   return paragraphs.map((paragraph, index) => (
     <p key={index} className="whitespace-pre-wrap break-keep">
@@ -42,6 +37,16 @@ function renderContent(content: string) {
 
 export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
   const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
+  const [liveData, setLiveData] = useState<AnalysisItem[]>(() => data.map((item) => ({ ...item })));
+
+  const dataSignature = useMemo(
+    () => data.map((item, index) => `${index}:${item.title}::${item.content}`).join('\u0001'),
+    [data]
+  );
+
+  useEffect(() => {
+    setLiveData(data.map((item) => ({ ...item })));
+  }, [dataSignature, data]);
 
   const handleSpeak = (text: string, index: number) => {
     if (speakingIndex === index) {
@@ -62,7 +67,7 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
 
   return (
     <div className="space-y-5 w-full">
-      {data.map((item, index) => (
+      {liveData.map((item, index) => (
         <article
           key={`${index}-${item.title}`}
           className="rounded-[2.5rem] border border-pink-100 bg-white/95 p-6 md:p-8 shadow-[0_18px_50px_-20px_rgba(190,24,93,0.22)]"
@@ -80,7 +85,7 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
 
                 <button
                   type="button"
-                  onClick={() => handleSpeak(item.content, index)}
+                  onClick={() => handleSpeak(item.content || item.title, index)}
                   className={cn(
                     'mt-0.5 shrink-0 rounded-full border p-2.5 shadow-sm transition-all active:scale-95',
                     speakingIndex === index
