@@ -67,7 +67,8 @@ export default function ShareButtons({ name }: ShareButtonsProps) {
         ],
       });
     } else {
-      alert('공유 기능을 준비 중입니다.');
+      handleCopyLink();
+      alert('카카오 공유를 사용할 수 없어 현재 페이지 링크를 복사했습니다.');
     }
   };
 
@@ -111,6 +112,8 @@ export default function ShareButtons({ name }: ShareButtonsProps) {
                   text: `${name}님의 인생 분석 결과입니다.`,
                   url: window.location.href,
                 });
+              } else {
+                handleCopyLink();
               }
             }}
           >

@@ -2,8 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Sparkles, LogOut, User as UserIcon, Heart } from 'lucide-react';
+import { LogOut, User as UserIcon, Heart } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { SITE_NAME } from '@/lib/site';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -18,13 +19,15 @@ export default function Navbar() {
               <Heart className="w-6 h-6 text-primary-500 fill-primary-500" />
             </div>
             <Link href="/" className="text-2xl font-black tracking-tight text-primary-900">
-              사주 치트키
+              {SITE_NAME}
             </Link>
           </div>
           
           <div className="flex items-center space-x-4 md:space-x-8">
             <div className="hidden md:flex items-center space-x-8 text-sm font-bold text-gray-400">
               <Link href="/" className="hover:text-primary-600 transition-colors">홈</Link>
+              <Link href="/guide/what-is-saju" className="hover:text-primary-600 transition-colors">가이드</Link>
+              <Link href="/faq" className="hover:text-primary-600 transition-colors">FAQ</Link>
               <Link href="/privacy" className="hover:text-primary-600 transition-colors">개인정보처리방침</Link>
             </div>
 
