@@ -25,11 +25,24 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+const hasFirebasePublicConfig = Boolean(
+  firebaseConfig.apiKey &&
+    firebaseConfig.authDomain &&
+    firebaseConfig.projectId &&
+    firebaseConfig.appId
+);
+
+const app = hasFirebasePublicConfig
+  ? getApps().length > 0
+    ? getApp()
+    : initializeApp(firebaseConfig)
+  : null;
 
 let db: any;
 try {
-  if (typeof window !== "undefined") {
+  if (!app) {
+    db = null;
+  } else if (typeof window !== "undefined") {
     db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
     });
@@ -37,11 +50,11 @@ try {
     db = getFirestore(app);
   }
 } catch (e) {
-  db = getFirestore(app);
+  db = app ? getFirestore(app) : null;
 }
 
-const auth = getAuth(app);
+const auth = typeof window !== "undefined" && app ? getAuth(app) : null;
 const googleProvider = new GoogleAuthProvider();
 const kakaoProvider = new OAuthProvider('oidc.kakao');
 
-export { db, auth, googleProvider, kakaoProvider };
+export { db, auth, googleProvider, kakaoProvider, hasFirebasePublicConfig };

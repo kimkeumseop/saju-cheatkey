@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { X, Mail, Lock, Loader2, Heart } from 'lucide-react';
 import { signInWithPopup, OAuthProvider } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, hasFirebasePublicConfig } from '@/lib/firebase';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -32,6 +32,9 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         await loginWithNaver();
       } else {
         // Kakao or other OIDC providers
+        if (!auth || !hasFirebasePublicConfig) {
+          throw new Error('Firebase auth is not configured.');
+        }
         const providerId = 'oidc.kakao';
         const provider = new OAuthProvider(providerId);
         await signInWithPopup(auth, provider);

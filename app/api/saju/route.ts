@@ -1,11 +1,73 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SchemaType } from '@google/generative-ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
+
+const sajuAnalysisSchema: any = {
+  type: SchemaType.OBJECT,
+  properties: {
+    sections: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          title: { type: SchemaType.STRING },
+          content: { type: SchemaType.STRING },
+        },
+        required: ['title', 'content'],
+      },
+    },
+  },
+  required: ['sections'],
+};
+
+function parseJsonResponse(text: string) {
+  const trimmed = text.trim();
+  const withoutCodeFence = trimmed
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/, '')
+    .trim();
+
+  const candidates = [
+    withoutCodeFence,
+    ...(withoutCodeFence.match(/\{[\s\S]*\}/g) || []),
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error('AI 응답에서 JSON 구조를 찾을 수 없습니다.');
+}
+
+function validateSajuAnalysis(data: any) {
+  if (!data || !Array.isArray(data.sections) || data.sections.length !== 6) {
+    throw new Error('AI 응답 형식이 올바르지 않습니다.');
+  }
+
+  for (const section of data.sections) {
+    if (
+      !section ||
+      typeof section.title !== 'string' ||
+      !section.title.trim() ||
+      typeof section.content !== 'string' ||
+      !section.content.trim()
+    ) {
+      throw new Error('AI 응답 섹션 형식이 올바르지 않습니다.');
+    }
+  }
+
+  return data;
+}
 
 async function generateWithRetry(model: any, prompt: string, maxRetries = 2) {
   for (let i = 0; i < maxRetries; i++) {
@@ -58,6 +120,8 @@ export async function POST(req: Request) {
         temperature: 0.85,
         maxOutputTokens: 3072, // 분량 유지와 속도 사이의 균형점
         topP: 0.95,
+        responseMimeType: 'application/json',
+        responseSchema: sajuAnalysisSchema,
       },
       safetySettings,
     });
@@ -109,15 +173,12 @@ export async function POST(req: Request) {
     `;
 
     responseText = await generateWithRetry(model, prompt);
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('AI 응답에서 JSON 구조를 찾을 수 없습니다.');
-    
     try {
-      const analysis = JSON.parse(jsonMatch[0]);
+      const analysis = validateSajuAnalysis(parseJsonResponse(responseText));
       return NextResponse.json({ success: true, saju: sajuData, analysis });
     } catch (e) {
       console.error('Saju API JSON parse error:', {
-        extractedJson: jsonMatch[0].slice(0, 1000),
+        responsePreview: responseText.slice(0, 1000),
       });
       throw new Error('AI 응답 파싱 실패');
     }

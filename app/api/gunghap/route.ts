@@ -1,11 +1,82 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SchemaType } from '@google/generative-ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
+
+const gunghapAnalysisSchema: any = {
+  type: SchemaType.OBJECT,
+  properties: {
+    compatibilityScore: { type: SchemaType.INTEGER },
+    headline: { type: SchemaType.STRING },
+    sections: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          title: { type: SchemaType.STRING },
+          content: { type: SchemaType.STRING },
+        },
+        required: ['title', 'content'],
+      },
+    },
+  },
+  required: ['compatibilityScore', 'headline', 'sections'],
+};
+
+function parseJsonResponse(text: string) {
+  const trimmed = text.trim();
+  const withoutCodeFence = trimmed
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/, '')
+    .trim();
+
+  const candidates = [
+    withoutCodeFence,
+    ...(withoutCodeFence.match(/\{[\s\S]*\}/g) || []),
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error('JSON 구조를 찾을 수 없습니다.');
+}
+
+function validateGunghapAnalysis(data: any) {
+  if (
+    !data ||
+    typeof data.compatibilityScore !== 'number' ||
+    typeof data.headline !== 'string' ||
+    !data.headline.trim() ||
+    !Array.isArray(data.sections) ||
+    data.sections.length !== 6
+  ) {
+    throw new Error('AI 응답 형식이 올바르지 않습니다.');
+  }
+
+  for (const section of data.sections) {
+    if (
+      !section ||
+      typeof section.title !== 'string' ||
+      !section.title.trim() ||
+      typeof section.content !== 'string' ||
+      !section.content.trim()
+    ) {
+      throw new Error('AI 응답 섹션 형식이 올바르지 않습니다.');
+    }
+  }
+
+  return data;
+}
 
 const relationLabels: Record<string, string> = {
   friend: '친구', some: '썸남 썸녀', couple: '연인', spouse: '배우자', 'ex-couple': '전여친 전남친', 'ex-spouse': '전아내 전남편',
@@ -60,7 +131,13 @@ export async function POST(req: Request) {
 
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-2.5-flash', 
-      generationConfig: { temperature: 0.85, maxOutputTokens: 4096, topP: 0.95 },
+      generationConfig: {
+        temperature: 0.85,
+        maxOutputTokens: 4096,
+        topP: 0.95,
+        responseMimeType: 'application/json',
+        responseSchema: gunghapAnalysisSchema,
+      },
       safetySettings,
     });
 
@@ -104,19 +181,16 @@ export async function POST(req: Request) {
     `;
 
     responseText = await generateWithRetry(model, prompt);
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('JSON 구조를 찾을 수 없습니다.');
-
     try {
       return NextResponse.json({
         success: true,
-        analysis: JSON.parse(jsonMatch[0]),
+        analysis: validateGunghapAnalysis(parseJsonResponse(responseText)),
         saju1,
         saju2
       });
     } catch (error) {
       console.error('Gunghap API JSON parse error:', {
-        extractedJson: jsonMatch[0].slice(0, 1000),
+        responsePreview: responseText.slice(0, 1000),
       });
       throw new Error('AI 응답 파싱 실패');
     }
