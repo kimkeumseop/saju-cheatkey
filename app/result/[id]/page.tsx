@@ -7,6 +7,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import Navbar from '@/components/Navbar';
 import AnalysisAccordion from '@/components/AnalysisAccordion';
 import ShareButtons from '@/components/ShareButtons';
+import InstaStoryButton from '@/components/InstaStoryButton';
 import GungHapPreview from '@/components/GungHapPreview';
 import { Loader2, Sparkles, Layout, BarChart3, Star, History, Moon, Gift } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
@@ -320,7 +321,21 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
               <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
                 {(() => {
                   const result = normalizeSajuAiResult(data.aiResult);
-                  return <AnalysisAccordion data={result.sections} />;
+                  const storySection = result.sections.find(s => s.title.includes('인스타 스토리') || s.title.includes('스토리 요약'));
+                  const accordionSections = result.sections.filter(s => s !== storySection);
+
+                  return (
+                    <>
+                      <AnalysisAccordion data={accordionSections} />
+                      {storySection && (
+                        <InstaStoryButton
+                          userName={data.userName}
+                          summaryContent={storySection.content}
+                          type="saju"
+                        />
+                      )}
+                    </>
+                  );
                 })()}
               </div>
               <div className="mt-12 bg-white p-8 rounded-[2.5rem] border border-pink-50 shadow-sm text-center"><ShareButtons name={data.userName} /></div>

@@ -148,15 +148,14 @@ export default function ColumnPage({ params }: { params: Promise<{ id: string }>
 
         <div className="mt-20 p-10 bg-indigo-50 rounded-[2.5rem] text-center space-y-6">
           <h3 className="text-2xl font-bold text-indigo-900">당신의 사주도 이런 깊이로 분석해 드립니다.</h3>
-          <p className="text-indigo-700 font-medium">단순한 운세를 넘어 삶의 맥락을 읽어주는 AI 사주 분석을 지금 경험해보세요.</p>
-          <button 
+          <p className="text-indigo-700 font-medium">단순한 운세를 넘어 삶의 맥락을 읽어주는 정통 명리학 기반 프리미엄 분석을 지금 경험해보세요.</p>
+          <button
             onClick={() => window.location.href = '/'}
             className="inline-flex items-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
           >
             지금 바로 사주 분석하기 🔮
           </button>
-        </div>
-      </article>
+        </div>      </article>
       <Footer />
     </div>
   );

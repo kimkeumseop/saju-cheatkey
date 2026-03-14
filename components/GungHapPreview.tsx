@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Sparkles, Heart, Zap, ChevronRight, AlertCircle, Layout, BarChart3, Star, History, Coins, Moon } from 'lucide-react';
 import AnalysisAccordion from './AnalysisAccordion';
 import ShareButtons from './ShareButtons';
+import InstaStoryButton from './InstaStoryButton';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { ELEMENT_STYLE } from '@/lib/saju';
@@ -166,7 +167,23 @@ export default function GungHapPreview({ data }: { data: any, resultId: string }
       <div className="space-y-8">
         <div className="flex items-center gap-3 ml-2"><Moon className="w-6 h-6 text-primary-600 fill-primary-600" /><h3 className="text-2xl font-bold text-gray-900">운명적인 인연의 리포트</h3></div>
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          <AnalysisAccordion data={aiResult.sections} />
+          {(() => {
+            const storySection = aiResult.sections.find(s => s.title.includes('인스타 스토리') || s.title.includes('스토리 요약'));
+            const accordionSections = aiResult.sections.filter(s => s !== storySection);
+
+            return (
+              <>
+                <AnalysisAccordion data={accordionSections} />
+                {storySection && (
+                  <InstaStoryButton
+                    userName={`${user1.name} & ${user2.name}`}
+                    summaryContent={storySection.content}
+                    type="gunghap"
+                  />
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
 

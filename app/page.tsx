@@ -3,11 +3,11 @@ import HomePage from '@/components/HomePage';
 import { createMetadata } from '@/lib/site';
 
 export const metadata: Metadata = createMetadata({
-  title: '사주 정보와 해석 가이드',
+  title: '2026년 무료 사주 & 궁합 치트키 | 내 운명 완벽 해설',
   description:
-    '사주란 무엇인지, 천간과 지지, 오행, 운세 읽는 법까지 함께 살펴볼 수 있는 사주 치트키 홈입니다.',
+    '어려운 명리학은 그만! 2026년 무료 사주, 토정비결, 운명 궁합을 현대적으로 풀어낸 프리미엄 비밀 리포트로 만나보세요. 내 사주 치트키로 숨겨진 재물운과 연애운의 흐름을 정확하게 확인하세요.',
   path: '/',
-  keywords: ['사주란 무엇인가', '천간 지지', '오행', '운세 해석', '사주 가이드'],
+  keywords: ['2026년 무료 사주', '무료 토정비결', '사주 치트키', '사주팔자', '명리학', '궁합', '연애운', '재물운', '무료 운세', '운명 테스트'],
 });
 
 export default function Page() {
