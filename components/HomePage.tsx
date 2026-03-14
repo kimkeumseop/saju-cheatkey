@@ -77,10 +77,16 @@ export default function HomePage() {
           isLite: true,
         }),
       });
+      if (!res.ok) throw new Error('네트워크 응답이 올바르지 않습니다.');
       const data = await res.json();
-      if (data.success) setFreeResult(data.analysis);
+      if (data.success) {
+        setFreeResult(data.analysis);
+      } else {
+        throw new Error(data.error || '운세 분석에 실패했습니다.');
+      }
     } catch (err) {
       console.error(err);
+      alert('일시적인 오류입니다. 다시 시도해주세요.');
     } finally {
       setIsFreeLoading(false);
     }
@@ -133,9 +139,9 @@ export default function HomePage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="space-y-6 relative z-10"
+                    className="space-y-6 relative z-10 flex flex-col items-center text-center"
                   >
-                    <div className="flex items-center gap-2 text-primary-600">
+                    <div className="flex items-center justify-center gap-2 text-primary-600">
                       <Star className="w-5 h-5 fill-primary-400 text-primary-400" />
                       <span className="font-black text-sm uppercase tracking-widest">Today's Whisper</span>
                     </div>
@@ -143,12 +149,12 @@ export default function HomePage() {
                     {!showInput ? (
                       <>
                         <div className="space-y-4">
-                          <h2 className="text-2xl font-black text-gray-800 leading-tight break-keep">
+                          <h2 className="text-2xl font-black text-gray-800 leading-tight break-keep" style={{ wordBreak: 'keep-all' }}>
                             오늘 당신에게 찾아올
                             <br />
                             흐름의 힌트는 무엇일까요?
                           </h2>
-                          <p className="text-gray-400 font-medium text-sm">
+                          <p className="text-gray-400 font-medium text-sm break-keep" style={{ wordBreak: 'keep-all' }}>
                             별도 이동 없이 오늘의 간단한 참고 메시지를 바로 확인할 수 있습니다.
                           </p>
                         </div>
@@ -157,7 +163,7 @@ export default function HomePage() {
                           disabled={isFreeLoading}
                           className="w-full bg-primary-500 hover:bg-primary-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-2"
                         >
-                          {isFreeLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : '무료로 확인하기'}
+                          {isFreeLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : '확인하기'}
                           {!isFreeLoading && <ChevronRight className="w-5 h-5" />}
                         </button>
                       </>
