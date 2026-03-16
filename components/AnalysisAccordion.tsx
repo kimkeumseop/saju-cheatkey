@@ -39,6 +39,8 @@ function cleanBodyText(text: string): string {
 }
 
 // ── 콘텐츠 파싱 ────────────────────────────────────────────────────
+const isListLine = (line: string) => /^[✅✔☑️✓•\-\*]\s/.test(line.trim());
+
 function splitContent(content: string): {
   summaryParagraph: string;
   restParagraphs: string[];
@@ -54,12 +56,41 @@ function splitContent(content: string): {
     .map((p) => p.trim())
     .filter(Boolean);
 
-  if (paragraphs.length <= 1) {
-    return { summaryParagraph: paragraphs[0] || content, restParagraphs: [], hasMore: false };
+  if (paragraphs.length === 0) {
+    return { summaryParagraph: content, restParagraphs: [], hasMore: false };
+  }
+
+  // 단일 단락: 체크리스트 항목이 3개 초과면 분할
+  if (paragraphs.length === 1) {
+    const lines = paragraphs[0].split('\n');
+    const listLines = lines.filter(isListLine);
+    if (listLines.length > 3) {
+      const nonListLines = lines.filter((l) => !isListLine(l));
+      const visible = [...nonListLines, ...listLines.slice(0, 3)].filter(Boolean).join('\n');
+      const hidden = listLines.slice(3).join('\n');
+      return { summaryParagraph: visible, restParagraphs: [hidden], hasMore: true };
+    }
+    return { summaryParagraph: paragraphs[0], restParagraphs: [], hasMore: false };
+  }
+
+  // 다중 단락: 첫 단락에 체크리스트 3개 초과 시 오버플로우 처리
+  const firstParagraph = paragraphs[0];
+  const firstLines = firstParagraph.split('\n');
+  const firstListLines = firstLines.filter(isListLine);
+
+  if (firstListLines.length > 3) {
+    const nonListLines = firstLines.filter((l) => !isListLine(l));
+    const visible = [...nonListLines, ...firstListLines.slice(0, 3)].filter(Boolean).join('\n');
+    const overflow = firstListLines.slice(3).join('\n');
+    return {
+      summaryParagraph: visible,
+      restParagraphs: [overflow, ...paragraphs.slice(1)].filter(Boolean),
+      hasMore: true,
+    };
   }
 
   return {
-    summaryParagraph: paragraphs[0],
+    summaryParagraph: firstParagraph,
     restParagraphs: paragraphs.slice(1),
     hasMore: true,
   };
