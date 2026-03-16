@@ -123,7 +123,7 @@ export async function POST(req: Request) {
     console.error("=================================================");
     
     return NextResponse.json(
-      { success: false, error: '운세 분석 중 일시적인 오류가 발생했습니다.', details: error.message }, 
+      { success: false, error: error.message }, 
       { status: 500 }
     );
   }

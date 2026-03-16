@@ -77,16 +77,19 @@ export default function HomePage() {
           isLite: true,
         }),
       });
-      if (!res.ok) throw new Error('네트워크 응답이 올바르지 않습니다.');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || '네트워크 응답이 올바르지 않습니다.');
+      }
       const data = await res.json();
       if (data.success) {
         setFreeResult(data.analysis);
       } else {
         throw new Error(data.error || '운세 분석에 실패했습니다.');
       }
-    } catch (err) {
-      console.error(err);
-      alert('일시적인 오류입니다. 다시 시도해주세요.');
+    } catch (err: any) {
+      console.error("API Error:", err);
+      alert(err.message || '일시적인 오류입니다. 다시 시도해주세요.');
     } finally {
       setIsFreeLoading(false);
     }
