@@ -11,24 +11,24 @@ export default function Navbar() {
   const router = useRouter();
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-pink-50 shadow-sm">
+    <nav className="fixed top-0 w-full z-50 bg-white/75 backdrop-blur-xl border-b border-pink-100/60 shadow-[0_1px_20px_rgba(240,101,149,0.06)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
-          <div className="flex items-center space-x-2 group">
-            <div className="w-10 h-10 bg-primary-100 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform shadow-sm">
-              <Heart className="w-6 h-6 text-primary-500 fill-primary-500" />
+          <div className="flex items-center space-x-2.5 group">
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform shadow-md shadow-primary-200/40" style={{background:'linear-gradient(135deg, #f783ac, #f06595)'}}>
+              <Heart className="w-5 h-5 text-white fill-white" />
             </div>
-            <Link href="/" className="text-2xl font-black tracking-tight text-primary-900">
+            <Link href="/" className="text-2xl font-black tracking-tight gradient-text">
               {SITE_NAME}
             </Link>
           </div>
           
           <div className="flex items-center space-x-4 md:space-x-8">
-            <div className="hidden md:flex items-center space-x-8 text-sm font-bold text-gray-400">
-              <Link href="/" className="hover:text-primary-600 transition-colors">홈</Link>
-              <Link href="/guide/what-is-saju" className="hover:text-primary-600 transition-colors">가이드</Link>
-              <Link href="/faq" className="hover:text-primary-600 transition-colors">FAQ</Link>
-              <Link href="/privacy" className="hover:text-primary-600 transition-colors">개인정보처리방침</Link>
+            <div className="hidden md:flex items-center space-x-1 text-sm font-bold text-gray-400">
+              <Link href="/" className="hover:text-primary-600 hover:bg-primary-50/60 px-3 py-2 rounded-xl transition-all">홈</Link>
+              <Link href="/guide/what-is-saju" className="hover:text-primary-600 hover:bg-primary-50/60 px-3 py-2 rounded-xl transition-all">가이드</Link>
+              <Link href="/faq" className="hover:text-primary-600 hover:bg-primary-50/60 px-3 py-2 rounded-xl transition-all">FAQ</Link>
+              <Link href="/privacy" className="hover:text-primary-600 hover:bg-primary-50/60 px-3 py-2 rounded-xl transition-all">개인정보처리방침</Link>
             </div>
 
             {user ? (
@@ -52,9 +52,9 @@ export default function Navbar() {
                 </button>
               </div>
             ) : (
-              <button 
+              <button
                 onClick={() => router.push('/login')}
-                className="bg-primary-600 text-white px-5 py-2.5 rounded-2xl text-sm font-black hover:bg-primary-700 transition-all active:scale-[0.95] shadow-lg shadow-pink-100"
+                className="btn-shimmer text-white px-5 py-2.5 rounded-2xl text-sm font-black hover:shadow-lg hover:shadow-primary-200/50 transition-all active:scale-[0.95] shadow-md shadow-pink-100"
               >
                 로그인
               </button>

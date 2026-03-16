@@ -80,3 +80,105 @@ body {
   border: 1px solid rgba(230, 73, 128, 0.05);
   box-shadow: 0 4px 20px 0 rgba(230, 73, 128, 0.04);
 }
+
+/* 플로팅 애니메이션 */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(3deg); }
+  66% { transform: translateY(-4px) rotate(-2deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(240, 101, 149, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(240, 101, 149, 0.6); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 3s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* 그라디언트 텍스트 */
+.gradient-text {
+  background: linear-gradient(135deg, #f06595, #e64980, #c2255c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-gold {
+  background: linear-gradient(135deg, #ffa8a8, #f783ac, #f06595);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 버튼 shimmer 효과 */
+.btn-shimmer {
+  background-size: 200% auto;
+  background-image: linear-gradient(to right, #f06595 0%, #e64980 30%, #f783ac 50%, #e64980 70%, #f06595 100%);
+  animation: shimmer 3s linear infinite;
+}
+
+/* 프리미엄 카드 */
+.premium-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,240,246,0.95));
+  border: 1px solid rgba(240, 101, 149, 0.12);
+  box-shadow: 0 8px 32px rgba(240, 101, 149, 0.08), 0 2px 8px rgba(240, 101, 149, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:hover {
+  box-shadow: 0 16px 48px rgba(240, 101, 149, 0.14), 0 4px 12px rgba(240, 101, 149, 0.08);
+  transform: translateY(-2px);
+}
+
+/* 아이콘 그라디언트 배경 */
+.icon-gradient {
+  background: linear-gradient(135deg, #fff0f6, #ffdeeb);
+}
+
+.icon-gradient-pink {
+  background: linear-gradient(135deg, #f06595, #e64980);
+}
+
+/* 구분선 그라디언트 */
+.divider-gradient {
+  background: linear-gradient(to right, transparent, rgba(240, 101, 149, 0.3), transparent);
+  height: 1px;
+  border: none;
+}
+
+/* 섹션 오버레이 */
+.section-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
