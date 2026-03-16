@@ -9,6 +9,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { ELEMENT_STYLE } from '@/lib/saju';
 import { normalizeGunghapAiResult } from '@/lib/ai-result';
+import { getRelationTheme, type RelationTheme } from '@/lib/relation-theme';
 import { motion } from 'framer-motion';
 
 function cn(...inputs: ClassValue[]) {
@@ -19,23 +20,7 @@ const getSafeColor = (elementKey: string) => {
   return ELEMENT_STYLE[elementKey] || { bg: 'bg-gray-50', text: 'text-gray-400', border: 'border-gray-100', color: '#999999' };
 };
 
-// ── 점수 → 상위 N% 변환 ─────────────────────────────────────────
-function getPercentile(score: number): number {
-  if (score >= 90) return 5;
-  if (score >= 80) return 15;
-  if (score >= 70) return 30;
-  if (score >= 60) return 50;
-  if (score >= 50) return 70;
-  return 90;
-}
-
-function getScoreLevel(score: number) {
-  if (score >= 90) return { label: 'Soulmates ✨', color: '#e64980' };
-  if (score >= 80) return { label: 'Perfect Match', color: '#f06595' };
-  if (score >= 70) return { label: 'Great Together', color: '#f59f00' };
-  if (score >= 50) return { label: 'Good Vibes', color: '#74c0fc' };
-  return { label: 'Interesting Mix', color: '#adb5bd' };
-}
+// getPercentile / getScoreLevel → 테마 시스템으로 대체됨 (lib/relation-theme.ts)
 
 // ── 만세력 차트 ──────────────────────────────────────────────────
 function PillarChart({
@@ -91,33 +76,40 @@ function PillarChart({
   );
 }
 
-// ── 점수 게이지 (임팩트 강화) ────────────────────────────────────
+// ── 점수 게이지 (관계 유형별 테마 적용) ─────────────────────────
 function ScoreGauge({
   score = 0,
   name1,
   name2,
+  theme,
 }: {
   score: number;
   name1?: string;
   name2?: string;
+  theme: RelationTheme;
 }) {
-  const level = getScoreLevel(score);
-  const percentile = getPercentile(score);
+  const percentile = theme.topPercent(score);
 
   return (
     <div className="space-y-6 py-6 md:py-8">
-      {/* 두 이름 표시 */}
-      {name1 && name2 && (
-        <div className="flex items-center justify-center gap-3 flex-wrap">
-          <span className="font-black text-primary-900 text-xl md:text-2xl">{name1}</span>
-          <div className="flex items-center justify-center w-9 h-9 rounded-full bg-white shadow-md shadow-rose-100/60">
-            <Heart className="w-5 h-5 text-rose-400 fill-rose-400" />
+      {/* 상단 아이콘 + 두 이름 */}
+      <div className="flex flex-col items-center gap-3">
+        <span className="text-4xl">{theme.icon}</span>
+        {name1 && name2 && (
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <span className="font-black text-gray-800 text-xl md:text-2xl">{name1}</span>
+            <div
+              className="flex items-center justify-center w-9 h-9 rounded-full shadow-md"
+              style={{ backgroundColor: `${theme.color}20` }}
+            >
+              <Heart className="w-5 h-5" style={{ color: theme.color, fill: theme.color }} />
+            </div>
+            <span className="font-black text-gray-800 text-xl md:text-2xl">{name2}</span>
           </div>
-          <span className="font-black text-primary-900 text-xl md:text-2xl">{name2}</span>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* 점수 (1.5배 확대) */}
+      {/* 점수 숫자 (1.5배 확대) */}
       <motion.div
         className="flex flex-col items-center gap-2"
         initial={{ scale: 0.5, opacity: 0 }}
@@ -127,46 +119,52 @@ function ScoreGauge({
         <div className="relative flex items-end justify-center gap-2">
           <div
             className="absolute inset-0 blur-3xl opacity-15 rounded-full pointer-events-none"
-            style={{ background: level.color }}
+            style={{ background: theme.color }}
           />
           <span
             className="text-[8rem] md:text-[10rem] font-black tracking-tighter leading-none relative z-10"
-            style={{ color: level.color }}
+            style={{ color: theme.color }}
           >
             {score}
           </span>
-          <span className="text-3xl font-black text-primary-300 mb-5 relative z-10">점</span>
+          <span className="text-3xl font-black mb-5 relative z-10" style={{ color: `${theme.color}80` }}>
+            점
+          </span>
         </div>
+        {/* 라벨: theme.label + theme.labelEmoji */}
         <div
           className="px-5 py-1.5 rounded-full text-sm font-black uppercase tracking-wider shadow-sm"
-          style={{ backgroundColor: `${level.color}18`, color: level.color }}
+          style={{ backgroundColor: `${theme.color}18`, color: theme.color }}
         >
-          {level.label}
+          {theme.label} {theme.labelEmoji}
         </div>
       </motion.div>
 
-      {/* 상위 N% 텍스트 */}
+      {/* 상위 N% 문구 — theme.percentText 적용 */}
       <p className="text-center font-black text-gray-700 text-base md:text-lg break-keep px-4">
         두 사람은 상위{' '}
-        <span className="text-2xl md:text-3xl font-black" style={{ color: level.color }}>
+        <span className="text-2xl md:text-3xl font-black" style={{ color: theme.color }}>
           {percentile}%
         </span>
-        의 인연입니다
+        {theme.percentText}
       </p>
 
-      {/* 프로그레스 바 */}
+      {/* 프로그레스 바 — theme.color 통일 */}
       <div className="w-full max-w-[280px] mx-auto space-y-2">
         <div className="flex justify-between px-1">
-          <span className="text-[9px] font-black text-primary-200 uppercase tracking-widest">Synergy Level</span>
-          <span className="text-[9px] font-black text-primary-400">{score}%</span>
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Synergy Level</span>
+          <span className="text-[9px] font-black" style={{ color: theme.color }}>{score}%</span>
         </div>
-        <div className="h-3 w-full bg-primary-50 rounded-full overflow-hidden border border-pink-100 shadow-inner p-0.5">
+        <div
+          className="h-3 w-full rounded-full overflow-hidden shadow-inner p-0.5"
+          style={{ backgroundColor: `${theme.color}15`, border: `1px solid ${theme.color}20` }}
+        >
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${score}%` }}
             transition={{ duration: 1.5, ease: 'easeOut' }}
             className="h-full rounded-full shadow-sm"
-            style={{ background: `linear-gradient(to right, #fcc2d7, ${level.color})` }}
+            style={{ background: `linear-gradient(to right, ${theme.color}60, ${theme.color})` }}
           />
         </div>
       </div>
@@ -180,6 +178,9 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
   const aiResult = normalizeGunghapAiResult(data.aiResult);
   const score = aiResult.compatibilityScore || 0;
   const [quickCopied, setQuickCopied] = useState(false);
+
+  // 관계 유형 테마 (작업 2·3)
+  const theme = getRelationTheme(relation);
 
   const relationLabels: Record<string, string> = {
     friend: '친구', some: '썸남 썸녀', couple: '연인', spouse: '배우자',
@@ -206,7 +207,7 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
   }, []);
 
   const handleQuickShare = () => {
-    const percentile = getPercentile(score);
+    const percentile = theme.topPercent(score);
     if (typeof window !== 'undefined' && window.Kakao?.isInitialized()) {
       window.Kakao.Share.sendDefault({
         objectType: 'feed',
@@ -255,23 +256,32 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
   return (
     <div className="space-y-8">
 
-      {/* ══ 작업 1: 점수 카드 (그라데이션 배경, 임팩트 강화) ══ */}
+      {/* ══ 작업 1·2: 점수 카드 (관계 유형 테마 그라데이션) ══ */}
       <div
         className="relative mt-8 rounded-[2.5rem] p-[2px] overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, #fcc2d7, #e599f7, #bac8ff)',
-          boxShadow: '0 20px 60px rgba(240,101,149,0.18), 0 8px 24px rgba(180,100,220,0.12)',
+          background: theme.gradient,
+          boxShadow: `0 20px 60px ${theme.color}30, 0 8px 24px ${theme.color}1a`,
         }}
       >
         <div
           className="relative rounded-[2.4rem] p-6 md:p-10 overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #fff5fb, #fdf2ff, #f5f0ff)' }}
+          style={{
+            background: `linear-gradient(135deg, ${theme.color}08, rgba(255,255,255,0.94) 50%, ${theme.color}05)`,
+            backdropFilter: 'blur(2px)',
+          }}
         >
           {/* 배경 블롭 */}
-          <div className="absolute top-0 right-0 w-56 h-56 bg-rose-100/30 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-100/25 rounded-full blur-2xl pointer-events-none" />
+          <div
+            className="absolute top-0 right-0 w-56 h-56 rounded-full blur-3xl pointer-events-none opacity-20"
+            style={{ background: theme.color }}
+          />
+          <div
+            className="absolute bottom-0 left-0 w-48 h-48 rounded-full blur-2xl pointer-events-none opacity-10"
+            style={{ background: theme.color }}
+          />
 
-          <ScoreGauge score={score} name1={user1?.name} name2={user2?.name} />
+          <ScoreGauge score={score} name1={user1?.name} name2={user2?.name} theme={theme} />
 
           {/* 헤드라인 */}
           <div className="text-center pb-2 relative z-10">
@@ -286,7 +296,10 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
       <div className="flex flex-col items-center gap-3">
         <button
           onClick={handleQuickShare}
-          className="inline-flex items-center gap-2.5 bg-white border-2 border-pink-200 text-primary-800 font-black px-7 py-3.5 rounded-2xl shadow-sm hover:shadow-md hover:border-pink-300 hover:bg-primary-50/40 transition-all active:scale-95 text-sm"
+          className="inline-flex items-center gap-2.5 bg-white font-black px-7 py-3.5 rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95 text-sm text-gray-800"
+          style={{ border: `2px solid ${theme.color}40` }}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = `${theme.color}80`)}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = `${theme.color}40`)}
         >
           {quickCopied ? (
             <>
