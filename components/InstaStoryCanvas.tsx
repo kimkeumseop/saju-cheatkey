@@ -1,57 +1,105 @@
 'use client';
 
 import React, { forwardRef } from 'react';
-import { Sparkles } from 'lucide-react';
+import { getRelationTheme } from '@/lib/relation-theme';
 
 interface InstaStoryCanvasProps {
   userName: string;
   summaryContent: string;
   type?: 'saju' | 'gunghap';
+  /** 궁합 관계 유형 (DB 저장 키: couple | some | spouse | … ) */
+  relation?: string;
 }
 
-const renderTextWithBold = (text: string) => {
-  // Bold markers are usually **text**
+// 굵은 텍스트 렌더링 (**bold**)
+const renderTextWithBold = (text: string, emphasisColor: string) => {
   const parts = text.split(/\*\*(.*?)\*\*/g);
-  return parts.map((part, i) => (
-    i % 2 === 1 ? <strong key={i} style={{ fontWeight: 900, color: '#D81B60' }}>{part}</strong> : <span key={i}>{part}</span>
-  ));
+  return parts.map((part, i) =>
+    i % 2 === 1 ? (
+      <strong key={i} style={{ fontWeight: 900, color: emphasisColor }}>
+        {part}
+      </strong>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+};
+
+// 1080px 캔버스 기준 타이포 스케일 (디자인 기준값 × 2.75)
+const T = {
+  label: 30,           // 11px × 2.75
+  name: 76,            // 28px × 2.75
+  subtitle: 36,        // 13px × 2.75
+  listItem: 33,        // 12px × 2.75
+  highlight: 42,       // 14px × 3.0 (강조)
+  url: 28,             // 10px × 2.75
+};
+
+// 1080px 캔버스 기준 간격 스케일
+const S = {
+  cardPaddingV: 76,    // 28px
+  cardPaddingH: 66,    // 24px
+  section: 55,         // 20px
+  listGap: 33,         // 12px
+  nameSubtitle: 44,    // 16px
 };
 
 const InstaStoryCanvas = forwardRef<HTMLDivElement, InstaStoryCanvasProps>(
-  ({ userName, summaryContent, type = 'saju' }, ref) => {
-    
-    // Parse content into title, bullets, viral
-    const lines = summaryContent.split('\n').map(l => l.trim()).filter(Boolean);
+  ({ userName, summaryContent, type = 'saju', relation }, ref) => {
+
+    // ── 테마 색상 결정 ───────────────────────────────────────────
+    const DEFAULT_GRADIENT = 'linear-gradient(135deg, #FFD6E0 0%, #E8D5F5 100%)';
+    const DEFAULT_COLOR = '#D81B60';
+
+    const theme = type === 'gunghap' && relation
+      ? getRelationTheme(relation)
+      : null;
+
+    const bgGradient = theme ? theme.gradient : DEFAULT_GRADIENT;
+    const themeColor = theme ? theme.color : DEFAULT_COLOR;
+    const themeIcon = theme ? theme.icon : '🌸';
+
+    // ── 콘텐츠 파싱 ──────────────────────────────────────────────
+    const lines = summaryContent.split('\n').map((l) => l.trim()).filter(Boolean);
     const bullets: string[] = [];
     const titleLines: string[] = [];
     let viralLine = '';
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      // Identify bullet points by common emojis or dash
-      if (line.startsWith('💡') || line.startsWith('✅') || line.startsWith('💖') || line.startsWith('📌') || line.startsWith('-')) {
+      if (
+        line.startsWith('💡') ||
+        line.startsWith('✅') ||
+        line.startsWith('💖') ||
+        line.startsWith('📌') ||
+        line.startsWith('-')
+      ) {
         bullets.push(line);
-      } else if (i === lines.length - 1 || line.includes('2026년') || line.includes('대폭발') || line.includes('💸')) {
-        // Last line or matching keywords typically indicates the viral point
+      } else if (
+        i === lines.length - 1 ||
+        line.includes('2026년') ||
+        line.includes('대폭발') ||
+        line.includes('💸')
+      ) {
         viralLine = line;
       } else {
         titleLines.push(line);
       }
     }
 
-    // Fallback if viralLine was caught early but was not the last line
     if (!viralLine && bullets.length > 0) {
-        viralLine = bullets.pop() || '';
+      viralLine = bullets.pop() || '';
     }
 
+    // ── 렌더링 ───────────────────────────────────────────────────
     return (
       <div
         ref={ref}
         style={{
           width: '1080px',
           height: '1920px',
-          background: 'linear-gradient(135deg, #FFD1D1 0%, #E6E6FA 100%)', // Coral pink to Lavender
-          fontFamily: "'Pretendard', sans-serif",
+          background: bgGradient,
+          fontFamily: "'Pretendard Variable', Pretendard, -apple-system, sans-serif",
           position: 'relative',
           overflow: 'hidden',
           display: 'flex',
@@ -61,178 +109,222 @@ const InstaStoryCanvas = forwardRef<HTMLDivElement, InstaStoryCanvasProps>(
           padding: '80px',
         }}
       >
-        {/* Glows and decorative backgrounds (Moon & Traditional Glow) */}
-        <div style={{ position: 'absolute', top: '-5%', right: '-15%', width: '1000px', height: '1000px', background: 'radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 70%)', borderRadius: '50%', filter: 'blur(30px)' }} />
-        <div style={{ position: 'absolute', bottom: '-10%', left: '-15%', width: '1200px', height: '1200px', background: 'radial-gradient(circle, rgba(255, 200, 210, 0.8) 0%, rgba(255, 182, 193, 0) 70%)', borderRadius: '50%', filter: 'blur(50px)' }} />
-        <div style={{ position: 'absolute', top: '15%', left: '5%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(230, 230, 250, 0.9) 0%, rgba(255, 255, 255, 0) 70%)', borderRadius: '50%', filter: 'blur(20px)' }} />
+        {/* ── 배경 블롭 장식 ── */}
+        <div style={{
+          position: 'absolute', top: '-8%', right: '-12%',
+          width: '900px', height: '900px',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 70%)',
+          borderRadius: '50%', filter: 'blur(40px)',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '-8%', left: '-12%',
+          width: '1000px', height: '1000px',
+          background: `radial-gradient(circle, ${themeColor}22 0%, rgba(255,255,255,0) 70%)`,
+          borderRadius: '50%', filter: 'blur(60px)',
+        }} />
+        <div style={{
+          position: 'absolute', top: '20%', left: '5%',
+          width: '280px', height: '280px',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%)',
+          borderRadius: '50%', filter: 'blur(20px)',
+        }} />
 
-        {/* Traditional/Premium accents - Abstract text shapes representing moon and energy */}
-        <div style={{ position: 'absolute', top: '60px', left: '60px', fontSize: '120px', opacity: 0.15, filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.8))' }}>🌸</div>
-        <div style={{ position: 'absolute', bottom: '250px', right: '60px', fontSize: '150px', opacity: 0.15, filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.8))' }}>🌕</div>
+        {/* ── 배경 테마 아이콘 장식 ── */}
+        <div style={{
+          position: 'absolute', bottom: '260px', right: '70px',
+          fontSize: '180px', opacity: 0.09,
+          filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.6))',
+          lineHeight: 1,
+        }}>
+          {themeIcon}
+        </div>
+        <div style={{
+          position: 'absolute', top: '80px', left: '80px',
+          fontSize: '120px', opacity: 0.07,
+          lineHeight: 1,
+        }}>
+          {type === 'saju' ? '🌙' : themeIcon}
+        </div>
 
-        {/* Content Container */}
-        <div
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.92)',
-            borderRadius: '60px',
-            padding: '90px 70px',
-            width: '100%',
-            boxShadow: '0 40px 100px rgba(0, 0, 0, 0.1), inset 0 0 0 2px rgba(255, 255, 255, 0.5)',
-            backdropFilter: 'blur(20px)',
-            display: 'flex',
-            flexDirection: 'column',
+        {/* ── 메인 콘텐츠 카드 ── */}
+        <div style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.93)',
+          borderRadius: '60px',
+          padding: `${S.cardPaddingV}px ${S.cardPaddingH}px`,
+          width: '100%',
+          boxShadow: `0 40px 100px rgba(0,0,0,0.08), 0 12px 30px ${themeColor}18, inset 0 0 0 2px rgba(255,255,255,0.6)`,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          position: 'relative',
+          zIndex: 10,
+        }}>
+
+          {/* ── 작업 1·5: 상단 라벨 배지 ── */}
+          <div style={{
+            display: 'inline-flex',
             alignItems: 'center',
-            position: 'relative',
-            zIndex: 10,
-          }}
-        >
-          {/* Top Badge */}
-          <div style={{ 
-            marginBottom: '50px', 
-            padding: '20px 40px', 
-            backgroundColor: '#FFF0F3', 
-            borderRadius: '40px', 
-            color: '#D81B60', 
-            fontSize: '34px', 
-            fontWeight: '800', 
-            display: 'flex', 
-            alignItems: 'center', 
             gap: '16px',
-            letterSpacing: '-0.05em',
-            boxShadow: '0 10px 20px rgba(216, 27, 96, 0.1)'
+            padding: '18px 44px',
+            backgroundColor: `${themeColor}12`,
+            borderRadius: '100px',
+            border: `2px solid ${themeColor}30`,
+            marginBottom: `${S.section}px`,
           }}>
-            <Sparkles size={40} style={{ color: '#D81B60' }} />
-            {type === 'saju' ? '사주 치트키 초핵심 요약' : '궁합 치트키 초핵심 요약'}
-            <Sparkles size={40} style={{ color: '#D81B60' }} />
+            <span style={{ fontSize: '28px', lineHeight: 1 }}>{themeIcon}</span>
+            <span style={{
+              fontSize: `${T.label}px`,
+              fontWeight: 700,
+              color: themeColor,
+              letterSpacing: '0.08em',
+              opacity: 0.85,
+              textTransform: 'uppercase' as const,
+            }}>
+              {type === 'saju' ? '사주 치트키 핵심 요약' : '궁합 치트키 핵심 요약'}
+            </span>
           </div>
 
-          {/* User Name */}
-          <h1 style={{ 
-            fontSize: '90px', 
-            fontWeight: '900', 
-            color: '#880E4F', 
-            marginBottom: '40px', 
-            textAlign: 'center', 
-            letterSpacing: '-0.03em',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.05)'
+          {/* ── 작업 1: 이름 ── */}
+          <h1 style={{
+            fontSize: `${T.name}px`,
+            fontWeight: 700,
+            color: themeColor,
+            marginBottom: 0,
+            textAlign: 'center',
+            letterSpacing: '-0.02em',
+            lineHeight: 1.2,
+            wordBreak: 'keep-all' as const,
+            textShadow: `0 2px 8px ${themeColor}25`,
           }}>
             {userName}
           </h1>
 
-          {/* Title / Intro */}
+          {/* 이름과 부제 사이 구분선 */}
+          <div style={{
+            width: '80px',
+            height: '3px',
+            background: `linear-gradient(to right, transparent, ${themeColor}60, transparent)`,
+            borderRadius: '2px',
+            margin: `${S.nameSubtitle}px 0`,
+          }} />
+
+          {/* ── 작업 1: 부제 한 줄 요약 ── */}
           {titleLines.length > 0 && (
             <div style={{
-              fontSize: '46px',
+              fontSize: `${T.subtitle}px`,
               color: '#333333',
-              lineHeight: '1.6',
-              fontWeight: '700',
+              lineHeight: 1.7,
+              fontWeight: 500,
               textAlign: 'center',
-              marginBottom: '60px',
-              wordBreak: 'keep-all',
-              letterSpacing: '-0.02em',
+              marginBottom: `${S.section}px`,
+              wordBreak: 'keep-all' as const,
+              letterSpacing: '0.01em',
             }}>
               {titleLines.map((line, idx) => (
-                <p key={idx} style={{ margin: '0 0 10px 0' }}>{renderTextWithBold(line)}</p>
+                <p key={idx} style={{ margin: '0 0 12px 0' }}>
+                  {renderTextWithBold(line, themeColor)}
+                </p>
               ))}
             </div>
           )}
 
-          {/* Bullet Points */}
+          {/* ── 작업 1·2: 핵심 특징 리스트 ── */}
           {bullets.length > 0 && (
             <div style={{
               width: '100%',
-              backgroundColor: 'rgba(255, 245, 247, 0.7)',
-              borderRadius: '40px',
-              padding: '50px 40px',
-              marginBottom: '60px',
+              backgroundColor: 'rgba(255, 255, 255, 0.55)',
+              borderRadius: '44px',
+              border: '2px solid rgba(255,255,255,0.8)',
+              padding: '50px 44px',
+              marginBottom: `${S.section}px`,
               display: 'flex',
-              flexDirection: 'column',
-              gap: '30px'
+              flexDirection: 'column' as const,
+              gap: `${S.listGap}px`,
             }}>
               {bullets.map((bullet, idx) => {
-                // Extract emoji if present
-                const match = bullet.match(/^([\uD800-\uDBFF][\uDC00-\uDFFF]|\S)\s*(.*)/);
-                const emoji = match ? match[1] : '✨';
+                const match = bullet.match(/^([\uD800-\uDBFF][\uDC00-\uDFFF]|[\u{1F000}-\u{1FFFF}]|\S)\s*(.*)/u);
+                const emoji = match ? match[1] : '·';
                 const text = match ? match[2] : bullet;
-
                 return (
                   <div key={idx} style={{
                     display: 'flex',
                     alignItems: 'flex-start',
-                    gap: '24px',
-                    fontSize: '40px',
-                    lineHeight: '1.5',
-                    color: '#444444',
-                    fontWeight: '600',
-                    letterSpacing: '-0.02em',
-                    wordBreak: 'keep-all'
+                    gap: '22px',
+                    fontSize: `${T.listItem}px`,
+                    lineHeight: 1.8,
+                    color: '#3a3a3a',
+                    fontWeight: 500,
+                    letterSpacing: '0.01em',
+                    wordBreak: 'keep-all' as const,
                   }}>
-                    <span style={{ fontSize: '48px', lineHeight: '1.2' }}>{emoji}</span>
-                    <div>{renderTextWithBold(text)}</div>
+                    <span style={{ fontSize: '40px', lineHeight: 1.3, flexShrink: 0 }}>{emoji}</span>
+                    <div style={{ flex: 1 }}>{renderTextWithBold(text, themeColor)}</div>
                   </div>
                 );
               })}
             </div>
           )}
 
-          {/* Golden Box (Viral Point) */}
+          {/* ── 작업 3: 하단 강조 박스 (흰색 반투명 frosted) ── */}
           {viralLine && (
             <div style={{
-              backgroundColor: '#FFF9C4', // Light gold
-              border: '4px solid #FFF176',
-              borderRadius: '40px',
-              padding: '45px 50px',
+              backgroundColor: 'rgba(255, 255, 255, 0.75)',
+              borderRadius: '33px',
+              border: '2px solid rgba(255, 255, 255, 0.9)',
+              padding: '44px 55px',
               width: '100%',
               textAlign: 'center',
-              boxShadow: '0 20px 40px rgba(255, 235, 59, 0.25)',
+              boxShadow: `0 10px 30px ${themeColor}18`,
               position: 'relative',
-              overflow: 'hidden'
+              overflow: 'hidden',
             }}>
-              <div style={{ position: 'absolute', top: '-20px', right: '-20px', fontSize: '90px', opacity: 0.25 }}>💸</div>
-              <div style={{ position: 'absolute', bottom: '-20px', left: '-20px', fontSize: '90px', opacity: 0.25 }}>✨</div>
+              <div style={{
+                position: 'absolute', top: '-15px', right: '-15px',
+                fontSize: '70px', opacity: 0.12, lineHeight: 1,
+              }}>
+                {themeIcon}
+              </div>
               <p style={{
-                fontSize: '54px',
-                fontWeight: '900',
-                color: '#F57F17',
+                fontSize: `${T.highlight}px`,
+                fontWeight: 900,
+                color: themeColor,
                 margin: 0,
-                letterSpacing: '-0.04em',
-                wordBreak: 'keep-all',
+                letterSpacing: '-0.01em',
+                wordBreak: 'keep-all' as const,
+                lineHeight: 1.5,
                 position: 'relative',
                 zIndex: 2,
-                textShadow: '1px 1px 0px rgba(255,255,255,0.8)'
               }}>
-                {renderTextWithBold(viralLine)} {viralLine.includes('💸') ? '' : '💸'}
+                {renderTextWithBold(viralLine, themeColor)}
               </p>
             </div>
           )}
         </div>
 
-        {/* Footer / Referral */}
-        <div style={{ 
-          marginTop: '70px', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          gap: '24px', 
-          zIndex: 10 
+        {/* ── 작업 5: URL 하단 텍스트 (버튼 없이 심플하게) ── */}
+        <div style={{
+          marginTop: '60px',
+          zIndex: 10,
+          display: 'flex',
+          flexDirection: 'column' as const,
+          alignItems: 'center',
+          gap: '12px',
         }}>
-          <div style={{ 
-            backgroundColor: '#D81B60', 
-            color: 'white', 
-            padding: '28px 70px', 
-            borderRadius: '100px', 
-            fontSize: '44px', 
-            fontWeight: '800', 
-            letterSpacing: '-0.05em',
-            boxShadow: '0 20px 40px rgba(216, 27, 96, 0.4)',
-            border: '4px solid rgba(255,255,255,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+          <div style={{
+            width: '60px', height: '2px',
+            background: 'rgba(255,255,255,0.4)',
+            borderRadius: '1px',
+          }} />
+          <p style={{
+            fontSize: `${T.url}px`,
+            fontWeight: 500,
+            color: 'rgba(60,30,30,0.5)',
+            letterSpacing: '0.05em',
+            margin: 0,
+            opacity: 0.7,
           }}>
-            👉 내 운명 확인하기 : saju-cheatkey.kr
-          </div>
+            saju-cheatkey.kr
+          </p>
         </div>
       </div>
     );

@@ -9,9 +9,10 @@ interface InstaStoryButtonProps {
   userName: string;
   summaryContent: string;
   type?: 'saju' | 'gunghap';
+  relation?: string;
 }
 
-export default function InstaStoryButton({ userName, summaryContent, type = 'saju' }: InstaStoryButtonProps) {
+export default function InstaStoryButton({ userName, summaryContent, type = 'saju', relation }: InstaStoryButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -69,7 +70,7 @@ export default function InstaStoryButton({ userName, summaryContent, type = 'saj
       
       {/* Hidden Canvas using a zero-size wrapper */}
       <div style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', zIndex: -9999, top: '-9999px', left: '-9999px' }}>
-         <InstaStoryCanvas ref={canvasRef} userName={userName} summaryContent={summaryContent} type={type} />
+         <InstaStoryCanvas ref={canvasRef} userName={userName} summaryContent={summaryContent} type={type} relation={relation} />
       </div>
     </div>
   );

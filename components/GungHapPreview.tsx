@@ -428,6 +428,7 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
                     userName={`${user1.name} & ${user2.name}`}
                     summaryContent={storySection.content}
                     type="gunghap"
+                    relation={relation}
                   />
                 )}
               </>
