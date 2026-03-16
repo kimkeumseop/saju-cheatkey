@@ -10,11 +10,26 @@ const apiKey = process.env.GEMINI_API_KEY;
 
 export async function POST(req: Request) {
   try {
-    const { name, birthDate, birthTime, calendarType, gender, isLite } = await req.json();
+    const body = await req.json();
+    const { name, birthDate, birthTime, calendarType, gender, isLite } = body;
     
-    if (!apiKey) return NextResponse.json({ success: false, error: 'API 키 누락' }, { status: 500 });
+    // 2. 프론트엔드 Payload(데이터) 검증 방어 로직
+    if (!name || !birthDate || !calendarType || !gender) {
+      return NextResponse.json(
+        { success: false, error: '이름, 생년월일, 양/음력, 성별 데이터가 모두 필요합니다.' }, 
+        { status: 400 }
+      );
+    }
+    
+    // 3. API Key 및 AI 모델 설정 점검
+    if (!apiKey) {
+      return NextResponse.json(
+        { success: false, error: 'API 키가 설정되지 않았습니다. 관리자에게 문의하세요.' }, 
+        { status: 401 }
+      );
+    }
 
-    const userSaju = calculateSaju(birthDate, birthTime, calendarType, gender);
+    const userSaju = calculateSaju(birthDate, birthTime || 'unknown', calendarType, gender);
     const userPillars = userSaju.pillars
       .filter(p => p.ganKo && p.zhiKo)
       .map(p => `${p.ganKo}${p.zhiKo}`)
@@ -61,7 +76,8 @@ export async function POST(req: Request) {
       const result = await model.generateContent(prompt);
       const text = result.response.text();
       const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return NextResponse.json({ success: true, analysis: JSON.parse(jsonMatch![0]) });
+      if (!jsonMatch) throw new Error("AI 응답에서 JSON을 파싱할 수 없습니다.");
+      return NextResponse.json({ success: true, analysis: JSON.parse(jsonMatch[0]) });
     }
 
     // 기존 프리미엄 로직 (생략 - 이전 코드 유지)
@@ -91,14 +107,24 @@ export async function POST(req: Request) {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI 응답에서 JSON을 파싱할 수 없습니다.");
     
     return NextResponse.json({ 
       success: true, 
-      analysis: JSON.parse(jsonMatch![0]),
+      analysis: JSON.parse(jsonMatch[0]),
       today: { date: kstDate.toISOString().split('T')[0], pillar: todayPillars }
     });
 
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    // 1. 강력한 에러 로깅 (디버깅 세팅)
+    console.error("================ API Error Details ================");
+    console.error("Error Message:", error.message);
+    console.error("Error Stack:", error.stack);
+    console.error("=================================================");
+    
+    return NextResponse.json(
+      { success: false, error: '운세 분석 중 일시적인 오류가 발생했습니다.', details: error.message }, 
+      { status: 500 }
+    );
   }
 }
