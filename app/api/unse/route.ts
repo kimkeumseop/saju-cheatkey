@@ -51,7 +51,7 @@ export async function POST(req: Request) {
 
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-2.5-flash', 
-      generationConfig: { temperature: 0.8, maxOutputTokens: 1024, topP: 0.95 },
+      generationConfig: { temperature: 0.8, maxOutputTokens: 1024, topP: 0.95, responseMimeType: "application/json" },
       safetySettings,
     });
 
@@ -74,10 +74,19 @@ export async function POST(req: Request) {
         }
       `;
       const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("AI 응답에서 JSON을 파싱할 수 없습니다.");
-      return NextResponse.json({ success: true, analysis: JSON.parse(jsonMatch[0]) });
+      const rawText = result.response.text();
+      const cleanText = rawText.replace(/```json/gi, '').replace(/```/gi, '').trim();
+      let analysisData;
+      try {
+        analysisData = JSON.parse(cleanText);
+      } catch (parseError) {
+        console.error("JSON Parse Error (Lite):", parseError, "Raw:", rawText);
+        analysisData = {
+          keyword: "💎 평온한 하루",
+          message: "오늘은 잠시 쉬어가며 내면의 소리에 귀 기울여보세요."
+        };
+      }
+      return NextResponse.json({ success: true, analysis: analysisData });
     }
 
     // 기존 프리미엄 로직 (생략 - 이전 코드 유지)
@@ -105,13 +114,25 @@ export async function POST(req: Request) {
     `;
 
     const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("AI 응답에서 JSON을 파싱할 수 없습니다.");
+    const rawText = result.response.text();
+    const cleanText = rawText.replace(/```json/gi, '').replace(/```/gi, '').trim();
+    let analysisData;
+    try {
+      analysisData = JSON.parse(cleanText);
+    } catch (parseError) {
+      console.error("JSON Parse Error (Premium):", parseError, "Raw:", rawText);
+      analysisData = {
+        summary: "오늘은 잠시 쉬어가며 내면의 소리에 귀 기울여보세요.",
+        vibe: "평온한 휴식",
+        heartFlutter: "나를 위한 작은 여유",
+        luckyWhisper: "가슴 깊이 심호흡을 해보세요.",
+        gift: "따뜻한 차 한 잔"
+      };
+    }
     
     return NextResponse.json({ 
       success: true, 
-      analysis: JSON.parse(jsonMatch[0]),
+      analysis: analysisData,
       today: { date: kstDate.toISOString().split('T')[0], pillar: todayPillars }
     });
 
