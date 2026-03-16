@@ -179,9 +179,10 @@ export default function HomePage() {
                         />
                         <button
                           onClick={() => fetchFreeUnse(userName)}
-                          className="w-full bg-primary-900 text-white py-5 rounded-2xl font-black text-lg shadow-xl"
+                          disabled={isFreeLoading}
+                          className="w-full bg-primary-900 text-white py-5 rounded-2xl font-black text-lg shadow-xl flex justify-center items-center gap-2"
                         >
-                          운세 확인하기
+                          {isFreeLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : '운세 확인하기'}
                         </button>
                       </div>
                     )}
