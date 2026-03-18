@@ -441,6 +441,26 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
 
               <div className="divider-gradient" />
 
+              {/* 타로 리딩 CTA */}
+              <div className="text-center space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'var(--tarot-400, #9d97e8)' }}>타로 리딩</p>
+                <h4 className="text-xl font-black text-gray-900 break-keep">
+                  지금 이 순간, 카드가 건네는 메시지
+                </h4>
+                <p className="text-sm text-gray-400 break-keep max-w-sm mx-auto">
+                  사주로 운명의 흐름을 알았다면, 타로로 오늘의 에너지를 읽어보세요.
+                </p>
+                <button
+                  onClick={() => router.push('/tarot')}
+                  className="text-white px-8 py-4 rounded-2xl font-black text-base shadow-lg transition-all active:scale-95 inline-flex items-center gap-2 hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg, var(--tarot-500, #7F77DD), var(--tarot-800, #4b44a8))', boxShadow: '0 8px 24px rgba(127,119,221,0.3)' }}
+                >
+                  🔮 타로 리딩 하기
+                </button>
+              </div>
+
+              <div className="divider-gradient" />
+
               {/* 내 사주 공유하기 */}
               <ShareButtons name={data.userName} />
             </div>

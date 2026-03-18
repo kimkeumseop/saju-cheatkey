@@ -182,3 +182,75 @@ body {
   filter: blur(80px);
   pointer-events: none;
 }
+/* ─────────────────────────────────────────────
+   globals.css 에 아래 내용을 추가하세요.
+   기존 핑크 테마는 건드리지 않습니다.
+   .tarot-theme 클래스 안에서만 퍼플로 덮어씁니다.
+───────────────────────────────────────────── */
+
+/* ── 퍼플 테마 변수 ── */
+.tarot-theme {
+  /* 메인 컬러 */
+  --tarot-50:  #EEEDFE;
+  --tarot-100: #CECBF6;
+  --tarot-200: #AFA9EC;
+  --tarot-400: #7F77DD;
+  --tarot-500: #6B63CC;  /* primary */
+  --tarot-600: #534AB7;
+  --tarot-700: #453DA0;
+  --tarot-800: #3C3489;
+  --tarot-900: #26215C;
+
+  /* 기존 사주 핑크 변수를 퍼플로 덮어쓰기 */
+  /* (Tailwind 커스텀 변수를 사용하고 있다면 여기서 재정의) */
+  --theme-primary:     #6B63CC;
+  --theme-primary-light: #7F77DD;
+  --theme-bg-soft:     #EEEDFE;
+  --theme-bg-medium:   #CECBF6;
+  --theme-border:      #AFA9EC;
+  --theme-text-on-dark: #EEEDFE;
+  --theme-text-accent: #534AB7;
+  --theme-shadow:      rgba(107, 99, 204, 0.20);
+  --theme-shadow-lg:   rgba(107, 99, 204, 0.30);
+
+  /* 배경 그라디언트 */
+  --theme-gradient-from: #F5F3FF;  /* purple-50 */
+  --theme-gradient-via:  #FFFFFF;
+  --theme-gradient-to:   #EDE9FE;  /* violet-100 */
+}
+
+/* ── Tailwind 유틸리티 오버라이드 (tarot-theme 내부) ── */
+/* 기존 glass-card, glass-panel을 퍼플 보더로 변경 */
+.tarot-theme .glass-card {
+  border-color: rgba(175, 169, 236, 0.25);
+  background: rgba(238, 237, 254, 0.5);
+  backdrop-filter: blur(12px);
+}
+
+.tarot-theme .glass-panel {
+  border-color: rgba(175, 169, 236, 0.2);
+}
+
+/* ── 버튼 primary ── */
+.tarot-theme .btn-tarot-primary {
+  background: linear-gradient(135deg, #7F77DD, #534AB7);
+  color: #FFFFFF;
+  box-shadow: 0 4px 20px rgba(107, 99, 204, 0.25);
+}
+.tarot-theme .btn-tarot-primary:hover {
+  box-shadow: 0 8px 30px rgba(107, 99, 204, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ── 배지 / 태그 ── */
+.tarot-theme .badge-tarot {
+  background: #EEEDFE;
+  color: #3C3489;
+  border: 0.5px solid #AFA9EC;
+}
+
+/* ── 스크롤바 (선택) ── */
+.tarot-theme ::-webkit-scrollbar-thumb {
+  background: #AFA9EC;
+  border-radius: 4px;
+}

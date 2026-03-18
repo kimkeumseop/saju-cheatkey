@@ -1,0 +1,80 @@
+/* ─────────────────────────────────────────────────────
+   globals.css 에 아래 내용을 추가하세요
+   기존 핑크 변수를 퍼플로 덮어씁니다
+───────────────────────────────────────────────────── */
+
+/* 타로 퍼플 테마 */
+.tarot-theme {
+  --tarot-50:  #EEEDFE;
+  --tarot-100: #CECBF6;
+  --tarot-200: #AFA9EC;
+  --tarot-400: #7F77DD;
+  --tarot-500: #6B63CC;
+  --tarot-600: #534AB7;
+  --tarot-800: #3C3489;
+  --tarot-900: #26215C;
+
+  /* 기존 사주 핑크 변수 → 퍼플로 덮어쓰기 */
+  --color-primary:       var(--tarot-400);
+  --color-primary-light: var(--tarot-50);
+  --color-primary-mid:   var(--tarot-200);
+  --color-primary-dark:  var(--tarot-800);
+
+  /* Tailwind 커스텀 색상 덮어쓰기용 CSS 변수 */
+  --tw-gradient-from: var(--tarot-500);
+  --tw-gradient-to:   var(--tarot-800);
+}
+
+/* 타로 테마 내 공통 배경 그라디언트 */
+.tarot-theme .tarot-bg {
+  background: linear-gradient(
+    135deg,
+    var(--tarot-50) 0%,
+    #ffffff 50%,
+    #f3f2ff 100%
+  );
+}
+
+/* 타로 테마 내 primary 버튼 */
+.tarot-theme .btn-primary,
+.tarot-theme [class*="from-purple"] {
+  background: linear-gradient(135deg, var(--tarot-500), var(--tarot-800));
+}
+
+/* 타로 테마 내 glass-card 보더 색상 */
+.tarot-theme .glass-card {
+  border-color: rgba(127, 119, 221, 0.15);
+}
+
+/* 타로 테마 내 포커스 링 */
+.tarot-theme *:focus-visible {
+  outline-color: var(--tarot-400);
+}
+
+/* 네비 타로 탭 활성화 */
+.tarot-theme .nav-tarot-active {
+  color: var(--tarot-600);
+  border-bottom-color: var(--tarot-400);
+}
+
+/* ─────────────────────────────────────────────────────
+   Tailwind 직접 사용하는 경우 아래 tailwind.config에도 추가하세요
+   
+   // tailwind.config.ts
+   theme: {
+     extend: {
+       colors: {
+         tarot: {
+           50:  '#EEEDFE',
+           100: '#CECBF6',
+           200: '#AFA9EC',
+           400: '#7F77DD',
+           500: '#6B63CC',
+           600: '#534AB7',
+           800: '#3C3489',
+           900: '#26215C',
+         }
+       }
+     }
+   }
+───────────────────────────────────────────────────── */

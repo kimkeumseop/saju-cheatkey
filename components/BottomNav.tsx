@@ -22,27 +22,38 @@ export default function BottomNav() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const handleTabClick = (action: () => void) => {
-    if (!user) {
-      setIsLoginModalOpen(true);
-    } else {
-      action();
-    }
+    /* AUTH_DISABLED_START */
+    // TODO: 로그인 재활성화 시 주석 해제
+    // if (!user) {
+    //   setIsLoginModalOpen(true);
+    // } else {
+    //   action();
+    // }
+    /* AUTH_DISABLED_END */
+    action();
   };
 
   const tabs = [
-    { 
-      id: 'saju', 
-      label: '나의 사주', 
+    {
+      id: 'saju',
+      label: '나의 사주',
       subLabel: '운명의 분석',
-      emoji: '🌙', 
+      emoji: '🌙',
       action: () => setIsSajuModalOpen(true)
     },
-    { 
-      id: 'compatibility', 
-      label: '운명 궁합', 
+    {
+      id: 'compatibility',
+      label: '운명 궁합',
       subLabel: '인연의 확인',
-      emoji: '💖', 
+      emoji: '💖',
       action: () => setIsGungHapModalOpen(true)
+    },
+    {
+      id: 'tarot',
+      label: '타로',
+      subLabel: '운명의 카드',
+      emoji: '🔮',
+      action: () => router.push('/tarot')
     },
   ];
 

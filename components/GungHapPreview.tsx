@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Heart, Moon, Copy, Check, MessageSquare } from 'lucide-react';
 import AnalysisAccordion from './AnalysisAccordion';
 import ShareButtons from './ShareButtons';
@@ -174,6 +175,7 @@ function ScoreGauge({
 
 // ── 메인 컴포넌트 ────────────────────────────────────────────────
 export default function GungHapPreview({ data }: { data: any; resultId: string }) {
+  const router = useRouter();
   const { user1, user2, saju1, saju2, relation } = data;
   const aiResult = normalizeGunghapAiResult(data.aiResult);
   const score = aiResult.compatibilityScore || 0;
@@ -435,6 +437,24 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
             );
           })()}
         </div>
+      </div>
+
+      {/* 타로 리딩 CTA */}
+      <div className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-pink-50 shadow-sm text-center space-y-4">
+        <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'var(--tarot-400, #9d97e8)' }}>타로 리딩</p>
+        <h4 className="text-xl font-black text-gray-900 break-keep">
+          지금 두 사람의 에너지, 카드로 확인해볼까요?
+        </h4>
+        <p className="text-sm text-gray-400 break-keep max-w-sm mx-auto">
+          궁합을 확인했다면, 타로로 오늘의 관계 흐름과 메시지를 읽어보세요.
+        </p>
+        <button
+          onClick={() => router.push('/tarot')}
+          className="text-white px-8 py-4 rounded-2xl font-black text-base transition-all active:scale-95 inline-flex items-center gap-2 hover:opacity-90"
+          style={{ background: 'linear-gradient(135deg, var(--tarot-500, #7F77DD), var(--tarot-800, #4b44a8))', boxShadow: '0 8px 24px rgba(127,119,221,0.3)' }}
+        >
+          🔮 타로 리딩 하기
+        </button>
       </div>
 
       {/* 하단 공유 버튼 */}
