@@ -1,106 +1,111 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Heart, Moon } from 'lucide-react';
-import { useRouter, usePathname } from 'next/navigation';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { usePathname, useRouter } from 'next/navigation';
 import SajuModal from './SajuModal';
 import GungHapInputModal from './GungHapInputModal';
 import LoginModal from './LoginModal';
-import { useAuth } from '@/lib/auth';
 
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+type Tab = {
+  id: string;
+  label: string;
+  subLabel: string;
+  emoji: string;
+  accent: string;
+  accentSoft: string;
+  active: boolean;
+  action: () => void;
+};
 
 export default function BottomNav() {
   const router = useRouter();
-  const { user } = useAuth();
+  const pathname = usePathname();
   const [isSajuModalOpen, setIsSajuModalOpen] = useState(false);
   const [isGungHapModalOpen, setIsGungHapModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  const handleTabClick = (action: () => void) => {
-    /* AUTH_DISABLED_START */
-    // TODO: 로그인 재활성화 시 주석 해제
-    // if (!user) {
-    //   setIsLoginModalOpen(true);
-    // } else {
-    //   action();
-    // }
-    /* AUTH_DISABLED_END */
-    action();
-  };
-
-  const tabs = [
+  const tabs: Tab[] = [
     {
       id: 'saju',
-      label: '나의 사주',
-      subLabel: '운명의 분석',
-      emoji: '🌙',
-      action: () => setIsSajuModalOpen(true)
+      label: '사주',
+      subLabel: '운세 분석',
+      emoji: '🔮',
+      accent: '#E64980',
+      accentSoft: 'rgba(240,101,149,0.12)',
+      active: pathname === '/saju' || pathname?.startsWith('/result'),
+      action: () => setIsSajuModalOpen(true),
     },
     {
       id: 'compatibility',
-      label: '운명 궁합',
-      subLabel: '인연의 확인',
-      emoji: '💖',
-      action: () => setIsGungHapModalOpen(true)
+      label: '궁합',
+      subLabel: '인연 확인',
+      emoji: '💞',
+      accent: '#E64980',
+      accentSoft: 'rgba(230,73,128,0.12)',
+      active: pathname === '/gunghap',
+      action: () => setIsGungHapModalOpen(true),
     },
     {
       id: 'tarot',
       label: '타로',
-      subLabel: '운명의 카드',
-      emoji: '🔮',
-      action: () => router.push('/tarot')
+      subLabel: '오늘의 카드',
+      emoji: '🌙',
+      accent: '#7F77DD',
+      accentSoft: 'rgba(127,119,221,0.14)',
+      active: pathname === '/tarot' || pathname?.startsWith('/tarot/'),
+      action: () => router.push('/tarot'),
+    },
+    {
+      id: 'mbti',
+      label: 'MBTI',
+      subLabel: '성향 테스트',
+      emoji: '🧠',
+      accent: '#10B981',
+      accentSoft: 'rgba(16,185,129,0.14)',
+      active: pathname === '/mbti' || pathname?.startsWith('/mbti/'),
+      action: () => router.push('/mbti'),
     },
   ];
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 w-full z-50 pb-safe">
+      <nav className="fixed bottom-0 left-0 z-50 w-full pb-safe">
         <div className="mx-4 mb-4 max-w-2xl md:mx-auto">
-          <div className="bg-white/95 backdrop-blur-xl border border-pink-100/60 rounded-[2rem] shadow-[0_-4px_24px_rgba(240,101,149,0.12),0_8px_40px_rgba(240,101,149,0.08)]">
-            <div className="flex h-20 items-stretch px-4">
-              {tabs.map((tab) => {
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabClick(tab.action)}
-                    className="flex-1 flex flex-col items-center justify-center transition-all relative group"
+          <div className="rounded-[2rem] border border-pink-100/60 bg-white/95 backdrop-blur-xl shadow-[0_-4px_24px_rgba(240,101,149,0.12),0_8px_40px_rgba(240,101,149,0.08)]">
+            <div className="flex min-h-20 items-stretch px-3">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={tab.action}
+                  className="group relative flex flex-1 flex-col items-center justify-center py-2"
+                >
+                  <div
+                    className="flex w-full flex-col items-center justify-center gap-0.5 rounded-2xl px-2 py-2.5 transition-all duration-300 active:scale-95"
+                    style={{
+                      background: tab.active ? `linear-gradient(180deg, ${tab.accentSoft}, rgba(255,255,255,0.98))` : 'transparent',
+                      boxShadow: tab.active ? `0 12px 28px ${tab.accentSoft}` : 'none',
+                    }}
                   >
-                    <div className="w-[90%] py-2.5 rounded-2xl transition-all duration-300 flex flex-col items-center justify-center gap-0.5 hover:bg-gradient-to-b hover:from-primary-50 hover:to-white active:scale-95">
-                      <span className="text-2xl mb-0.5 group-hover:scale-110 transition-transform duration-200">{tab.emoji}</span>
-                      <div className="text-center leading-tight">
-                        <p className="text-[13px] font-black tracking-tighter text-primary-700">
-                          {tab.label}
-                        </p>
-                        <p className="text-[9px] font-bold text-primary-300">
-                          {tab.subLabel}
-                        </p>
-                      </div>
+                    <span className="mb-0.5 text-2xl transition-transform duration-200 group-hover:scale-110">{tab.emoji}</span>
+                    <div className="text-center leading-tight">
+                      <p className="text-[12px] font-black tracking-tight" style={{ color: tab.active ? tab.accent : '#7a7a7a' }}>
+                        {tab.label}
+                      </p>
+                      <p className="text-[9px] font-bold" style={{ color: tab.active ? tab.accent : '#b9b9b9' }}>
+                        {tab.subLabel}
+                      </p>
                     </div>
-                  </button>
-                );
-              })}
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         </div>
       </nav>
 
-      <SajuModal 
-        isOpen={isSajuModalOpen} 
-        onClose={() => setIsSajuModalOpen(false)} 
-      />
-      <GungHapInputModal
-        isOpen={isGungHapModalOpen}
-        onClose={() => setIsGungHapModalOpen(false)}
-      />
-      <LoginModal 
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-      />
+      <SajuModal isOpen={isSajuModalOpen} onClose={() => setIsSajuModalOpen(false)} />
+      <GungHapInputModal isOpen={isGungHapModalOpen} onClose={() => setIsGungHapModalOpen(false)} />
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </>
   );
 }
