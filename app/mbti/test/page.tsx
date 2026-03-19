@@ -151,7 +151,7 @@ export default function MbtiTestPage() {
                 <p className="text-sm font-bold text-gray-400">문항 {question.id}</p>
               </div>
 
-              <h2 className="text-2xl font-black leading-tight tracking-tight text-gray-900 md:text-4xl">
+              <h2 className="text-lg font-black leading-relaxed tracking-tight text-gray-900 md:text-2xl break-keep">
                 {question.statement}
               </h2>
 
