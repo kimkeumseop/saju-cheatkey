@@ -38,6 +38,10 @@ export default function RootLayout({
           name="google-site-verification"
           content="0QyT_vWbOQThoWqzG6s169d7hucRibvYLSXJCLiBNTE"
         />
+        <meta
+          name="naver-site-verification"
+          content="22ae6644d466da2adf1789aecb23aa40597c4173"
+        />
         <link
           rel="stylesheet"
           as="style"
