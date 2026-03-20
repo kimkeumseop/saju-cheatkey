@@ -1,37 +1,35 @@
 import { MetadataRoute } from 'next'
-import { SITE_URL, guides } from '@/lib/site'
+import { SITE_URL } from '@/lib/site'
+
+const SITEMAP_ROUTES = [
+  { path: '/', changeFrequency: 'weekly' as const, priority: 1 },
+
+  { path: '/saju', changeFrequency: 'weekly' as const, priority: 0.9 },
+  { path: '/gunghap', changeFrequency: 'weekly' as const, priority: 0.9 },
+  { path: '/tarot', changeFrequency: 'weekly' as const, priority: 0.9 },
+  { path: '/mbti', changeFrequency: 'weekly' as const, priority: 0.9 },
+
+  { path: '/guide/what-is-saju', changeFrequency: 'monthly' as const, priority: 0.8 },
+  { path: '/guide/heavenly-stems-earthly-branches', changeFrequency: 'monthly' as const, priority: 0.8 },
+  { path: '/guide/five-elements', changeFrequency: 'monthly' as const, priority: 0.8 },
+  { path: '/guide/how-to-read-yearly-fortune', changeFrequency: 'monthly' as const, priority: 0.8 },
+  { path: '/guide/common-misunderstandings', changeFrequency: 'monthly' as const, priority: 0.8 },
+  { path: '/guide/birth-time-unknown', changeFrequency: 'monthly' as const, priority: 0.8 },
+
+  { path: '/faq', changeFrequency: 'monthly' as const, priority: 0.6 },
+  { path: '/privacy', changeFrequency: 'yearly' as const, priority: 0.5 },
+  { path: '/terms', changeFrequency: 'yearly' as const, priority: 0.5 },
+  { path: '/about', changeFrequency: 'monthly' as const, priority: 0.6 },
+  { path: '/contact', changeFrequency: 'monthly' as const, priority: 0.6 },
+]
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticRoutes = [
-    '',
-    '/saju',
-    '/unse',
-    '/about',
-    '/faq',
-    '/contact',
-    '/terms',
-    '/privacy',
-  ].map((route) => ({
-    url: `${SITE_URL}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: route === '' ? 1 : 0.8,
-  }))
+  const lastModified = new Date()
 
-  const guideRoutes = guides.map((guide) => ({
-    url: `${SITE_URL}/guide/${guide.slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
+  return SITEMAP_ROUTES.map(({ path, changeFrequency, priority }) => ({
+    url: new URL(path, SITE_URL).toString(),
+    lastModified,
+    changeFrequency,
+    priority,
   }))
-
-  const columnIds = ['1', '2', '3'];
-  const columnRoutes = columnIds.map((id) => ({
-    url: `${SITE_URL}/column/${id}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }))
-
-  return [...staticRoutes, ...guideRoutes, ...columnRoutes]
 }
