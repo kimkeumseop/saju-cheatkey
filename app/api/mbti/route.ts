@@ -1,17 +1,54 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
-import { buildMbtiFallbackProfile, getDefaultScoresForType } from '@/lib/mbti';
-import { MBTI_TYPES } from '@/src/data/mbtiTypes';
+import { buildMbtiFallbackProfile, getDefaultScoresForType, type MbtiAiProfile } from '@/lib/mbti';
+import { MBTI_TYPES, type MbtiTypeCode } from '@/src/data/mbtiTypes';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
+const AI_TIMEOUT_MS = 12000;
+const MBTI_CODES = Object.keys(MBTI_TYPES) as MbtiTypeCode[];
+const MBTI_CODE_SET = new Set(MBTI_CODES);
+
+function normalizeMbtiList(value: unknown, fallback: string[]) {
+  const items = Array.isArray(value)
+    ? value.map((item) => (typeof item === 'string' ? item.trim() : '')).filter(Boolean).slice(0, 3)
+    : [];
+
+  return items.length === 3 ? items : fallback;
+}
+
+function normalizeMbtiCode(value: unknown, fallback: string) {
+  const code = typeof value === 'string' ? value.trim().toUpperCase() : '';
+  return MBTI_CODE_SET.has(code as MbtiTypeCode) ? code : fallback;
+}
+
+function normalizeMbtiProfile(profile: unknown, fallback: MbtiAiProfile): MbtiAiProfile {
+  if (!profile || typeof profile !== 'object') {
+    return fallback;
+  }
+
+  const candidate = profile as Partial<MbtiAiProfile>;
+  const summary = typeof candidate.summary === 'string' && candidate.summary.trim()
+    ? candidate.summary.trim()
+    : fallback.summary;
+
+  return {
+    summary,
+    strengths: normalizeMbtiList(candidate.strengths, fallback.strengths),
+    weaknesses: normalizeMbtiList(candidate.weaknesses, fallback.weaknesses),
+    goodMatch: normalizeMbtiCode(candidate.goodMatch, fallback.goodMatch),
+    cautionMatch: normalizeMbtiCode(candidate.cautionMatch, fallback.cautionMatch),
+  };
+}
 
 export async function POST(req: Request) {
+  let type = 'INTJ';
+
   try {
     const body = await req.json();
-    const type = String(body?.type || '').toUpperCase();
+    type = String(body?.type || '').toUpperCase();
     const scores = body?.scores || getDefaultScoresForType(type);
     const typeInfo = MBTI_TYPES[type as keyof typeof MBTI_TYPES];
 
@@ -19,10 +56,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Invalid MBTI type' }, { status: 400 });
     }
 
+    const fallbackProfile = buildMbtiFallbackProfile(type);
+
     if (!apiKey) {
       return NextResponse.json({
         success: true,
-        profile: buildMbtiFallbackProfile(type),
+        profile: fallbackProfile,
       });
     }
 
@@ -63,23 +102,42 @@ export async function POST(req: Request) {
 - goodMatch와 cautionMatch는 실제 MBTI 코드 4글자
 `.trim();
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let text = '';
+
+    try {
+      text = await Promise.race([
+        model.generateContent(prompt).then(async (result) => {
+          const response = await result.response;
+          return response.text().trim();
+        }),
+        new Promise<string>((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error('MBTI AI timeout')), AI_TIMEOUT_MS);
+        }),
+      ]);
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    }
 
     try {
       const parsed = JSON.parse(text);
-      return NextResponse.json({ success: true, profile: parsed });
+      return NextResponse.json({
+        success: true,
+        profile: normalizeMbtiProfile(parsed, fallbackProfile),
+      });
     } catch {
       return NextResponse.json({
         success: true,
-        profile: buildMbtiFallbackProfile(type),
+        profile: fallbackProfile,
       });
     }
   } catch (error: any) {
+    const fallbackType = MBTI_CODE_SET.has(type as MbtiTypeCode) ? type : 'INTJ';
     return NextResponse.json({
       success: true,
-      profile: buildMbtiFallbackProfile('INTJ'),
+      profile: buildMbtiFallbackProfile(fallbackType),
       error: error?.message,
     });
   }

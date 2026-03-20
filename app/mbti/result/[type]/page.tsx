@@ -15,6 +15,16 @@ type StoredMbtiResult = {
   profile?: MbtiAiProfile | null;
 };
 
+const AI_FETCH_TIMEOUT_MS = 8000;
+
+function isFallbackProfile(profile: MbtiAiProfile, fallbackProfile: MbtiAiProfile) {
+  return (
+    profile.summary === fallbackProfile.summary
+    && profile.goodMatch === fallbackProfile.goodMatch
+    && profile.cautionMatch === fallbackProfile.cautionMatch
+  );
+}
+
 export default function MbtiResultPage() {
   const params = useParams<{ type: string }>();
   const type = String(params?.type || '').toUpperCase() as MbtiTypeCode;
@@ -23,17 +33,22 @@ export default function MbtiResultPage() {
   const [scores, setScores] = useState<MbtiScores>(() => getDefaultScoresForType(type));
   const [profile, setProfile] = useState<MbtiAiProfile>(fallbackProfile);
   const [loadingAi, setLoadingAi] = useState(false);
+  const [storageChecked, setStorageChecked] = useState(false);
+  const [aiNotice, setAiNotice] = useState<string | null>(null);
 
   useEffect(() => {
     setScores(getDefaultScoresForType(type));
     setProfile(buildMbtiFallbackProfile(type));
+    setLoadingAi(false);
+    setStorageChecked(false);
+    setAiNotice(null);
   }, [type]);
 
   useEffect(() => {
-    const savedRaw = sessionStorage.getItem(MBTI_RESULT_STORAGE_KEY);
-    if (!savedRaw) return;
-
     try {
+      const savedRaw = sessionStorage.getItem(MBTI_RESULT_STORAGE_KEY);
+      if (!savedRaw) return;
+
       const saved = JSON.parse(savedRaw) as StoredMbtiResult;
       if (saved.mbtiType === type) {
         if (saved.scores) setScores(saved.scores);
@@ -41,28 +56,55 @@ export default function MbtiResultPage() {
       }
     } catch {
       return;
+    } finally {
+      setStorageChecked(true);
     }
   }, [type]);
 
   useEffect(() => {
-    let cancelled = false;
-    const shouldFetch = !typeInfo || profile.summary === fallbackProfile.summary;
+    if (!typeInfo || !storageChecked || !isFallbackProfile(profile, fallbackProfile)) return;
 
-    if (!typeInfo || !shouldFetch) return;
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), AI_FETCH_TIMEOUT_MS);
 
     const load = async () => {
       try {
         setLoadingAi(true);
+        setAiNotice('AI 설명을 불러오는 중이에요. 기본 결과를 먼저 보여드릴게요.');
         const response = await fetch('/api/mbti', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type, scores }),
+          signal: controller.signal,
         });
+        if (!response.ok) {
+          throw new Error(`Failed to load MBTI AI profile: ${response.status}`);
+        }
         const data = await response.json();
         if (!cancelled && data?.profile) {
           setProfile(data.profile);
+          setAiNotice(null);
+
+          try {
+            const savedRaw = sessionStorage.getItem(MBTI_RESULT_STORAGE_KEY);
+            const saved = savedRaw ? JSON.parse(savedRaw) : {};
+            sessionStorage.setItem(MBTI_RESULT_STORAGE_KEY, JSON.stringify({
+              ...saved,
+              mbtiType: type,
+              scores,
+              profile: data.profile,
+            }));
+          } catch {
+            // Ignore sessionStorage write failures and keep the loaded result in memory.
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setAiNotice('AI 설명이 지연되어 기본 결과를 먼저 보여드리고 있어요.');
         }
       } finally {
+        window.clearTimeout(timeoutId);
         if (!cancelled) setLoadingAi(false);
       }
     };
@@ -70,8 +112,21 @@ export default function MbtiResultPage() {
     load();
     return () => {
       cancelled = true;
+      controller.abort();
+      window.clearTimeout(timeoutId);
     };
-  }, [fallbackProfile.summary, profile.summary, scores, type, typeInfo]);
+  }, [
+    fallbackProfile.cautionMatch,
+    fallbackProfile.goodMatch,
+    fallbackProfile.summary,
+    profile.cautionMatch,
+    profile.goodMatch,
+    profile.summary,
+    scores,
+    storageChecked,
+    type,
+    typeInfo,
+  ]);
 
   const storySummary = useMemo(() => {
     return [
@@ -128,8 +183,10 @@ export default function MbtiResultPage() {
             {profile.summary || typeInfo.desc}
           </p>
 
-          {loadingAi ? (
-            <p className="mt-3 text-sm font-bold text-emerald-700">AI 설명을 다듬는 중입니다...</p>
+          {loadingAi || aiNotice ? (
+            <p className="mt-3 text-sm font-bold text-emerald-700">
+              {loadingAi ? 'AI 설명을 불러오는 중이에요. 기본 결과를 먼저 보여드릴게요.' : aiNotice}
+            </p>
           ) : null}
         </section>
 
