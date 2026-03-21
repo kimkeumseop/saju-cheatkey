@@ -52,6 +52,10 @@ export default function RootLayout({
           content="0QyT_vWbOQThoWqzG6s169d7hucRibvYLSXJCLiBNTE"
         />
         <meta
+          name="google-site-verification"
+          content="Uq__XjJJK6j-ipJKyUcbCDK6hy_aWPgaf3ep7bsbdlk"
+        />
+        <meta
           name="naver-site-verification"
           content="22ae6644d466da2adf1789aecb23aa40597c4173"
         />
