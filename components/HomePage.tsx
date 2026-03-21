@@ -455,8 +455,9 @@ export default function HomePage() {
                   <Link
                     href={card.href}
                     className="inline-flex items-center gap-1.5 text-sm font-black text-primary-600 transition hover:text-primary-800"
+                    aria-label={`${card.title} 자세히 보기`}
                   >
-                    자세히 보기
+                    {card.title} 자세히 보기
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </motion.article>
@@ -518,8 +519,9 @@ export default function HomePage() {
                     <Link
                       href={`/guide/${guide.slug}`}
                       className="inline-flex items-center gap-1 text-xs font-black text-primary-500 transition hover:text-primary-700"
+                      aria-label={`${guide.title} 읽어보기`}
                     >
-                      읽어보기
+                      {guide.title} 읽어보기
                       <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                     </Link>
                   </article>

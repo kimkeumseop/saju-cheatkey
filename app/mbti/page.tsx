@@ -4,10 +4,10 @@ import { Brain, ChevronRight, SlidersHorizontal, Timer } from 'lucide-react';
 import { createMetadata } from '@/lib/site';
 
 export const metadata: Metadata = createMetadata({
-  title: 'MBTI 테스트',
-  description: '20문항 슬라이더로 3~4분 안에 확인하는 MBTI 테스트',
+  title: '무료 MBTI 테스트 16가지 성격유형 | 사주 치트키',
+  description: '20문항으로 3~4분 만에 완성하는 무료 MBTI 성격유형 테스트. INTJ, INTP, ENFP 등 16가지 유형 설명, 강점과 약점, 궁합 포인트까지 한 번에 확인하세요.',
   path: '/mbti',
-  keywords: ['MBTI 테스트', '성격 유형 검사', 'MBTI 결과'],
+  keywords: ['무료 MBTI 테스트', 'MBTI 성격유형', 'MBTI 16가지 유형', '성격유형 검사', 'MBTI 결과', 'MBTI 궁합', 'INTJ', 'ENFP', 'INFP'],
 });
 
 const features = [
@@ -16,8 +16,19 @@ const features = [
   { icon: Brain, title: '16가지 유형', desc: '유형 설명, 강점과 약점, 궁합 포인트까지 한 번에 봅니다.' },
 ];
 
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://saju-cheatkey.kr' },
+    { '@type': 'ListItem', position: 2, name: 'MBTI 테스트', item: 'https://saju-cheatkey.kr/mbti' },
+  ],
+};
+
 export default function MbtiHomePage() {
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_30%),linear-gradient(180deg,#ecfdf5_0%,#f7fffb_55%,#ecfdf5_100%)] pt-20 pb-28">
       <section className="px-6 py-16">
         <div className="mx-auto max-w-5xl">
@@ -88,5 +99,6 @@ export default function MbtiHomePage() {
         </div>
       </section>
     </main>
+    </>
   );
 }

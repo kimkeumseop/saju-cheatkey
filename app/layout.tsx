@@ -1,21 +1,34 @@
 import "./globals.css";
+import localFont from "next/font/local";
 import BottomNav from "@/components/BottomNav";
 import { AuthProvider } from "@/lib/auth";
 import type { Metadata } from "next";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
+const pretendard = localFont({
+  src: [
+    { path: "./fonts/Pretendard-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/Pretendard-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/Pretendard-Bold.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-pretendard",
+  display: "swap",
+  preload: true,
+  fallback: ["-apple-system", "BlinkMacSystemFont", "system-ui", "Apple SD Gothic Neo", "Noto Sans KR", "sans-serif"],
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "2026년 무료 사주 & 궁합 치트키 | 내 운명 완벽 해설",
+    default: "무료 사주 · 타로 · MBTI · 궁합 | 사주 치트키",
     template: `%s | ${SITE_NAME}`,
   },
   description:
-    "어려운 명리학은 그만! 2026년 무료 사주, 토정비결, 운명 궁합을 현대적으로 풀어낸 프리미엄 비밀 리포트로 만나보세요. 내 사주 치트키로 숨겨진 재물운과 연애운의 흐름을 정확하게 확인하세요.",
-  keywords: ["2026년 무료 사주", "무료 토정비결", "사주 치트키", "사주팔자", "명리학", "궁합", "연애운", "재물운", "무료 운세", "운명 테스트"],
+    "생년월일로 무료 사주, AI 타로 카드, MBTI 성격유형 테스트, 궁합까지 한 번에 확인하세요. 2026년 운세를 쉽고 빠르게 알아보는 사주 치트키.",
+  keywords: ["무료 사주", "무료 타로", "MBTI 테스트", "무료 궁합", "사주 치트키", "2026년 운세", "사주팔자", "타로 카드", "MBTI 성격유형", "무료 운세"],
   openGraph: {
-    title: "2026년 무료 사주 & 궁합 치트키 | 내 운명 완벽 해설",
-    description: "어려운 명리학은 그만! 2026년 무료 사주, 토정비결, 운명 궁합을 현대적으로 풀어낸 프리미엄 비밀 리포트로 만나보세요. 내 사주 치트키로 숨겨진 재물운과 연애운의 흐름을 정확하게 확인하세요.",
+    title: "무료 사주 · 타로 · MBTI · 궁합 | 사주 치트키",
+    description: "생년월일로 무료 사주, AI 타로 카드, MBTI 성격유형 테스트, 궁합까지 한 번에 확인하세요. 2026년 운세를 쉽고 빠르게 알아보는 사주 치트키.",
     url: SITE_URL,
     siteName: SITE_NAME,
     locale: "ko_KR",
@@ -32,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={pretendard.variable}>
       <head>
         <meta
           name="google-site-verification"
@@ -42,14 +55,13 @@ export default function RootLayout({
           name="naver-site-verification"
           content="22ae6644d466da2adf1789aecb23aa40597c4173"
         />
-        <link
-          rel="stylesheet"
-          as="style"
-          crossOrigin="anonymous"
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
-        />
+        {/* Firebase / Google API preconnect */}
+        <link rel="preconnect" href="https://firebaseapp.com" />
+        <link rel="preconnect" href="https://apis.google.com" />
+        <link rel="preconnect" href="https://securetoken.googleapis.com" />
+        <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
       </head>
-      <body className="antialiased min-h-screen relative pb-20">
+      <body className={`${pretendard.className} antialiased min-h-screen relative pb-20`}>
         <AuthProvider>
           <div className="fixed inset-0 bg-texture z-[-1]" />
           {children}

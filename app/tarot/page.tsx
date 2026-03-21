@@ -4,11 +4,24 @@ import Link from 'next/link'
 import TodayTarotCard from '@/components/tarot/TodayTarotCard'
 
 export const metadata: Metadata = {
-  title: '타로 카드 | 사주 치트키',
-  description: '타로 카드 리딩. 오늘의 카드, 연애·직업·금전 스프레드, 78장 카드 사전까지.',
+  title: '무료 타로 카드 리딩 AI 해석 | 사주 치트키',
+  description: 'AI 타로 리더 성월이 오늘의 카드를 해석해드려요. 원카드, 쓰리카드, 연애·직업·금전 스프레드와 78장 타로 카드 사전을 무료로 제공합니다.',
+  keywords: ['무료 타로', '타로 카드 리딩', 'AI 타로', '타로 점', '타로 카드 사전', '오늘의 타로', '연애 타로'],
+  alternates: { canonical: 'https://saju-cheatkey.kr/tarot' },
   openGraph: {
-    title: '타로 카드 리딩 | 사주 치트키',
-    description: '타로 리더 성월이 당신의 카드를 해석해드려요 🔮',
+    title: '무료 타로 카드 리딩 AI 해석 | 사주 치트키',
+    description: 'AI 타로 리더 성월이 오늘의 카드를 해석해드려요. 원카드, 쓰리카드, 78장 카드 사전까지 무료.',
+    url: 'https://saju-cheatkey.kr/tarot',
+    siteName: '사주 치트키',
+    locale: 'ko_KR',
+    type: 'website',
+    images: [{ url: 'https://saju-cheatkey.kr/og-default.svg', width: 1200, height: 630, alt: '사주 치트키 타로 카드' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '무료 타로 카드 리딩 AI 해석 | 사주 치트키',
+    description: 'AI 타로 리더 성월이 오늘의 카드를 해석해드려요.',
+    images: ['https://saju-cheatkey.kr/og-default.svg'],
   },
 }
 
@@ -19,8 +32,19 @@ const FEATURES = [
   { icon: '🎴', title: '다양한 스프레드', desc: '원카드, 쓰리카드, 오각형 스프레드로 깊이 있는 리딩' },
 ]
 
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '홈', item: 'https://saju-cheatkey.kr' },
+    { '@type': 'ListItem', position: 2, name: '타로 카드', item: 'https://saju-cheatkey.kr/tarot' },
+  ],
+};
+
 export default function TarotPage() {
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
     <main className="min-h-screen tarot-bg">
 
       {/* 히어로 */}
@@ -95,5 +119,6 @@ export default function TarotPage() {
       </section>
 
     </main>
+    </>
   )
 }

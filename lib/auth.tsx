@@ -77,32 +77,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // 로컬 프로필을 즉시 표시해 초기 렌더링 차단 방지
+    loadLocalProfiles();
+
     if (!auth || !hasFirebasePublicConfig) {
-      loadLocalProfiles();
       setLoading(false);
       return;
     }
 
+    let unsubscribeAuth: (() => void) | undefined;
     let unsubscribeUserDoc: (() => void) | undefined;
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        fetchProfiles(currentUser.uid);
-        if (db) {
-          unsubscribeUserDoc = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
-            if (docSnap.exists()) setUserCheatKeys(docSnap.data().cheatCoin || 0);
-            else setUserCheatKeys(0);
-          });
+
+    const initAuth = () => {
+      unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+        if (currentUser) {
+          setUser(currentUser);
+          fetchProfiles(currentUser.uid);
+          if (db) {
+            unsubscribeUserDoc = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
+              if (docSnap.exists()) setUserCheatKeys(docSnap.data().cheatCoin || 0);
+              else setUserCheatKeys(0);
+            });
+          }
+        } else {
+          setUser(null);
+          setUserCheatKeys(0);
+          loadLocalProfiles();
         }
-      } else {
-        setUser(null);
-        setUserCheatKeys(0);
-        loadLocalProfiles();
-      }
-      setLoading(false);
-    });
+        setLoading(false);
+      });
+    };
+
+    // requestIdleCallback으로 Firebase Auth 초기화를 LCP 이후로 지연
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      (window as Window & { requestIdleCallback: (cb: IdleRequestCallback, opts?: IdleRequestOptions) => number })
+        .requestIdleCallback(initAuth, { timeout: 3000 });
+    } else {
+      setTimeout(initAuth, 200);
+    }
+
     return () => {
-      unsubscribeAuth();
+      if (unsubscribeAuth) unsubscribeAuth();
       if (unsubscribeUserDoc) unsubscribeUserDoc();
     };
   }, []);

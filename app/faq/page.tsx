@@ -6,14 +6,37 @@ import AdSenseScript from '@/components/AdSenseScript';
 import { createMetadata, faqEntries, SITE_EMAIL } from '@/lib/site';
 
 export const metadata: Metadata = createMetadata({
-  title: 'FAQ',
-  description: '사주 치트키 이용 전 자주 묻는 질문을 정리했습니다. 출생시간, 결과 해석, 개인정보 처리, 문의 방법을 확인할 수 있습니다.',
+  title: '자주 묻는 질문 FAQ | 사주 치트키',
+  description: '사주 치트키 이용 전 자주 묻는 질문 모음. 사주 계산 기준, 출생시간 없을 때 이용 방법, 결과 해석 방식, 개인정보 처리, 문의 방법을 확인하세요.',
   path: '/faq',
-  keywords: ['사주 치트키 FAQ', '사주 자주 묻는 질문', '출생시간 모름', '사주 해석 기준'],
+  keywords: ['사주 치트키 FAQ', '사주 자주 묻는 질문', '출생시간 모름', '사주 해석 기준', '사주 개인정보'],
 });
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqEntries.map((entry) => ({
+        '@type': 'Question',
+        name: entry.question,
+        acceptedAnswer: { '@type': 'Answer', text: entry.answer },
+      })),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '홈', item: 'https://saju-cheatkey.kr' },
+        { '@type': 'ListItem', position: 2, name: '자주 묻는 질문', item: 'https://saju-cheatkey.kr/faq' },
+      ],
+    },
+  ],
+};
 
 export default function FAQPage() {
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
     <main className="min-h-screen bg-[#FFF5F7] pt-24 pb-32">
       <AdSenseScript />
       <Navbar />
@@ -55,5 +78,6 @@ export default function FAQPage() {
 
       <Footer />
     </main>
+    </>
   );
 }
