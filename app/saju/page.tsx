@@ -225,7 +225,7 @@ function SajuEntryContent() {
             바로 읽어보세요
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-8 text-gray-500 break-keep md:text-lg">
-            이제 `/saju`는 안전한 시작 페이지로 동작합니다. 정보 없이 들어와도 에러가 나지 않고, 바로 분석 입력을 시작할 수 있습니다.
+            생년월일 하나로 나의 사주를 바로 확인해보세요.
           </p>
 
           <button
