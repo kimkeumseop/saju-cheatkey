@@ -4,10 +4,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
-  BookOpen,
-  CircleHelp,
-  Compass,
-  Layers3,
   Sparkles,
   Stars,
   Zap,
@@ -130,32 +126,6 @@ const featureItems = [
   },
 ];
 
-const featuredGuideCards = [
-  {
-    title: '사주란 무엇인가',
-    description: '사주가 어떤 원리로 읽히는지, 처음 보는 사람도 이해하기 쉽게 정리한 기초 가이드입니다.',
-    href: '/guide/what-is-saju',
-    icon: BookOpen,
-  },
-  {
-    title: '천간과 지지 기초',
-    description: '사주의 구조를 이루는 천간과 지지를 초보자도 따라갈 수 있게 풀어낸 읽을거리입니다.',
-    href: '/guide/heavenly-stems-earthly-branches',
-    icon: Layers3,
-  },
-  {
-    title: '오행의 흐름',
-    description: '목화토금수가 어떻게 균형을 이루는지, 사주에서 어떤 의미를 가지는지 살펴봅니다.',
-    href: '/guide/five-elements',
-    icon: Compass,
-  },
-  {
-    title: '운세 해석 가이드',
-    description: '결과를 어떻게 읽고 어디까지 참고해야 하는지, 해석의 기준을 차분히 안내합니다.',
-    href: '/guide/how-to-read-yearly-fortune',
-    icon: CircleHelp,
-  },
-];
 
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
@@ -218,12 +188,36 @@ export default function HomePage() {
             타로와 MBTI로 지금의 나를 더 선명하게 봐요
           </motion.p>
 
+          {/* CTA buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.28 }}
+            className="mt-10 flex flex-wrap items-center justify-center gap-3"
+          >
+            <Link
+              href="/saju"
+              className="inline-flex items-center gap-2 rounded-2xl px-7 py-4 text-base font-bold text-white shadow-lg transition hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+              style={{ background: 'linear-gradient(135deg, #f06595, #e64980)', boxShadow: '0 12px 30px rgba(240,101,149,0.35)' }}
+            >
+              사주 바로 보기
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/tarot"
+              className="inline-flex items-center gap-2 rounded-2xl border border-white/80 bg-white/90 px-7 py-4 text-base font-bold shadow-sm transition hover:shadow-md hover:bg-white active:scale-[0.98]"
+              style={{ color: tarotColor }}
+            >
+              타로 보기
+            </Link>
+          </motion.div>
+
           {/* Trust badges */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.32 }}
-            className="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-gray-400"
+            transition={{ duration: 0.5, delay: 0.45 }}
+            className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-gray-400"
           >
             <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary-300" />무료 제공</span>
             <span className="h-3 w-px bg-gray-200" />
@@ -233,21 +227,6 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
-            className="h-8 w-5 rounded-full border-2 border-primary-200 flex items-start justify-center pt-1.5"
-          >
-            <div className="h-1.5 w-1 rounded-full bg-primary-300" />
-          </motion.div>
-        </motion.div>
       </section>
 
       {/* ─── SERVICES ─── */}
@@ -296,7 +275,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="flex-1 space-y-3">
-                    <h3 className="text-2xl font-black tracking-tight text-gray-900">{card.title}</h3>
+                    <h3 className="text-2xl font-bold tracking-tight text-gray-900">{card.title}</h3>
                     <p className="whitespace-pre-line text-sm leading-7 text-gray-500 break-keep">{card.description}</p>
                   </div>
 
@@ -363,7 +342,7 @@ export default function HomePage() {
                     <span className="text-xs font-black tabular-nums text-gray-200">{card.num}</span>
                     <div className="h-10 w-0.5 rounded-full" style={{ background: card.accent }} />
                     <div>
-                      <p className="text-base font-black text-gray-900 break-keep md:text-lg">{card.question}</p>
+                      <p className="text-base font-bold text-gray-900 break-keep md:text-lg">{card.question}</p>
                       <p className="mt-1 text-sm text-gray-400 break-keep">{card.subtext}</p>
                     </div>
                   </div>
@@ -409,60 +388,10 @@ export default function HomePage() {
                   <span className="text-5xl font-black leading-none" style={{ color: `${item.accent}22` }}>{item.num}</span>
                   <div className="h-1.5 w-10 rounded-full" style={{ background: item.accent }} />
                 </div>
-                <h3 className="text-xl font-black tracking-tight text-gray-900">{item.title}</h3>
+                <h3 className="text-xl font-bold tracking-tight text-gray-900">{item.title}</h3>
                 <p className="mt-3 text-sm leading-7 text-gray-500 break-keep">{item.description}</p>
               </motion.div>
             ))}
-          </div>
-        </motion.div>
-      </section>
-
-      {/* ─── FEATURED GUIDES ─── */}
-      <section className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-        <motion.div {...fadeUp} className="space-y-10">
-          <div className="space-y-4 text-center">
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-primary-400">Learn the Basics</p>
-            <h2 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">사주 기초를 먼저 읽어보세요</h2>
-            <p className="mx-auto max-w-2xl text-sm leading-8 text-gray-500 break-keep">
-              결과를 읽기 전에 기본 개념을 같이 보면 해석이 훨씬 선명해집니다.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            {featuredGuideCards.map((card, index) => {
-              const Icon = card.icon;
-              return (
-                <motion.article
-                  key={card.href}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.45, delay: index * 0.07 }}
-                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                  className="group rounded-[2rem] bg-white p-7 shadow-sm transition"
-                  style={{ border: '1px solid rgba(240,101,149,0.08)' }}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="icon-gradient-pink flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl shadow-md shadow-primary-200/30">
-                      <Icon className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-black text-primary-900">{card.title}</h3>
-                      <p className="mt-2 text-sm leading-7 text-gray-500 break-keep">{card.description}</p>
-                    </div>
-                  </div>
-                  <div className="divider-gradient my-5" />
-                  <Link
-                    href={card.href}
-                    className="inline-flex items-center gap-1.5 text-sm font-black text-primary-600 transition hover:text-primary-800"
-                    aria-label={`${card.title} 자세히 보기`}
-                  >
-                    {card.title} 자세히 보기
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                  </Link>
-                </motion.article>
-              );
-            })}
           </div>
         </motion.div>
       </section>
