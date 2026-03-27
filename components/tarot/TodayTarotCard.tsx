@@ -31,6 +31,14 @@ function getCardPool(period: Period): TarotCard[] {
   return matched.length >= 10 ? matched : TAROT_CARDS
 }
 
+const darkGlass = {
+  background: 'rgba(255,255,255,0.04)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  border: '1px solid rgba(157,143,255,0.2)',
+  boxShadow: '0 4px 32px rgba(157,143,255,0.1), 0 1px 0 rgba(255,255,255,0.05) inset',
+} as React.CSSProperties
+
 export default function TodayTarotCard() {
   const [card, setCard] = useState<TarotCard | null>(null)
   const [revealed, setRevealed] = useState(false)
@@ -53,7 +61,6 @@ export default function TodayTarotCard() {
       if (found) { setCard(found); setRevealed(true); fetchImageUrl(found.id) }
     }
 
-    // 시간대 바뀌면 자동 리셋
     const msUntilNextPeriod = () => {
       const now = new Date()
       const h = now.getHours()
@@ -92,8 +99,21 @@ export default function TodayTarotCard() {
   const { label, icon } = PERIOD_CONFIG[period]
 
   return (
-    <div className="glass-card rounded-3xl p-6 text-center" style={{ borderColor: 'rgba(127,119,221,0.2)' }}>
-      <div className="text-xs font-medium tracking-widest mb-4" style={{ color: 'var(--tarot-600)' }}>
+    <div className="relative rounded-3xl p-6 text-center" style={darkGlass}>
+      {/* Top accent bar */}
+      <div
+        className="absolute left-0 top-0 h-[2px] w-full rounded-t-3xl"
+        style={{ background: 'linear-gradient(90deg, #9d8fff, #534ab7)', boxShadow: '0 0 12px rgba(157,143,255,0.4)' }}
+      />
+
+      <div
+        className="inline-flex items-center gap-1.5 text-xs font-black tracking-widest mb-4 rounded-full px-3 py-1.5"
+        style={{
+          background: 'rgba(157,143,255,0.12)',
+          border: '1px solid rgba(157,143,255,0.25)',
+          color: '#9d8fff',
+        }}
+      >
         {icon} {label}
       </div>
 
@@ -104,8 +124,8 @@ export default function TodayTarotCard() {
               key="back"
               className="absolute inset-0 rounded-2xl flex items-center justify-center cursor-pointer"
               style={{
-                background: 'linear-gradient(135deg, var(--tarot-400), var(--tarot-800))',
-                boxShadow: '0 8px 24px rgba(127,119,221,0.3)',
+                background: 'linear-gradient(135deg, #9d8fff, #534ab7)',
+                boxShadow: '0 8px 24px rgba(157,143,255,0.35)',
               }}
               onClick={!loading ? drawCard : undefined}
               whileHover={{ scale: 1.04 }}
@@ -116,7 +136,7 @@ export default function TodayTarotCard() {
                 <div className="w-8 h-8 border-2 rounded-full animate-spin"
                   style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: 'white' }} />
               ) : (
-                <div className="text-center" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                <div className="text-center" style={{ color: 'rgba(255,255,255,0.8)' }}>
                   <div className="text-3xl mb-1">✦</div>
                   <div className="text-xs tracking-widest">탭하기</div>
                 </div>
@@ -125,11 +145,11 @@ export default function TodayTarotCard() {
           ) : (
             <motion.div
               key="front"
-              className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center"
+              className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center overflow-hidden"
               style={{
-                background: 'linear-gradient(135deg, var(--tarot-50), #f8f7ff)',
-                border: '1px solid var(--tarot-100)',
-                boxShadow: '0 4px 16px rgba(127,119,221,0.12)',
+                background: 'rgba(157,143,255,0.08)',
+                border: '1px solid rgba(157,143,255,0.25)',
+                boxShadow: '0 4px 20px rgba(157,143,255,0.15)',
               }}
               initial={{ rotateY: -90 }}
               animate={{ rotateY: 0, transition: { duration: 0.3 } }}
@@ -146,18 +166,18 @@ export default function TodayTarotCard() {
       <AnimatePresence>
         {revealed && card && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="text-sm font-semibold mb-3" style={{ color: 'var(--tarot-700)' }}>{card.name}</div>
+            <div className="text-sm font-bold mb-3" style={{ color: '#f0eeff' }}>{card.name}</div>
             <div className="flex flex-wrap gap-1 justify-center mb-3">
               {card.keywords.map((k) => (
                 <span key={k} className="px-2 py-0.5 rounded-full text-[11px]"
-                  style={{ background: 'var(--tarot-50)', color: 'var(--tarot-600)' }}>
+                  style={{ background: 'rgba(157,143,255,0.12)', color: '#9d8fff', border: '1px solid rgba(157,143,255,0.2)' }}>
                   {k}
                 </span>
               ))}
             </div>
-            <p className="text-xs text-gray-500 leading-relaxed text-center mb-4">{card.desc}</p>
+            <p className="text-xs leading-relaxed text-center mb-4" style={{ color: 'rgba(240,238,255,0.4)' }}>{card.desc}</p>
             <button onClick={reset} className="w-full py-2 rounded-full text-xs transition-opacity hover:opacity-70"
-              style={{ border: '1px solid var(--tarot-200)', color: 'var(--tarot-500)' }}>
+              style={{ border: '1px solid rgba(157,143,255,0.25)', color: 'rgba(157,143,255,0.7)' }}>
               ↺ 다시 뽑기
             </button>
           </motion.div>
@@ -165,7 +185,7 @@ export default function TodayTarotCard() {
       </AnimatePresence>
 
       {!revealed && !loading && (
-        <p className="text-xs text-gray-400 mt-1">카드를 탭하면 {label.replace('의 타로', '')} 메시지가 열려요</p>
+        <p className="text-xs mt-1" style={{ color: 'rgba(240,238,255,0.25)' }}>카드를 탭하면 {label.replace('의 타로', '')} 메시지가 열려요</p>
       )}
     </div>
   )
