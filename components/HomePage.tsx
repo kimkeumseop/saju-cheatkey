@@ -211,43 +211,12 @@ export default function HomePage() {
             타로와 MBTI로 지금의 나를 더 선명하게 봐요
           </motion.p>
 
-          {/* CTA buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.28 }}
-            className="mt-10 flex flex-wrap items-center justify-center gap-3"
-          >
-            <Link
-              href="/saju"
-              className="inline-flex items-center gap-2 rounded-2xl px-7 py-4 text-base font-bold text-white transition hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, #ff6eb4, #e64980)',
-                boxShadow: '0 0 30px rgba(255,110,180,0.5), 0 12px 30px rgba(255,110,180,0.3)',
-              }}
-            >
-              사주 바로 보기
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/tarot"
-              className="inline-flex items-center gap-2 rounded-2xl px-7 py-4 text-base font-bold transition hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                ...glassCard('rgba(157,143,255,0.3)'),
-                color: '#9d8fff',
-                textShadow: '0 0 10px rgba(157,143,255,0.5)',
-              }}
-            >
-              타로 보기
-            </Link>
-          </motion.div>
-
           {/* Trust badges */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.45 }}
-            className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-bold"
+            className="mt-10 flex flex-wrap items-center justify-center gap-4 text-xs font-bold"
             style={{ color: 'rgba(255,255,255,0.25)' }}
           >
             <span className="flex items-center gap-1.5">
