@@ -242,7 +242,7 @@ export default function HomePage() {
             <h2 className="mt-2 text-3xl font-black tracking-tight md:text-4xl" style={{ color: '#f0eeff' }}>원하는 방식으로 바로 시작하기</h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
             {serviceCards.map((card, index) => (
               <motion.article
                 key={card.title}
@@ -250,49 +250,68 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.15 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -10, transition: { duration: 0.22 } }}
-                className="group relative overflow-hidden rounded-[2.4rem] p-7 md:p-8 transition-all duration-300"
-                style={glassCard(card.border, card.glow)}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                className="group relative overflow-hidden rounded-[2rem] p-7 transition-all duration-300"
+                style={{
+                  background: `radial-gradient(ellipse at 110% -10%, ${card.accent}1a 0%, rgba(10,8,22,0.85) 55%)`,
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: `1px solid ${card.border}`,
+                  boxShadow: `0 8px 40px ${card.glow}, 0 1px 0 rgba(255,255,255,0.05) inset`,
+                }}
               >
-                {/* Top neon accent bar */}
+                {/* Number badge — top right */}
                 <div
-                  className="absolute left-0 top-0 h-[2px] w-full rounded-t-[2.4rem]"
-                  style={{ background: `linear-gradient(90deg, ${card.accent}, ${card.accentEnd})`, boxShadow: `0 0 12px ${card.glow}` }}
+                  className="absolute right-6 top-5 text-[11px] font-black tracking-[0.22em]"
+                  style={{ color: card.accent, opacity: 0.25 }}
+                >
+                  {String(index + 1).padStart(2, '0')}
+                </div>
+
+                {/* Top accent line — left-anchored, fades right */}
+                <div
+                  className="absolute left-7 top-0 h-[2px] rounded-b"
+                  style={{
+                    width: '44%',
+                    background: `linear-gradient(90deg, ${card.accent}, transparent)`,
+                    boxShadow: `0 0 8px ${card.glow}`,
+                  }}
                 />
 
-                {/* Corner glow orb */}
+                {/* Bottom-right ambient glow orb */}
                 <div
-                  className="absolute -right-8 -top-8 h-36 w-36 rounded-full opacity-15 transition-opacity group-hover:opacity-30"
-                  style={{ background: `radial-gradient(circle, ${card.accent}, transparent 70%)` }}
+                  className="absolute -bottom-10 -right-10 h-44 w-44 rounded-full opacity-10 transition-opacity duration-500 group-hover:opacity-22"
+                  style={{ background: `radial-gradient(circle, ${card.accent}, transparent 68%)` }}
                 />
 
-                <div className="relative z-10 flex h-full flex-col gap-7">
-                  {/* Icon */}
+                <div className="relative z-10 flex h-full flex-col gap-6">
+                  {/* Icon — glass tile */}
                   <div
-                    className="flex h-16 w-16 items-center justify-center rounded-2xl text-2xl text-white"
+                    className="flex h-14 w-14 items-center justify-center rounded-[1.1rem] text-[1.6rem]"
                     style={{
-                      background: `linear-gradient(135deg, ${card.accent}, ${card.accentEnd})`,
-                      boxShadow: `0 8px 24px ${card.glow}, 0 0 0 1px rgba(255,255,255,0.1) inset`,
+                      background: `linear-gradient(145deg, ${card.accent}2e, ${card.accentEnd}18)`,
+                      border: `1px solid ${card.accent}40`,
+                      boxShadow: `0 4px 20px ${card.glow}, 0 0 0 1px rgba(255,255,255,0.06) inset`,
                     }}
                   >
-                    {card.emoji}
+                    <span style={{ filter: `drop-shadow(0 0 6px ${card.accent})` }}>{card.emoji}</span>
                   </div>
 
-                  <div className="flex-1 space-y-3">
-                    <h3 className="text-2xl font-bold tracking-tight" style={{ color: '#f0eeff' }}>{card.title}</h3>
-                    <p className="whitespace-pre-line text-sm leading-7 break-keep" style={{ color: 'rgba(240,238,255,0.45)' }}>{card.description}</p>
+                  <div className="flex-1 space-y-2.5">
+                    <h3 className="text-xl font-bold tracking-tight" style={{ color: '#f0eeff' }}>{card.title}</h3>
+                    <p className="whitespace-pre-line text-sm leading-[1.75] break-keep" style={{ color: 'rgba(240,238,255,0.5)' }}>{card.description}</p>
                   </div>
 
                   <Link
                     href={card.href}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-sm font-black text-white transition active:scale-[0.98]"
+                    className="group/btn inline-flex items-center justify-center gap-2 rounded-full py-3.5 text-sm font-bold text-white transition-all duration-200 hover:gap-3 active:scale-[0.97]"
                     style={{
                       background: `linear-gradient(135deg, ${card.accent}, ${card.accentEnd})`,
-                      boxShadow: `0 4px 16px ${card.glow}`,
+                      boxShadow: `0 4px 20px ${card.glow}, 0 1px 0 rgba(255,255,255,0.18) inset`,
                     }}
                   >
                     {card.buttonLabel}
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
                   </Link>
                 </div>
               </motion.article>
