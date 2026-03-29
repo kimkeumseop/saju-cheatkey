@@ -406,6 +406,48 @@ export default function HomePage() {
         </motion.div>
       </section>
 
+      {/* ─── SAJU INTRO ─── */}
+      <section className="relative z-10 px-6 py-14 md:py-20">
+        <motion.div {...fadeUp} className="mx-auto max-w-4xl">
+          <div className="mb-10 text-center">
+            <p className="text-xs font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(157,143,255,0.7)' }}>사주란 무엇인가</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight md:text-4xl" style={{ color: '#f0eeff' }}>명리학이 읽는 나의 기운</h2>
+          </div>
+
+          <div
+            className="rounded-[2.4rem] p-8 md:p-12 space-y-6"
+            style={glassCard('rgba(157,143,255,0.12)', 'rgba(157,143,255,0.06)')}
+          >
+            <p className="text-base leading-8 break-keep" style={{ color: 'rgba(240,238,255,0.65)' }}>
+              사주(四柱)란 태어난 연(年)·월(月)·일(日)·시(時)의 네 기둥, 여덟 글자로 개인의 기질과 삶의 흐름을 읽는 동양 명리학의 핵심 도구입니다. 수천 년간 축적된 관찰과 체계를 바탕으로, 타고난 에너지의 패턴을 파악하고 크고 작은 변화의 흐름을 미리 살피는 데 활용해왔습니다.
+            </p>
+            <p className="text-base leading-8 break-keep" style={{ color: 'rgba(240,238,255,0.65)' }}>
+              사주의 근간은 오행(五行)입니다. 목(木)·화(火)·토(土)·금(金)·수(水), 다섯 가지 기운이 서로 돕고 견제하면서 자연과 사람의 흐름을 만들어냅니다. 각 기운의 강약과 균형을 읽으면, 어떤 상황에서 에너지가 살아나는지, 어떤 환경에서 소모가 빨라지는지를 파악할 수 있습니다. 천간(天干) 열 글자와 지지(地支) 열두 글자의 조합이 만드는 60개의 패턴은 개인의 기질과 대인관계 방식을 입체적으로 드러내줍니다.
+            </p>
+            <p className="text-base leading-8 break-keep" style={{ color: 'rgba(240,238,255,0.65)' }}>
+              사주 치트키는 이 명리학적 관점을 누구나 읽을 수 있는 언어로 풀어드립니다. 복잡한 전문 용어 없이, 사주·궁합·운세의 기본 원리부터 실제 해석 방법까지 단계별 가이드로 정리했습니다. 처음 사주를 접하는 분도, 이미 어느 정도 알고 있는 분도 더 입체적인 이해를 얻어갈 수 있도록 26편의 기초 가이드와 명리 칼럼을 함께 제공합니다.
+            </p>
+
+            <div className="grid grid-cols-1 gap-4 pt-4 md:grid-cols-3">
+              {[
+                { label: '네 기둥', desc: '연·월·일·시 여덟 글자로 기질과 흐름을 읽는 구조', accent: '#ff6eb4' },
+                { label: '오행 균형', desc: '목·화·토·금·수의 강약과 상생상극 관계 분석', accent: '#9d8fff' },
+                { label: '대운 흐름', desc: '10년 단위로 바뀌는 대운과 연간 운세의 변화', accent: '#00e5a0' },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-2xl p-5"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                >
+                  <p className="text-sm font-black mb-2" style={{ color: item.accent }}>{item.label}</p>
+                  <p className="text-xs leading-6 break-keep" style={{ color: 'rgba(240,238,255,0.4)' }}>{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
       {/* ─── READING LIBRARY ─── */}
       <section className="relative z-10 px-6 pb-24">
         <motion.div
@@ -428,18 +470,32 @@ export default function HomePage() {
                   결과를 더 차분하게 이해하는 데 도움이 되는 기본 자료를 모았습니다.
                 </p>
               </div>
-              <Link
-                href="/faq"
-                className="inline-flex items-center gap-2 self-start rounded-xl px-4 py-2.5 text-sm font-black transition hover:scale-[1.02]"
-                style={{
-                  background: 'rgba(255,110,180,0.1)',
-                  border: '1px solid rgba(255,110,180,0.2)',
-                  color: '#ff6eb4',
-                }}
-              >
-                자주 묻는 질문 보기
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+              <div className="flex flex-col gap-2 self-start">
+                <Link
+                  href="/guide"
+                  className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black transition hover:scale-[1.02]"
+                  style={{
+                    background: 'rgba(255,110,180,0.15)',
+                    border: '1px solid rgba(255,110,180,0.25)',
+                    color: '#ff6eb4',
+                  }}
+                >
+                  가이드 전체 보기
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/faq"
+                  className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black transition hover:scale-[1.02]"
+                  style={{
+                    background: 'rgba(255,110,180,0.06)',
+                    border: '1px solid rgba(255,110,180,0.12)',
+                    color: 'rgba(255,110,180,0.7)',
+                  }}
+                >
+                  자주 묻는 질문 보기
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
