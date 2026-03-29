@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const SITE_URL = "https://saju-cheatkey.kr";
 export const SITE_NAME = "사주 치트키";
 export const SITE_TEAM = "사주 치트키 운영팀";
-export const SITE_EMAIL = "sajucheatkey@google.com";
+export const SITE_EMAIL = "sajucheatkey@gmail.com";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.svg`;
 
 type MetadataInput = {
