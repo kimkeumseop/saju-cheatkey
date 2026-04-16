@@ -30,5 +30,6 @@ if (!admin.apps.length) {
   }
 }
 
-export const adminAuth = admin.auth();
-export const adminDb = admin.firestore();
+// Firebase 초기화 실패 시 빌드 에러 방지 — 런타임에서만 실제 사용됨
+export const adminAuth = admin.apps.length ? admin.auth() : null as unknown as admin.auth.Auth;
+export const adminDb = admin.apps.length ? admin.firestore() : null as unknown as admin.firestore.Firestore;

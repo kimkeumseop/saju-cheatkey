@@ -1,12 +1,17 @@
 # Design System — Saju Cheatkey
 
 ## Direction
-Warmth & Depth — Soft pink/rose brand with glass morphism, layered shadows, and rounded organic forms. Korean spiritual/wellness aesthetic.
+**Mystic Feminine Luxury** — 별이 가득한 밤하늘 아래, 나를 위한 럭셔리 웰니스 공간.
+따뜻한 다크 플럼 배경 위에 더스티 로즈 + 소프트 바이올렛 + 티파니 틸 조합.
+Noto Serif KR 헤딩으로 럭셔리/신비로운 감성, 글래스모피즘 카드, 달 장식 모티프.
+타겟: 20-30대 여성 — 게이밍 느낌 제거, 웰니스/럭셔리 K-뷰티 감성 강화.
 
 ## Foundation
-- **Color:** Warm pink-tinted white backgrounds, rose primary, purple/green accents
-- **Depth:** Shadow-heavy (70% shadows, 30% borders) — glows and layered box-shadows over flat borders
-- **Feel:** Glass morphism cards, frosted surfaces, ambient glow effects
+- **Background:** #0d0710 (warm dark plum — 보라빛 도는 따뜻한 어두움)
+- **Star color:** #ffeef5 (핑크빛 화이트 별)
+- **Text base:** #f5eef2 (웜 화이트)
+- **Depth:** Shadow-heavy with brand color glow (no neutral gray-only shadows)
+- **Feel:** Glass morphism, aurora orbs, moon crescent decoration, serif headings
 
 ---
 
@@ -17,125 +22,191 @@ Warmth & Depth — Soft pink/rose brand with glass morphism, layered shadows, an
 Base: 4px
 Scale: 4, 8, 12, 16, 24, 28, 32
 Gap default: gap-4 (16px)
-Section padding: p-6 (24px) — p-8 (32px)
-Button padding: py-4 px-6
+Section padding: py-14 md:py-20
+Button padding: py-3.5 px-6 (cards) / py-2.5 px-5 (pills)
 ```
 
 ### Border Radius
 ```
-xs:  rounded-xl    — 12px  (inputs, small buttons)
-sm:  rounded-2xl   — 24px  (buttons, chips) ← most common
-md:  rounded-[2rem] — 32px  (cards, modals)
-lg:  rounded-[2.5rem] — 40px (hero cards)
-full: rounded-full  (pills, avatars, icons)
+xs:   rounded-xl     — 12px  (inputs, small buttons)
+sm:   rounded-2xl    — 24px  (buttons, chips, guide cards)
+md:   rounded-[2rem] — 32px  (service cards, feature cards)
+lg:   rounded-[2.4rem]–[2.5rem] (saju intro panel)
+xl:   rounded-[3rem] — 48px  (reading library section)
+full: rounded-full   (pills, pill buttons, scroll indicator)
 ```
 
 ### Colors
 ```
 Background:
-  base:     #fff5f7   (pink-tinted white)
-  surface:  #fffafb
-  overlay:  rgba(255, 250, 250, 0.85)
+  base:     #0d0710   (warm dark plum)
+  card-bg:  rgba(18,8,16,0.88–0.90)
+  glass:    rgba(255,255,255,0.025)
+  overlay:  rgba(255,255,255,0.035)
 
-Primary (Pink/Rose):
-  light:    #f9a8c9   (primary-300)
-  mid:      #f06595   (primary-500)
-  default:  #e64980   (primary-600)
-  dark:     #c2255c   (primary-700)
-  text-dark: #2d1b1e  (deep brown)
+Primary (Dusty Rose — 사주/궁합):
+  사주:     #e8829a   (dusty rose — softer than neon pink)
+  사주-end: #c2255c
+  궁합:     #d4688a
+  궁합-end: #9e1c4e
 
-Accent Purple (Tarot):
-  light:    #a09de8
-  default:  #7F77DD
-  dark:     #534AB7 / #6B63CC
+Accent Purple (타로):
+  light:    #c49fff
+  default:  #9d8fff
+  dark:     #534ab7
 
-Accent Green (MBTI):
-  default:  #10B981
+Accent Teal (MBTI):
+  default:  #00e5a0 → #7decc8 (gradient end in hero)
   dark:     #059669
 
-Social:
-  kakao:    #FEE500
-  naver:    #03C75A
+Text:
+  heading:  #f5eef2  (warm white)
+  body:     rgba(240,232,238, 0.66)
+  muted:    rgba(240,232,238, 0.36–0.46)
+  label:    rgba(232,130,154, 0.60–0.72)
 
 Glow Opacities:
-  pink:     rgba(240, 101, 149, 0.08–0.18)
-  purple:   rgba(127, 119, 221, 0.14–0.25)
-  green:    rgba(16, 185, 129, 0.12–0.20)
+  rose:     rgba(232,130,154, 0.07–0.22)
+  purple:   rgba(157,143,255, 0.03–0.20)
+  teal:     rgba(0,229,160,   0.05–0.16)
+
+Star color: #ffeef5 (핑크빛 화이트)
 ```
 
 ### Typography
 ```
+Headings (h1, h2, section titles):
+  font-family: "Noto Serif KR", serif
+  font-weight: font-bold (700)
+  — 럭셔리/신비로운 감성 핵심
+
+Body / Labels:
+  font-family: Pretendard (기본 sans)
+  weight: font-black (labels/caps), font-bold (h3), font-medium (body)
+
 Scale:    xs, sm, base, lg, xl, 2xl, 3xl, 4xl, 5xl, 6xl, 8xl
-Weights:  font-black (h1/labels), font-bold (h2–h3), font-semibold (h4), font-medium (inputs)
-Tracking: tracking-[0.28em]–[0.3em] for all-caps labels; tracking-tight for headings
-Leading:  leading-tight (headings), leading-relaxed (body)
+Tracking: tracking-[0.28em]–[0.3em] for all-caps labels
+          tracking-tight for headings
+Leading:  leading-tight (headings), leading-relaxed/7/8 (body)
 ```
 
 ### Depth / Elevation
 ```
-Level 1 — Subtle:    shadow-sm + 1px rgba(pink, 0.05) border
-Level 2 — Default:   shadow-lg + glow: 0 8px 32px rgba(pink, 0.08)
-Level 3 — Raised:    shadow-xl + glow: 0 12px 30px rgba(pink, 0.12)
-Level 4 — Modal:     shadow-2xl + backdrop-blur(20px) + glow
+Level 1 — Subtle:  0 4px 24px rgba(0,0,0,0.22) + 1px rgba(white,0.04) inset
+Level 2 — Default: 0 8px 40px {accent-glow} + 1px rgba(white,0.04) inset
+Level 3 — Raised:  0 8px 48px {accent-glow} stronger
+Level 4 — Modal:   shadow-2xl + backdrop-blur(20px) + glow
+
+Aurora orbs: radial-gradient, opacity 0.05–0.10, very diffuse (width 700–1100px)
 ```
 
 ---
 
 ## Patterns
 
-### Button — Primary
+### Button — Primary (card CTA)
 ```
-Height:     py-4 (implicit ~52px)
-Padding:    px-6 py-4
-Radius:     rounded-2xl
-Background: bg-primary-600 (or gradient to primary-700)
-Shadow:     shadow-lg
-Text:       font-bold text-white
-Hover:      bg-primary-700, shadow-xl, scale-[1.02]
-```
-
-### Button — Pill/Secondary
-```
-Padding:    px-4 py-2
+Height:     py-3.5
 Radius:     rounded-full
-Border:     1px solid primary-200
-Text:       text-sm font-semibold text-primary-700
+Background: linear-gradient(135deg, accent, accentEnd)
+Shadow:     0 4px 20px accent-glow, inset 0 1px 0 rgba(white,0.16)
+Text:       font-bold text-white text-sm
+Hover:      brightness-110, shadow-lg, gap 커지기
+Active:     scale-[0.97] brightness-95
 ```
 
-### Card — Default
+### Button — Secondary (link style)
 ```
-Padding:    p-6 – p-8
+Padding:    px-4 py-2.5
+Radius:     rounded-xl
+Background: rgba(accent, 0.12)
+Border:     1px solid rgba(accent, 0.20)
+Text:       font-black text-sm, accent color
+Hover:      scale-[1.02]
+```
+
+### Card — Service (dark glass)
+```
+Padding:    p-7
 Radius:     rounded-[2rem]
-Background: bg-white/90 or bg-white/95
-Border:     1px solid rgba(240, 101, 149, 0.08–0.12)
-Shadow:     0 8px 32px rgba(240, 101, 149, 0.08), 0 2px 8px rgba(240, 101, 149, 0.04)
+Background: radial-gradient(ellipse at 110% -10%, accent/16 0%, rgba(18,8,16,0.90) 55%)
+Backdrop:   blur(20px)
+Border:     1px solid accent/16
+Shadow:     0 8px 40px accent-glow, inset 0 1px 0 rgba(white,0.04)
+Hover:      y -8px, duration 0.2s
+Decoration: top accent line (44% width), number badge (top-right), ambient glow orb
 ```
 
-### Card — Glass
+### Card — Feature / Guide Choice
 ```
-Padding:    p-6 – p-8
-Radius:     rounded-[2rem] – rounded-[2.5rem]
-Background: rgba(255, 250, 250, 0.85)
-Backdrop:   backdrop-filter: blur(20px)
-Border:     1px solid rgba(240, 101, 149, 0.10)
-Shadow:     0 10px 30px -5px rgba(240, 101, 149, 0.08)
+Padding:    p-6–p-7
+Radius:     rounded-[2rem]
+Background: radial-gradient(ellipse at 100% 0%, accent/12, rgba(18,8,16,0.74))
+Border:     1px solid accent/26
+Hover:      y -4px
+```
+
+### Card — Glass (saju intro, reading library)
+```
+Background: rgba(255,255,255, 0.025)
+Backdrop:   blur(20px)
+Border:     1px solid accent/0a–10
+Shadow:     0 4px 32px accent-glow/05
 ```
 
 ### Input — Default
 ```
 Padding:    px-4 py-3
 Radius:     rounded-xl
-Border:     1px solid pink-100 / border-pink-200
-Background: bg-white
-Focus:      border-primary-400, ring-2 ring-primary-100
+Border:     1px solid rgba(232,130,154,0.20)
+Background: rgba(255,255,255,0.04)
+Focus:      border-rose-400, ring-1 ring-rose-400/20
 ```
 
-### Modal
+### Decoration — Moon Crescent
 ```
-Radius:     rounded-[2.5rem] – rounded-[3rem]
-Background: bg-white/95, backdrop-blur(20px)
-Shadow:     shadow-2xl
-Z-index:    z-[100] – z-[110]
+SVG crescent, size 48–68px
+Primary: rgba(232,130,154,0.45)
+Overlay: rgba(157,143,255,0.50) at opacity-20
+Position: absolute top-right of hero, pointer-events-none
+```
+
+---
+
+## Aurora Background Pattern
+```
+Orb 1 (top center, warm rose):
+  size: 1100×900px
+  color: rgba(232,130,154,0.10) → rgba(180,80,120,0.04) → transparent
+  animation: aurora-drift 16s
+
+Orb 2 (right, violet):
+  size: 800×700px
+  color: rgba(130,90,255,0.07)
+  animation: aurora-drift-2 20s
+
+Orb 3 (bottom-left, teal):
+  size: 700×600px
+  color: rgba(0,200,140,0.05)
+  animation: aurora-drift 24s reverse
+
+Orb 4 (top-right, warm gold):
+  size: 420×420px
+  color: rgba(210,160,100,0.05)
+  animation: aurora-drift-2 28s
+```
+
+---
+
+## Section Label Pattern
+```
+<p className="text-xs font-black uppercase tracking-[0.3em]"
+   style={{ color: 'rgba(232,130,154,0.60)' }}>
+  Services
+</p>
+<h2 style={{ fontFamily: '"Noto Serif KR", serif', color: '#f5eef2' }}>
+  섹션 제목
+</h2>
 ```
 
 ---
@@ -143,15 +214,20 @@ Z-index:    z-[100] – z-[110]
 ## Z-Index Scale
 ```
 background:  z-[-1]
+stars/aurora: z-0  (fixed)
 content:     z-10
-navigation:  z-50 (fixed)
-modal:       z-[100] – z-[110]
+navigation:  z-50  (fixed)
+modal:       z-[100]–z-[110]
 ```
 
 ---
 
 ## Notes
-- Glass morphism is the dominant card pattern — prefer bg-white/opacity + backdrop-blur over flat solid backgrounds
-- Shadows carry color (pink/purple glow) — avoid neutral gray-only shadows
-- All-caps labels use wide letter-spacing (0.28–0.3em)
-- Rounded corners are generous — prefer 2rem+ for major containers
+- **헤딩은 반드시 Noto Serif KR** — 럭셔리/신비 감성의 핵심
+- **배경색 #0d0710** — 절대 #06040f(쿨블랙)으로 되돌리지 말 것
+- **Primary pink = #e8829a** (더스티 로즈) — #ff6eb4(형광 핫핑크) 사용 금지
+- Glass morphism dominant — bg-white/opacity + backdrop-blur
+- Shadows carry color (rose/purple/teal glow) — neutral gray-only 금지
+- All-caps labels: tracking-[0.28–0.3em]
+- Star color: #ffeef5 (핑크빛 화이트) — 순백 #fff 사용 금지
+- 달 초승달(MoonCrescent SVG) 히어로 우측 상단 고정 장식
