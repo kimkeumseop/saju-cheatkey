@@ -69,10 +69,10 @@ const serviceCards = [
 ];
 
 const guideChoiceCards = [
-  { question: '나의 본질이 궁금해요',         service: '사주',  subtext: '태어난 날의 기운으로 나를 읽어요',            href: '/saju',    accent: '#ff6eb4', num: '01' },
-  { question: '이 관계가 잘 맞는지 궁금해요', service: '궁합',  subtext: '두 사람의 에너지가 만나는 방식을 봐요',         href: '/gunghap', accent: '#ff4da6', num: '02' },
-  { question: '지금 이 순간이 궁금해요',       service: '타로',  subtext: '카드가 전하는 오늘의 메시지를 받아요',          href: '/tarot',   accent: '#9d8fff', num: '03' },
-  { question: '내 성격 유형이 궁금해요',       service: 'MBTI', subtext: '20문항으로 빠르게 성향을 파악해요',             href: '/mbti',    accent: '#00e5a0', num: '04' },
+  { question: '나의 본질이 궁금해요',         service: '사주',  subtext: '태어난 날의 기운으로 나를 읽어요',      href: '/saju',    accent: '#ff6eb4', accentEnd: '#e64980', num: '01' },
+  { question: '이 관계가 잘 맞는지 궁금해요', service: '궁합',  subtext: '두 사람의 에너지가 만나는 방식을 봐요', href: '/gunghap', accent: '#ff4da6', accentEnd: '#c2255c', num: '02' },
+  { question: '지금 이 순간이 궁금해요',       service: '타로',  subtext: '카드가 전하는 오늘의 메시지를 받아요',  href: '/tarot',   accent: '#9d8fff', accentEnd: '#534ab7', num: '03' },
+  { question: '내 성격 유형이 궁금해요',       service: 'MBTI', subtext: '20문항으로 빠르게 성향을 파악해요',     href: '/mbti',    accent: '#00e5a0', accentEnd: '#059669', num: '04' },
 ];
 
 const featureItems = [
@@ -217,27 +217,47 @@ export default function HomePage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.45 }}
             className="mt-10 flex flex-wrap items-center justify-center gap-4 text-xs font-bold"
-            style={{ color: 'rgba(255,255,255,0.25)' }}
+            style={{ color: 'rgba(255,255,255,0.32)' }}
           >
             <span className="flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5" style={{ color: '#ff6eb4' }} />무료 제공
             </span>
-            <span className="h-3 w-px bg-white/10" />
+            <span className="h-3 w-px" style={{ background: 'rgba(255,255,255,0.15)' }} />
             <span className="flex items-center gap-1.5">
               <Stars className="h-3.5 w-3.5" style={{ color: '#9d8fff' }} />개인정보 안전
             </span>
-            <span className="h-3 w-px bg-white/10" />
+            <span className="h-3 w-px" style={{ background: 'rgba(255,255,255,0.15)' }} />
             <span className="flex items-center gap-1.5">
               <Zap className="h-3.5 w-3.5" style={{ color: '#00e5a0' }} />즉시 확인
             </span>
           </motion.div>
         </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        >
+          <span className="text-[10px] font-bold uppercase tracking-[0.25em]" style={{ color: 'rgba(255,255,255,0.2)' }}>scroll</span>
+          <motion.div
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+            className="h-5 w-5 rounded-full flex items-center justify-center"
+            style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+          >
+            <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+              <path d="M1 1L4 4.5L7 1" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* ─── SERVICES ─── */}
       <section className="relative z-10 px-6 py-16 md:py-20">
         <div className="mx-auto max-w-7xl">
-          <motion.div {...fadeUp} className="mb-10">
+          <motion.div {...fadeUp} className="mb-10 text-center">
             <p className="text-xs font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(255,110,180,0.7)' }}>Services</p>
             <h2 className="mt-2 text-3xl font-black tracking-tight md:text-4xl" style={{ color: '#f0eeff' }}>원하는 방식으로 바로 시작하기</h2>
           </motion.div>
@@ -304,7 +324,7 @@ export default function HomePage() {
 
                   <Link
                     href={card.href}
-                    className="group/btn inline-flex items-center justify-center gap-2 rounded-full py-3.5 text-sm font-bold text-white transition-all duration-200 hover:gap-3 active:scale-[0.97]"
+                    className="group/btn inline-flex items-center justify-center gap-2 rounded-full py-3.5 text-sm font-bold text-white transition-all duration-200 hover:gap-3 hover:brightness-110 hover:shadow-lg active:scale-[0.97] active:brightness-95"
                     style={{
                       background: `linear-gradient(135deg, ${card.accent}, ${card.accentEnd})`,
                       boxShadow: `0 4px 20px ${card.glow}, 0 1px 0 rgba(255,255,255,0.18) inset`,
@@ -341,45 +361,58 @@ export default function HomePage() {
 
       {/* ─── GUIDE MATCH ─── */}
       <section className="relative z-10 px-6 py-14 md:py-20">
-        <motion.div {...fadeUp} className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
+        <motion.div {...fadeUp} className="mx-auto max-w-4xl">
+          <div className="mb-10 text-center">
             <p className="text-xs font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(255,110,180,0.7)' }}>Guide Match</p>
             <h2 className="mt-2 text-3xl font-black tracking-tight md:text-4xl" style={{ color: '#f0eeff' }}>어떤 게 나에게 맞을까요?</h2>
-            <p className="mt-4 text-sm" style={{ color: 'rgba(240,238,255,0.35)' }}>지금 가장 궁금한 것을 골라보세요</p>
+            <p className="mt-3 text-sm" style={{ color: 'rgba(240,238,255,0.35)' }}>지금 가장 궁금한 것을 골라보세요</p>
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {guideChoiceCards.map((card, index) => (
               <motion.div
                 key={card.question}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.45, delay: index * 0.08 }}
-                whileHover={{ x: 6, transition: { duration: 0.2 } }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
               >
                 <Link
                   href={card.href}
-                  className="group flex items-center justify-between gap-5 rounded-[1.8rem] p-6 transition-all hover:scale-[1.005] md:p-7"
-                  style={glassCard(`${card.accent}25`)}
+                  className="group flex flex-col gap-5 rounded-[2rem] p-6 transition-shadow duration-300 md:p-7"
+                  style={{
+                    background: `radial-gradient(ellipse at 100% 0%, ${card.accent}18 0%, rgba(10,8,22,0.7) 60%)`,
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: `1px solid ${card.accent}30`,
+                    boxShadow: `0 4px 28px ${card.accent}14`,
+                  }}
                 >
-                  <div className="flex items-center gap-5">
-                    <span className="text-xs font-black tabular-nums" style={{ color: 'rgba(255,255,255,0.12)' }}>{card.num}</span>
-                    <div className="h-10 w-0.5 rounded-full" style={{ background: card.accent, boxShadow: `0 0 8px ${card.accent}` }} />
-                    <div>
-                      <p className="text-base font-bold break-keep md:text-lg" style={{ color: '#f0eeff' }}>{card.question}</p>
-                      <p className="mt-1 text-sm break-keep" style={{ color: 'rgba(240,238,255,0.35)' }}>{card.subtext}</p>
-                    </div>
+                  <div className="flex items-start justify-between">
+                    <span
+                      className="text-[11px] font-black tabular-nums tracking-[0.18em]"
+                      style={{ color: `${card.accent}60` }}
+                    >
+                      {card.num}
+                    </span>
+                    <ArrowRight
+                      className="h-4 w-4 opacity-30 transition-all duration-200 group-hover:opacity-80 group-hover:translate-x-1"
+                      style={{ color: card.accent }}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold leading-snug break-keep" style={{ color: '#f0eeff' }}>{card.question}</p>
+                    <p className="mt-2 text-sm leading-relaxed break-keep" style={{ color: 'rgba(240,238,255,0.4)' }}>{card.subtext}</p>
                   </div>
                   <div
-                    className="flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-white"
+                    className="self-start rounded-full px-4 py-2 text-xs font-black text-white"
                     style={{
-                      background: `linear-gradient(135deg, ${card.accent}, ${card.accent}99)`,
-                      boxShadow: `0 0 16px ${card.accent}50`,
+                      background: `linear-gradient(135deg, ${card.accent}, ${card.accentEnd})`,
+                      boxShadow: `0 2px 12px ${card.accent}40`,
                     }}
                   >
-                    {card.service}
-                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    {card.service} 보기
                   </div>
                 </Link>
               </motion.div>
@@ -407,18 +440,28 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.45, delay: index * 0.07 }}
-                className="rounded-[2rem] p-7"
-                style={glassCard(`${item.accent}20`)}
+                className="group rounded-[2rem] p-7 transition-all duration-300 hover:-translate-y-1"
+                style={glassCard(`${item.accent}22`)}
               >
-                <div className="mb-6 flex items-end justify-between">
-                  <span className="text-5xl font-black leading-none" style={{ color: `${item.accent}18` }}>{item.num}</span>
+                <div className="mb-5 flex items-center justify-between">
+                  <span
+                    className="text-[3.5rem] font-black leading-none"
+                    style={{ color: item.accent, opacity: 0.15 }}
+                  >
+                    {item.num}
+                  </span>
                   <div
-                    className="h-1.5 w-10 rounded-full"
-                    style={{ background: item.accent, boxShadow: `0 0 8px ${item.accent}80` }}
-                  />
+                    className="h-8 w-8 rounded-xl flex items-center justify-center"
+                    style={{
+                      background: `linear-gradient(135deg, ${item.accent}28, ${item.accent}14)`,
+                      border: `1px solid ${item.accent}35`,
+                    }}
+                  >
+                    <div className="h-2 w-2 rounded-full" style={{ background: item.accent, boxShadow: `0 0 6px ${item.accent}` }} />
+                  </div>
                 </div>
                 <h3 className="text-xl font-bold tracking-tight" style={{ color: '#f0eeff' }}>{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 break-keep" style={{ color: 'rgba(240,238,255,0.4)' }}>{item.description}</p>
+                <p className="mt-3 text-sm leading-7 break-keep" style={{ color: 'rgba(240,238,255,0.45)' }}>{item.description}</p>
               </motion.div>
             ))}
           </div>
@@ -434,34 +477,43 @@ export default function HomePage() {
           </div>
 
           <div
-            className="rounded-[2.4rem] p-8 md:p-12 space-y-6"
+            className="rounded-[2.4rem] p-8 md:p-12"
             style={glassCard('rgba(157,143,255,0.12)', 'rgba(157,143,255,0.06)')}
           >
-            <p className="text-base leading-8 break-keep" style={{ color: 'rgba(240,238,255,0.65)' }}>
-              사주(四柱)란 태어난 연(年)·월(月)·일(日)·시(時)의 네 기둥, 여덟 글자로 개인의 기질과 삶의 흐름을 읽는 동양 명리학의 핵심 도구입니다. 수천 년간 축적된 관찰과 체계를 바탕으로, 타고난 에너지의 패턴을 파악하고 크고 작은 변화의 흐름을 미리 살피는 데 활용해왔습니다.
-            </p>
-            <p className="text-base leading-8 break-keep" style={{ color: 'rgba(240,238,255,0.65)' }}>
-              사주의 근간은 오행(五行)입니다. 목(木)·화(火)·토(土)·금(金)·수(水), 다섯 가지 기운이 서로 돕고 견제하면서 자연과 사람의 흐름을 만들어냅니다. 각 기운의 강약과 균형을 읽으면, 어떤 상황에서 에너지가 살아나는지, 어떤 환경에서 소모가 빨라지는지를 파악할 수 있습니다. 천간(天干) 열 글자와 지지(地支) 열두 글자의 조합이 만드는 60개의 패턴은 개인의 기질과 대인관계 방식을 입체적으로 드러내줍니다.
-            </p>
-            <p className="text-base leading-8 break-keep" style={{ color: 'rgba(240,238,255,0.65)' }}>
-              사주 치트키는 이 명리학적 관점을 누구나 읽을 수 있는 언어로 풀어드립니다. 복잡한 전문 용어 없이, 사주·궁합·운세의 기본 원리부터 실제 해석 방법까지 단계별 가이드로 정리했습니다. 처음 사주를 접하는 분도, 이미 어느 정도 알고 있는 분도 더 입체적인 이해를 얻어갈 수 있도록 26편의 기초 가이드와 명리 칼럼을 함께 제공합니다.
-            </p>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_280px] lg:grid-cols-[1fr_320px]">
+              {/* Text column */}
+              <div className="space-y-5">
+                <p className="text-base leading-8 break-keep" style={{ color: 'rgba(240,238,255,0.7)' }}>
+                  사주(四柱)란 태어난 연·월·일·시의 네 기둥, 여덟 글자로 개인의 기질과 삶의 흐름을 읽는 동양 명리학의 핵심 도구입니다. 수천 년간 축적된 관찰을 바탕으로, 타고난 에너지 패턴을 파악하고 변화의 흐름을 살피는 데 활용해왔습니다.
+                </p>
+                <p className="text-base leading-8 break-keep" style={{ color: 'rgba(240,238,255,0.7)' }}>
+                  사주의 근간은 오행(五行)입니다. 목·화·토·금·수, 다섯 기운이 서로 돕고 견제하면서 자연과 사람의 흐름을 만듭니다. 천간 열 글자와 지지 열두 글자의 조합이 만드는 60개의 패턴은 개인의 기질과 대인관계 방식을 입체적으로 드러내줍니다.
+                </p>
+                <p className="text-sm leading-7 break-keep" style={{ color: 'rgba(240,238,255,0.45)' }}>
+                  사주 치트키는 이 명리학적 관점을 누구나 읽을 수 있는 언어로 풀어드립니다. 26편의 기초 가이드와 명리 칼럼으로 처음 접하는 분도 입체적인 이해를 얻을 수 있습니다.
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 gap-4 pt-4 md:grid-cols-3">
-              {[
-                { label: '네 기둥', desc: '연·월·일·시 여덟 글자로 기질과 흐름을 읽는 구조', accent: '#ff6eb4' },
-                { label: '오행 균형', desc: '목·화·토·금·수의 강약과 상생상극 관계 분석', accent: '#9d8fff' },
-                { label: '대운 흐름', desc: '10년 단위로 바뀌는 대운과 연간 운세의 변화', accent: '#00e5a0' },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-2xl p-5"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <p className="text-sm font-black mb-2" style={{ color: item.accent }}>{item.label}</p>
-                  <p className="text-xs leading-6 break-keep" style={{ color: 'rgba(240,238,255,0.4)' }}>{item.desc}</p>
-                </div>
-              ))}
+              {/* Concept tiles column */}
+              <div className="flex flex-col gap-3">
+                {[
+                  { label: '네 기둥', desc: '연·월·일·시 여덟 글자로 기질과 흐름을 읽는 구조', accent: '#ff6eb4' },
+                  { label: '오행 균형', desc: '목·화·토·금·수의 강약과 상생상극 관계 분석', accent: '#9d8fff' },
+                  { label: '대운 흐름', desc: '10년 단위로 바뀌는 대운과 연간 운세의 변화', accent: '#00e5a0' },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-2xl p-4"
+                    style={{
+                      background: `linear-gradient(135deg, ${item.accent}0f, rgba(255,255,255,0.02))`,
+                      border: `1px solid ${item.accent}22`,
+                    }}
+                  >
+                    <p className="text-sm font-black mb-1.5" style={{ color: item.accent }}>{item.label}</p>
+                    <p className="text-xs leading-[1.7] break-keep" style={{ color: 'rgba(240,238,255,0.45)' }}>{item.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -518,35 +570,35 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {guides.map((guide, index) => (
-                <article
+              {guides.slice(0, 6).map((guide, index) => (
+                <Link
                   key={guide.slug}
-                  className="group rounded-[1.4rem] p-5 transition hover:-translate-y-0.5"
+                  href={`/guide/${guide.slug}`}
+                  className="group rounded-[1.4rem] p-5 transition-all duration-200 hover:-translate-y-1 hover:border-[rgba(255,110,180,0.18)] block"
                   style={{
                     background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.07)',
                   }}
+                  aria-label={`${guide.title} 읽어보기`}
                 >
-                  <div className="mb-3 flex items-center gap-2.5">
+                  <div className="mb-3 flex items-start gap-3">
                     <div
-                      className="flex h-7 w-7 items-center justify-center rounded-xl text-xs font-black text-white shadow-sm"
+                      className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-[11px] font-black text-white"
                       style={{ background: 'linear-gradient(135deg, #ff6eb4, #e64980)' }}
                     >
                       {index + 1}
                     </div>
-                    <h3 className="text-sm font-black leading-snug break-keep" style={{ color: 'rgba(240,238,255,0.85)' }}>{guide.title}</h3>
+                    <h3 className="text-sm font-bold leading-snug break-keep" style={{ color: 'rgba(240,238,255,0.88)' }}>{guide.title}</h3>
                   </div>
-                  <p className="mb-3 text-xs leading-6 break-keep" style={{ color: 'rgba(240,238,255,0.35)' }}>{guide.description}</p>
-                  <Link
-                    href={`/guide/${guide.slug}`}
-                    className="inline-flex items-center gap-1 text-xs font-black transition"
+                  <p className="mb-4 pl-9 text-xs leading-[1.7] break-keep" style={{ color: 'rgba(240,238,255,0.35)' }}>{guide.description}</p>
+                  <div
+                    className="pl-9 inline-flex items-center gap-1 text-xs font-black transition-all duration-200 group-hover:gap-1.5"
                     style={{ color: '#ff6eb4' }}
-                    aria-label={`${guide.title} 읽어보기`}
                   >
-                    {guide.title} 읽어보기
-                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                  </Link>
-                </article>
+                    읽어보기
+                    <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </div>
+                </Link>
               ))}
             </div>
           </div>
