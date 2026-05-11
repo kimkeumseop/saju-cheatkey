@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     type: "website",
   },
   other: {
-    "google-adsense-account": "ca-pub-1059415497859090",
+    "google-adsense-account": "ca-pub-5293766413369655",
   },
 };
 
