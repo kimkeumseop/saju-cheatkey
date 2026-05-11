@@ -4,6 +4,7 @@ import BottomNav from "@/components/BottomNav";
 import { AuthProvider } from "@/lib/auth";
 import type { Metadata } from "next";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import Script from "next/script";
 
 const pretendard = localFont({
   src: [
@@ -59,6 +60,7 @@ export default function RootLayout({
           name="naver-site-verification"
           content="22ae6644d466da2adf1789aecb23aa40597c4173"
         />
+        <meta name="google-adsense-account" content="ca-pub-5293766413369655" />
         {/* Firebase / Google API preconnect */}
         <link rel="preconnect" href="https://firebaseapp.com" />
         <link rel="preconnect" href="https://apis.google.com" />
@@ -66,6 +68,11 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
       </head>
       <body className={`${pretendard.className} antialiased min-h-screen relative pb-20`}>
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5293766413369655"
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
         <AuthProvider>
           <div className="fixed inset-0 bg-texture z-[-1]" />
           {children}
