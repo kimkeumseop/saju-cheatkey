@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import AdSenseScript from '@/components/AdSenseScript';
 import { createMetadata, guideMap, guides } from '@/lib/site';
 
 export async function generateStaticParams() {
@@ -38,7 +37,6 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
 
   return (
     <main className="min-h-screen bg-[#FFF5F7] pt-24 pb-32">
-      <AdSenseScript />
       <Navbar />
 
       <article className="max-w-4xl mx-auto px-6 space-y-10">

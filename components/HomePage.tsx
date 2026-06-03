@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, Stars, Zap } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import AdSenseScript from '@/components/AdSenseScript';
 import TodayWhisper from '@/components/TodayWhisper';
 import TodayTarotCard from '@/components/tarot/TodayTarotCard';
 import { guides } from '@/lib/site';
@@ -113,7 +112,6 @@ function MoonCrescent({ size = 40, color = 'rgba(232,130,154,0.4)' }: { size?: n
 export default function HomePage() {
   return (
     <main className="relative min-h-screen overflow-x-hidden" style={{ background: '#0d0710' }}>
-      <AdSenseScript />
 
       {/* ─── STAR FIELD ─── */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">

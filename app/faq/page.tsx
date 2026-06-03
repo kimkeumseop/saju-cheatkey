@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import AdSenseScript from '@/components/AdSenseScript';
 import { createMetadata, faqEntries, SITE_EMAIL } from '@/lib/site';
 
 export const metadata: Metadata = createMetadata({
@@ -38,7 +37,6 @@ export default function FAQPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
     <main className="min-h-screen bg-[#FFF5F7] pt-24 pb-32">
-      <AdSenseScript />
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-6 space-y-8">

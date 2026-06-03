@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import AdSenseScript from '@/components/AdSenseScript';
 import { createMetadata, guides } from '@/lib/site';
 
 export const metadata = createMetadata({
@@ -70,7 +69,6 @@ const guideMap = Object.fromEntries(guides.map((g) => [g.slug, g]));
 export default function GuidePage() {
   return (
     <main className="min-h-screen bg-[#FFF5F7] pt-24 pb-32">
-      <AdSenseScript />
       <Navbar />
 
       <div className="mx-auto max-w-5xl px-6 space-y-16">

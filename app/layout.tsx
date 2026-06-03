@@ -60,7 +60,6 @@ export default function RootLayout({
           name="naver-site-verification"
           content="22ae6644d466da2adf1789aecb23aa40597c4173"
         />
-        <meta name="google-adsense-account" content="ca-pub-1059415497859090" />
         {/* Firebase / Google API preconnect */}
         <link rel="preconnect" href="https://firebaseapp.com" />
         <link rel="preconnect" href="https://apis.google.com" />
@@ -69,6 +68,7 @@ export default function RootLayout({
       </head>
       <body className={`${pretendard.className} antialiased min-h-screen relative pb-20`}>
         <Script
+          id="adsbygoogle-init"
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1059415497859090"
           strategy="afterInteractive"
           crossOrigin="anonymous"

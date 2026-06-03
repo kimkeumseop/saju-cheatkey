@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import AdSenseScript from '@/components/AdSenseScript';
 import { createMetadata, SITE_EMAIL, SITE_NAME, SITE_TEAM } from '@/lib/site';
 
 export const metadata: Metadata = createMetadata({
@@ -15,7 +14,6 @@ export const metadata: Metadata = createMetadata({
 export default function TermsPage() {
   return (
     <main className="min-h-screen bg-[#FFF5F7] pt-24 pb-32 px-4 md:px-6">
-      <AdSenseScript />
       <Navbar />
 
       <article className="max-w-4xl mx-auto space-y-8">
