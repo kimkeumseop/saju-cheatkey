@@ -106,7 +106,7 @@ function renderParagraph(rawText: string, className?: string) {
       {parts.map((part, i) => {
         if (part.startsWith('**') && part.endsWith('**')) {
           return (
-            <strong key={i} className="font-black text-rose-600">
+            <strong key={i} className="font-black" style={{ color: '#e8829a' }}>
               {part.slice(2, -2)}
             </strong>
           );
@@ -176,14 +176,24 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
         return (
           <article
             key={`${index}-${item.title}`}
-            className="rounded-[2rem] md:rounded-[2.5rem] border border-pink-100 bg-white/95 p-5 md:p-8 shadow-[0_12px_40px_-15px_rgba(190,24,93,0.16)] overflow-hidden"
+            className="rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 overflow-hidden"
+            style={{
+              background: 'rgba(255,255,255,0.025)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(232,130,154,0.14)',
+              boxShadow: '0 8px 40px rgba(232,130,154,0.06), 0 1px 0 rgba(255,255,255,0.04) inset',
+            }}
           >
             {/* ── 헤더: 번호 + 제목 + 버튼 ── */}
             <div className="flex items-start gap-3 mb-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 text-base font-black text-white shadow-lg shadow-rose-200/60">
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-base font-black text-white"
+                style={{ background: 'linear-gradient(135deg, #e8829a, #c2255c)', boxShadow: '0 4px 16px rgba(232,130,154,0.35)' }}
+              >
                 {index + 1}
               </div>
-              <h4 className="flex-1 font-black tracking-tight text-rose-950 break-keep leading-snug text-[17px] md:text-[21px] pt-1.5">
+              <h4 className="flex-1 font-bold tracking-tight break-keep leading-snug text-[17px] md:text-[21px] pt-1.5" style={{ color: '#f5eef2' }}>
                 {cleanTitle}
               </h4>
               {/* 액션 버튼 */}
@@ -192,10 +202,10 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
                   type="button"
                   onClick={() => handleCopyLink(index)}
                   className={cn(
-                    'rounded-full border p-2 shadow-sm transition-all active:scale-95',
+                    'rounded-full border p-2 transition-all active:scale-95',
                     isCopied
-                      ? 'border-green-300 bg-green-50 text-green-500'
-                      : 'border-pink-100 bg-rose-50 text-rose-300 hover:border-rose-200 hover:text-rose-500'
+                      ? 'border-green-400/40 bg-green-400/10 text-green-400'
+                      : 'border-white/10 bg-white/5 text-white/40 hover:text-[#e8829a] hover:border-[#e8829a]/30'
                   )}
                   aria-label="링크 복사"
                   title="이 결과 링크 복사"
@@ -206,10 +216,10 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
                   type="button"
                   onClick={() => handleSpeak(item.content || item.title, index)}
                   className={cn(
-                    'rounded-full border p-2 shadow-sm transition-all active:scale-95',
+                    'rounded-full border p-2 transition-all active:scale-95',
                     isSpeaking
-                      ? 'border-rose-400 bg-rose-500 text-white'
-                      : 'border-pink-100 bg-rose-50 text-rose-400 hover:border-rose-200 hover:text-rose-600'
+                      ? 'border-transparent bg-[#e8829a] text-white'
+                      : 'border-white/10 bg-white/5 text-white/40 hover:text-[#e8829a] hover:border-[#e8829a]/30'
                   )}
                   aria-label={isSpeaking ? '음성 재생 중지' : '본문 음성 재생'}
                 >
@@ -219,19 +229,16 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
             </div>
 
             {/* ── 핵심 요약 (항상 표시) ── */}
-            <div className="rounded-[1.5rem] bg-gradient-to-br from-rose-50 via-white to-pink-50 px-5 py-4 border border-pink-50/80">
-              <div className={cn(
-                'text-[15px] font-medium leading-relaxed text-slate-700 md:text-[16px] break-keep',
-                isSpeaking && 'text-rose-950'
-              )}>
+            <div className="rounded-[1.5rem] px-5 py-4" style={{ background: 'rgba(232,130,154,0.06)', border: '1px solid rgba(232,130,154,0.12)' }}>
+              <div className="text-[15px] font-medium leading-relaxed md:text-[16px] break-keep" style={{ color: isSpeaking ? '#f5eef2' : 'rgba(240,232,238,0.72)' }}>
                 {renderParagraph(summaryParagraph)}
               </div>
             </div>
 
             {/* ── 펼쳐지는 나머지 내용 ── */}
             {hasMore && isExpanded && (
-              <div className="mt-3 px-5 py-4 rounded-[1.5rem] bg-white/70 border border-pink-50 space-y-3">
-                <div className="space-y-3 text-[14px] font-medium leading-relaxed text-slate-600 break-keep">
+              <div className="mt-3 px-5 py-4 rounded-[1.5rem] space-y-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="space-y-3 text-[14px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.6)' }}>
                   {restParagraphs.map((p, i) => (
                     <div key={i}>{renderParagraph(p)}</div>
                   ))}
@@ -244,7 +251,8 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
               <button
                 type="button"
                 onClick={() => toggleExpand(index)}
-                className="mt-3 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-black text-rose-300 hover:text-rose-500 hover:bg-rose-50/60 transition-all"
+                className="mt-3 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-black transition-all"
+                style={{ color: 'rgba(232,130,154,0.7)' }}
               >
                 {isExpanded ? (
                   <>접기 <ChevronUp className="w-3.5 h-3.5" /></>

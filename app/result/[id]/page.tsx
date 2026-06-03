@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import Navbar from '@/components/Navbar';
+import CosmicBackground from '@/components/CosmicBackground';
 import AnalysisAccordion from '@/components/AnalysisAccordion';
 import ShareButtons from '@/components/ShareButtons';
 import InstaStoryButton from '@/components/InstaStoryButton';
@@ -42,7 +43,7 @@ function calcAge(birthDate: string): number {
 function PillarChart({ pillars, title, isTimeUnknown }: { pillars: any[]; title?: string; isTimeUnknown?: boolean }) {
   return (
     <div className="space-y-6">
-      {title && <h4 className="text-center font-black text-primary-900 text-lg">{title}</h4>}
+      {title && <h4 className="text-center font-bold text-lg" style={{ color: '#f5eef2' }}>{title}</h4>}
       <div className="grid grid-cols-4 gap-2 md:gap-4 relative z-10">
         {pillars.map((p: any, colIdx: number) => {
           const isDayPillar = p.label === '일주';
@@ -55,25 +56,25 @@ function PillarChart({ pillars, title, isTimeUnknown }: { pillars: any[]; title?
           return (
             <div key={colIdx} className="space-y-3">
               <div className="text-center space-y-1">
-                <div className="text-[10px] font-black text-primary-200 tracking-tighter opacity-80 uppercase">{p.label}</div>
-                <div className="text-[11px] font-black text-primary-800">{showDash ? '-' : p.tenGodGan}</div>
+                <div className="text-[10px] font-black tracking-tighter uppercase" style={{ color: 'rgba(232,130,154,0.55)' }}>{p.label}</div>
+                <div className="text-[11px] font-black" style={{ color: 'rgba(240,232,238,0.7)' }}>{showDash ? '-' : p.tenGodGan}</div>
               </div>
               <div className="space-y-2 md:space-y-4">
                 <div className={cn('relative transition-all duration-500', isDayPillar ? 'scale-105 z-20' : '')}>
-                  <div className={cn(ganStyle.bg, ganStyle.text, 'p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center border-[2px] md:border-[4px]', isDayPillar ? 'border-primary-300 shadow-xl shadow-primary-200/20' : 'border-white shadow-sm')}>
+                  <div className={cn(ganStyle.bg, ganStyle.text, 'p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center border-[2px] md:border-[4px]', isDayPillar ? 'border-[#e8829a] shadow-xl shadow-[#e8829a]/30' : 'border-white/10 shadow-sm')}>
                     <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight">{showDash ? '-' : p.ganKo}</span>
                   </div>
                 </div>
                 <div className="relative transition-all duration-500">
-                  <div className={cn(zhiStyle.bg, zhiStyle.text, 'p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center border-[2px] md:border-[4px] border-white shadow-sm overflow-hidden relative')}>
+                  <div className={cn(zhiStyle.bg, zhiStyle.text, 'p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center border-[2px] md:border-[4px] border-white/10 shadow-sm overflow-hidden relative')}>
                     {!showDash && <span className="text-xl absolute top-1 right-1 opacity-20">{p.zodiacIcon}</span>}
                     <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight relative z-10">{showDash ? '-' : p.zhiKo}</span>
                   </div>
                 </div>
               </div>
               <div className="text-center space-y-1 mt-2">
-                <div className="text-[11px] font-black text-primary-800">{showDash ? '-' : p.tenGodZhi}</div>
-                <div className="text-[10px] font-bold text-primary-300">{showDash ? '-' : p.unSeong}</div>
+                <div className="text-[11px] font-black" style={{ color: 'rgba(240,232,238,0.7)' }}>{showDash ? '-' : p.tenGodZhi}</div>
+                <div className="text-[10px] font-bold" style={{ color: 'rgba(240,232,238,0.4)' }}>{showDash ? '-' : p.unSeong}</div>
               </div>
             </div>
           );
@@ -175,9 +176,9 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   }, [id, router]);
 
   if (loading) return (
-    <div className="min-h-screen bg-[#FFF5F7] flex flex-col items-center justify-center p-6 text-center">
-      <Loader2 className="w-12 h-12 text-primary-400 animate-spin stroke-[3]" />
-      <p className="mt-4 text-primary-400 font-bold">운명의 속삭임을 듣는 중...</p>
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ background: '#0d0710' }}>
+      <Loader2 className="w-12 h-12 animate-spin stroke-[3]" style={{ color: '#e8829a' }} />
+      <p className="mt-4 font-bold" style={{ color: 'rgba(232,130,154,0.7)' }}>운명의 속삭임을 듣는 중...</p>
     </div>
   );
 
@@ -223,9 +224,10 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F7] pt-24 pb-32 px-3 sm:px-4 md:px-6">
-      <Navbar />
-      <div className="max-w-4xl mx-auto space-y-12">
+    <div className="relative min-h-screen overflow-x-hidden pt-24 pb-32 px-3 sm:px-4 md:px-6" style={{ background: '#0d0710' }}>
+      <CosmicBackground />
+      <Navbar dark />
+      <div className="relative z-10 max-w-4xl mx-auto space-y-12">
         {isCompatibility ? (
           <GungHapPreview data={{ ...data, isPaid: true }} resultId={id} />
         ) : (
@@ -233,25 +235,28 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
 
             {/* ══ 작업 1: 헤더 카피 개선 ══ */}
             <div className="text-center space-y-5">
-              <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary-100 text-primary-700 text-sm font-bold shadow-sm">
-                <Moon className="w-4 h-4 fill-primary-400 text-primary-400" />
+              <div
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold"
+                style={{ background: 'rgba(232,130,154,0.10)', border: '1px solid rgba(232,130,154,0.20)', color: '#e8829a' }}
+              >
+                <Moon className="w-4 h-4" style={{ fill: '#e8829a', color: '#e8829a' }} />
                 신비로운 영혼의 리포트
               </div>
               <div className="space-y-3">
-                <h1 className="font-black text-gray-900 tracking-tight break-keep leading-tight text-3xl md:text-5xl">
-                  <span className="gradient-text">{data.userName}</span>
-                  <span className="text-gray-800">, 당신이 아직 모르는</span>
+                <h1 className="font-bold tracking-tight break-keep leading-tight text-3xl md:text-5xl" style={{ fontFamily: '"Noto Serif KR", serif' }}>
+                  <span style={{ background: 'linear-gradient(135deg, #e8829a 0%, #c49fff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{data.userName}</span>
+                  <span style={{ color: 'rgba(245,238,242,0.92)' }}>, 당신이 아직 모르는</span>
                   <br />
-                  <span className="text-primary-900">진짜 자신</span>
+                  <span style={{ color: '#f5eef2' }}>진짜 자신</span>
                 </h1>
                 {dominantElementInfo && (
-                  <p className="text-primary-500 font-bold text-sm md:text-base">
+                  <p className="font-bold text-sm md:text-base" style={{ color: 'rgba(232,130,154,0.8)' }}>
                     {dominantElementInfo.emoji} 핵심 기운 ·{' '}
-                    <span className="text-primary-700 font-black">{dominantElementInfo.keyword}</span>
+                    <span className="font-black" style={{ color: '#e8829a' }}>{dominantElementInfo.keyword}</span>
                     {' '}— {dominantElementInfo.desc}
                   </p>
                 )}
-                <p className="text-xs font-bold text-primary-300 italic opacity-70">
+                <p className="text-xs font-bold italic" style={{ color: 'rgba(240,232,238,0.34)' }}>
                   {data.birthDate}
                   {data.birthTime && data.birthTime !== 'unknown' ? ` ${data.birthTime}` : ''}
                 </p>
@@ -259,29 +264,38 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             </div>
 
             {/* 만세력 설계도 */}
-            <div className="bg-white p-5 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-xl border border-pink-50 space-y-10 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50/50 rounded-full blur-3xl -mr-32 -mt-32" />
+            <div
+              className="p-5 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] space-y-10 relative overflow-hidden"
+              style={{
+                background: 'rgba(255,255,255,0.025)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(232,130,154,0.14)',
+                boxShadow: '0 8px 40px rgba(232,130,154,0.08), 0 1px 0 rgba(255,255,255,0.04) inset',
+              }}
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -mr-32 -mt-32" style={{ background: 'rgba(232,130,154,0.10)' }} />
               <div className="text-center space-y-1 relative z-10">
-                <h3 className="text-2xl font-black text-primary-900 tracking-tight text-serif">인생 설계도 (만세력)</h3>
-                <p className="text-[10px] font-black text-primary-200 uppercase tracking-[0.3em]">Manseyrok INFOGRAPHIC</p>
+                <h3 className="text-2xl font-bold tracking-tight" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>인생 설계도 (만세력)</h3>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(232,130,154,0.4)' }}>Manseyrok INFOGRAPHIC</p>
               </div>
               {saju && <PillarChart pillars={saju.pillars} isTimeUnknown={isTimeUnknown} />}
-              <div className="pt-8 border-t border-pink-50 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="pt-8 grid grid-cols-1 md:grid-cols-2 gap-8" style={{ borderTop: '1px solid rgba(232,130,154,0.10)' }}>
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 ml-1">
-                    <BarChart3 className="w-4 h-4 text-primary-400" />
-                    <span className="text-sm font-black text-primary-800">오행 분포</span>
+                    <BarChart3 className="w-4 h-4" style={{ color: '#e8829a' }} />
+                    <span className="text-sm font-bold" style={{ color: 'rgba(240,232,238,0.8)' }}>오행 분포</span>
                   </div>
                   {filteredElements && <ElementsChart counts={filteredElements} />}
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 ml-1">
-                    <Star className="w-4 h-4 text-primary-400" />
-                    <span className="text-sm font-black text-primary-800">핵심 귀인 & 신살</span>
+                    <Star className="w-4 h-4" style={{ color: '#e8829a' }} />
+                    <span className="text-sm font-bold" style={{ color: 'rgba(240,232,238,0.8)' }}>핵심 귀인 & 신살</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {saju?.keyShinsal?.map((s: string) => (
-                      <div key={s} className="px-4 py-2 rounded-2xl bg-primary-50 text-primary-600 text-[11px] font-black border border-primary-100 shadow-sm">
+                      <div key={s} className="px-4 py-2 rounded-2xl text-[11px] font-black" style={{ background: 'rgba(232,130,154,0.12)', color: '#e8829a', border: '1px solid rgba(232,130,154,0.22)' }}>
                         #{s}
                       </div>
                     ))}
@@ -291,20 +305,29 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             </div>
 
             {/* ══ 작업 5: 대운 세로 타임라인 ══ */}
-            <div className="bg-white p-5 sm:p-8 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-lg border border-pink-50 space-y-8 relative overflow-hidden">
+            <div
+              className="p-5 sm:p-8 md:p-10 rounded-[2rem] md:rounded-[3rem] space-y-8 relative overflow-hidden"
+              style={{
+                background: 'rgba(255,255,255,0.025)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(157,143,255,0.12)',
+                boxShadow: '0 8px 40px rgba(157,143,255,0.06), 0 1px 0 rgba(255,255,255,0.04) inset',
+              }}
+            >
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <History className="w-5 h-5 text-primary-500" />
-                  <h3 className="text-xl font-black text-primary-900">대운 (10년 주기의 흐름)</h3>
+                  <History className="w-5 h-5" style={{ color: '#9d8fff' }} />
+                  <h3 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>대운 (10년 주기의 흐름)</h3>
                 </div>
-                <p className="text-[13px] text-gray-400 font-medium leading-relaxed ml-7 break-keep">
+                <p className="text-[13px] font-medium leading-relaxed ml-7 break-keep" style={{ color: 'rgba(240,232,238,0.42)' }}>
                   대운(大運)은 내 인생의 계절이 바뀌는 시점입니다. 각 시기를 눌러 에너지를 확인해보세요.
                 </p>
               </div>
 
               <div className="relative space-y-2">
                 {/* 세로 타임라인 선 */}
-                <div className="absolute left-[1.2rem] top-5 bottom-5 w-0.5 bg-gradient-to-b from-primary-100 via-primary-300 to-primary-100 opacity-40 pointer-events-none" />
+                <div className="absolute left-[1.2rem] top-5 bottom-5 w-0.5 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(157,143,255,0.05), rgba(157,143,255,0.4), rgba(157,143,255,0.05))' }} />
 
                 {daeunList.map((dy: any, idx: number) => {
                   const isCurrent = currentDaeunIdx === idx;
@@ -318,47 +341,47 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                     <div key={idx} className="flex items-start gap-3 relative">
                       {/* 타임라인 도트 */}
                       <div className={cn(
-                        'relative z-10 mt-3.5 w-10 h-10 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all duration-300 bg-white',
+                        'relative z-10 mt-3.5 w-10 h-10 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all duration-300',
                         isCurrent
-                          ? 'border-primary-500 shadow-lg shadow-primary-200/60 scale-110'
-                          : 'border-pink-200'
-                      )}>
+                          ? 'border-[#9d8fff] shadow-lg shadow-[#9d8fff]/40 scale-110'
+                          : 'border-white/15'
+                      )} style={{ background: '#160c1a' }}>
                         {isCurrent ? (
-                          <div className="w-4 h-4 rounded-full bg-primary-500" />
+                          <div className="w-4 h-4 rounded-full" style={{ background: '#9d8fff' }} />
                         ) : (
-                          <span className="text-[10px] font-black text-gray-300">{idx + 1}</span>
+                          <span className="text-[10px] font-black text-white/30">{idx + 1}</span>
                         )}
                       </div>
 
                       {/* 카드 버튼 */}
                       <button
                         onClick={() => setSelectedDaeunIdx(isSelected ? null : idx)}
-                        className={cn(
-                          'flex-1 text-left rounded-[1.5rem] border-2 p-4 transition-all duration-300 mb-2',
+                        className="flex-1 text-left rounded-[1.5rem] border p-4 transition-all duration-300 mb-2"
+                        style={
                           isCurrent
-                            ? 'border-primary-300 bg-gradient-to-br from-primary-50 to-white shadow-md shadow-primary-100/50'
+                            ? { borderColor: 'rgba(157,143,255,0.4)', background: 'linear-gradient(135deg, rgba(157,143,255,0.14), rgba(255,255,255,0.02))', boxShadow: '0 4px 20px rgba(157,143,255,0.12)' }
                             : isSelected
-                            ? 'border-pink-200 bg-white shadow-sm'
-                            : 'border-pink-50 bg-white/80 hover:border-pink-200 hover:bg-white'
-                        )}
+                            ? { borderColor: 'rgba(157,143,255,0.28)', background: 'rgba(255,255,255,0.04)' }
+                            : { borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }
+                        }
                       >
                         {/* 카드 상단 행 */}
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
-                            <span className={cn('text-sm font-black', isCurrent ? 'text-primary-600' : 'text-gray-400')}>
+                            <span className="text-sm font-black" style={{ color: isCurrent ? '#9d8fff' : 'rgba(240,232,238,0.42)' }}>
                               {dy.age}세~
                             </span>
                             {isCurrent && (
-                              <span className="px-2 py-0.5 bg-primary-100 text-primary-600 text-[10px] font-black rounded-full leading-none">
+                              <span className="px-2 py-0.5 text-[10px] font-black rounded-full leading-none" style={{ background: 'rgba(157,143,255,0.18)', color: '#9d8fff' }}>
                                 현재
                               </span>
                             )}
                           </div>
                           <div className="flex gap-1.5">
-                            <div className={cn(ganStyle.bg, ganStyle.text, 'w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black shadow-sm border border-white')}>
+                            <div className={cn(ganStyle.bg, ganStyle.text, 'w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black shadow-sm border border-white/10')}>
                               {dy.ganKo}
                             </div>
-                            <div className={cn(zhiStyle.bg, zhiStyle.text, 'w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black shadow-sm border border-white')}>
+                            <div className={cn(zhiStyle.bg, zhiStyle.text, 'w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black shadow-sm border border-white/10')}>
                               {dy.zhiKo}
                             </div>
                           </div>
@@ -366,19 +389,19 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
 
                         {/* 키워드 행 */}
                         <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-                          <span className="text-xs text-gray-500 font-medium">{ganInfo.emoji} {ganInfo.keyword}</span>
-                          <span className="text-gray-300 text-xs">+</span>
-                          <span className="text-xs text-gray-500 font-medium">{zhiInfo.emoji} {zhiInfo.keyword}</span>
+                          <span className="text-xs font-medium" style={{ color: 'rgba(240,232,238,0.5)' }}>{ganInfo.emoji} {ganInfo.keyword}</span>
+                          <span className="text-xs" style={{ color: 'rgba(240,232,238,0.25)' }}>+</span>
+                          <span className="text-xs font-medium" style={{ color: 'rgba(240,232,238,0.5)' }}>{zhiInfo.emoji} {zhiInfo.keyword}</span>
                         </div>
 
                         {/* 선택 시 상세 설명 (툴팁 패널) */}
                         {isSelected && (
-                          <div className="mt-3 pt-3 border-t border-pink-100 space-y-1.5">
-                            <p className="text-sm font-bold text-rose-700 break-keep leading-relaxed">
-                              &ldquo;<span className="text-primary-600">{ganInfo.keyword}</span>&rdquo;를 바탕으로{' '}
-                              &ldquo;<span className="text-primary-600">{zhiInfo.keyword}</span>&rdquo;을 꽃피우는 시기
+                          <div className="mt-3 pt-3 space-y-1.5" style={{ borderTop: '1px solid rgba(157,143,255,0.16)' }}>
+                            <p className="text-sm font-bold break-keep leading-relaxed" style={{ color: 'rgba(245,238,242,0.82)' }}>
+                              &ldquo;<span style={{ color: '#9d8fff' }}>{ganInfo.keyword}</span>&rdquo;를 바탕으로{' '}
+                              &ldquo;<span style={{ color: '#9d8fff' }}>{zhiInfo.keyword}</span>&rdquo;을 꽃피우는 시기
                             </p>
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs" style={{ color: 'rgba(240,232,238,0.4)' }}>
                               {dy.age}세부터 10년간 흐르는 주된 에너지 · {ganInfo.desc} / {zhiInfo.desc}
                             </p>
                           </div>
@@ -393,8 +416,8 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             {/* ══ 작업 2·3: 운명의 속삭임 리포트 (AnalysisAccordion) ══ */}
             <div className="space-y-8 relative">
               <div className="flex items-center gap-3 ml-2">
-                <Moon className="w-6 h-6 text-primary-600 fill-primary-600" />
-                <h3 className="text-2xl font-bold text-gray-900">운명의 속삭임 리포트</h3>
+                <Moon className="w-6 h-6" style={{ color: '#e8829a', fill: '#e8829a' }} />
+                <h3 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>운명의 속삭임 리포트</h3>
               </div>
               <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
                 {(() => {
@@ -420,34 +443,44 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             </div>
 
             {/* ══ 작업 4: 공유/바이럴 CTA ══ */}
-            <div className="bg-white p-8 rounded-[2.5rem] border border-pink-50 shadow-sm space-y-8">
+            <div
+              className="p-8 rounded-[2.5rem] space-y-8"
+              style={{
+                background: 'rgba(255,255,255,0.025)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(232,130,154,0.12)',
+                boxShadow: '0 4px 32px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.04) inset',
+              }}
+            >
               {/* 친구 궁합 보기 CTA */}
               <div className="text-center space-y-4">
-                <p className="text-[10px] font-black text-primary-300 uppercase tracking-[0.3em]">더 알아보기</p>
-                <h4 className="text-xl font-black text-gray-900 break-keep">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(232,130,154,0.5)' }}>더 알아보기</p>
+                <h4 className="text-xl font-bold break-keep" style={{ color: '#f5eef2' }}>
                   소중한 인연과의 궁합도 확인해보세요
                 </h4>
-                <p className="text-sm text-gray-400 break-keep max-w-sm mx-auto">
+                <p className="text-sm break-keep max-w-sm mx-auto" style={{ color: 'rgba(240,232,238,0.42)' }}>
                   나의 사주를 확인했다면, 운명의 파트너와의 에너지 궁합을 함께 살펴보세요.
                 </p>
                 <button
                   onClick={handleGungHapClick}
-                  className="btn-shimmer text-white px-8 py-4 rounded-2xl font-black text-base shadow-lg shadow-primary-200/40 hover:shadow-xl transition-all active:scale-95 inline-flex items-center gap-2"
+                  className="text-white px-8 py-4 rounded-2xl font-bold text-base transition-all active:scale-95 inline-flex items-center gap-2 hover:brightness-110"
+                  style={{ background: 'linear-gradient(135deg, #d4688a, #9e1c4e)', boxShadow: '0 4px 24px rgba(212,104,138,0.32), 0 1px 0 rgba(255,255,255,0.16) inset' }}
                 >
                   <Heart className="w-5 h-5 fill-white" />
                   운명 궁합 보기
                 </button>
               </div>
 
-              <div className="divider-gradient" />
+              <div style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent)' }} />
 
               {/* 타로 리딩 CTA */}
               <div className="text-center space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'var(--tarot-400, #9d97e8)' }}>타로 리딩</p>
-                <h4 className="text-xl font-black text-gray-900 break-keep">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(157,143,255,0.6)' }}>타로 리딩</p>
+                <h4 className="text-xl font-bold break-keep" style={{ color: '#f5eef2' }}>
                   지금 이 순간, 카드가 건네는 메시지
                 </h4>
-                <p className="text-sm text-gray-400 break-keep max-w-sm mx-auto">
+                <p className="text-sm break-keep max-w-sm mx-auto" style={{ color: 'rgba(240,232,238,0.42)' }}>
                   사주로 운명의 흐름을 알았다면, 타로로 오늘의 에너지를 읽어보세요.
                 </p>
                 <button
@@ -459,7 +492,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                 </button>
               </div>
 
-              <div className="divider-gradient" />
+              <div style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent)' }} />
 
               {/* 내 사주 공유하기 */}
               <ShareButtons name={data.userName} />

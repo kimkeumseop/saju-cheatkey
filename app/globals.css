@@ -257,13 +257,18 @@ body {
 /* ── Tailwind 유틸리티 오버라이드 (tarot-theme 내부) ── */
 /* 기존 glass-card, glass-panel을 퍼플 보더로 변경 */
 .tarot-theme .glass-card {
-  border-color: rgba(175, 169, 236, 0.25);
-  background: rgba(238, 237, 254, 0.5);
-  backdrop-filter: blur(12px);
+  border-color: rgba(157, 143, 255, 0.16);
+  background: rgba(255, 255, 255, 0.025);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.22), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 }
 
 .tarot-theme .glass-panel {
-  border-color: rgba(175, 169, 236, 0.2);
+  border-color: rgba(157, 143, 255, 0.16);
+  background: rgba(255, 255, 255, 0.025);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 /* ── 버튼 primary ── */
@@ -313,12 +318,16 @@ body {
 }
 
 .mbti-theme .glass-card {
-  border-color: rgba(16, 185, 129, 0.16);
-  background: rgba(236, 253, 245, 0.55);
-  backdrop-filter: blur(12px);
+  border-color: rgba(0, 229, 160, 0.16);
+  background: rgba(255, 255, 255, 0.025);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.22), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 }
 
 .mbti-theme .glass-panel {
-  border-color: rgba(16, 185, 129, 0.16);
-  box-shadow: 0 10px 30px -5px rgba(16, 185, 129, 0.12);
+  border-color: rgba(0, 229, 160, 0.16);
+  background: rgba(255, 255, 255, 0.025);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }

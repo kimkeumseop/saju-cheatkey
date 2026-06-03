@@ -74,28 +74,37 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] flex flex-col items-center justify-center p-4">
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4" style={{ background: '#0d0710' }}>
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-pink-100/30 rounded-full blur-[100px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-100/30 rounded-full blur-[100px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[100px]" style={{ background: 'rgba(232,130,154,0.12)' }} />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full blur-[100px]" style={{ background: 'rgba(157,143,255,0.1)' }} />
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        <button onClick={() => router.push('/')} className="mb-6 flex items-center gap-2 text-gray-400 hover:text-[#3C1E1E] transition-colors font-bold text-sm group">
+        <button onClick={() => router.push('/')} className="mb-6 flex items-center gap-2 transition-colors font-bold text-sm group text-white/40 hover:text-white/80">
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           메인으로 돌아가기
         </button>
 
-        <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white overflow-hidden flex flex-col">
-          <div className="flex border-b border-gray-100 shrink-0">
-            <button onClick={() => { setIsSignUp(false); setError(''); }} className={`flex-1 py-6 text-sm font-black transition-all ${!isSignUp ? 'text-[#3C1E1E] bg-white border-b-4 border-[#FEE500]' : 'text-gray-400 bg-gray-50'}`}>로그인</button>
-            <button onClick={() => { setIsSignUp(true); setError(''); }} className={`flex-1 py-6 text-sm font-black transition-all ${isSignUp ? 'text-[#3C1E1E] bg-white border-b-4 border-[#FEE500]' : 'text-gray-400 bg-gray-50'}`}>회원가입</button>
+        <div
+          className="rounded-[2.5rem] overflow-hidden flex flex-col"
+          style={{
+            background: 'linear-gradient(180deg, rgba(26,14,24,0.96), rgba(13,7,16,0.97))',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(232,130,154,0.16)',
+            boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 8px 40px rgba(232,130,154,0.08)',
+          }}
+        >
+          <div className="flex shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <button onClick={() => { setIsSignUp(false); setError(''); }} className="flex-1 py-6 text-sm font-bold transition-all" style={!isSignUp ? { color: '#f5eef2', background: 'rgba(232,130,154,0.08)', borderBottom: '4px solid #e8829a' } : { color: 'rgba(240,232,238,0.4)' }}>로그인</button>
+            <button onClick={() => { setIsSignUp(true); setError(''); }} className="flex-1 py-6 text-sm font-bold transition-all" style={isSignUp ? { color: '#f5eef2', background: 'rgba(232,130,154,0.08)', borderBottom: '4px solid #e8829a' } : { color: 'rgba(240,232,238,0.4)' }}>회원가입</button>
           </div>
 
           <div className="p-8 md:p-10 space-y-8">
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-black text-[#3C1E1E] tracking-tight leading-tight">{isSignUp ? '함께해서 기뻐요! 💖' : '다시 와주셨군요! ✨'}</h1>
-              <p className="text-sm text-gray-500 font-bold break-keep">{isSignUp ? '3초 만에 가입하고 내 운명 확인하기' : '로그인하고 내 운명 치트키를 평생 소장하세요.'}</p>
+              <h1 className="text-3xl font-bold tracking-tight leading-tight" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>{isSignUp ? '함께해서 기뻐요! 💖' : '다시 와주셨군요! ✨'}</h1>
+              <p className="text-sm font-bold break-keep" style={{ color: 'rgba(240,232,238,0.42)' }}>{isSignUp ? '3초 만에 가입하고 내 운명 확인하기' : '로그인하고 내 운명 치트키를 평생 소장하세요.'}</p>
             </div>
 
             {/* 소셜 로그인 섹션 - 로고 이미지 추가 */}
@@ -138,34 +147,34 @@ export default function LoginPage() {
             </div>
 
             <div className="relative">
-              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-100"></span></div>
-              <div className="relative flex justify-center text-[10px] uppercase font-black text-gray-400 bg-white px-4 tracking-widest">OR</div>
+              <div className="absolute inset-0 flex items-center"><span className="w-full" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}></span></div>
+              <div className="relative flex justify-center text-[10px] uppercase font-black px-4 tracking-widest" style={{ color: 'rgba(240,232,238,0.4)', background: '#160c1a' }}>OR</div>
             </div>
 
-            {error && <div className="p-4 rounded-xl bg-red-50 text-red-600 text-[13px] font-bold text-center leading-tight break-keep animate-shake">{error}</div>}
+            {error && <div className="p-4 rounded-xl text-[13px] font-bold text-center leading-tight break-keep animate-shake" style={{ background: 'rgba(239,68,68,0.12)', color: '#fca5a5' }}>{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && (
                 <div className="relative">
-                  <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input type="text" placeholder="닉네임" required value={name} onChange={(e) => setName(e.target.value)} className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-[#FEE500] focus:bg-white rounded-2xl outline-none text-sm font-bold transition-all" />
+                  <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                  <input type="text" placeholder="닉네임" required value={name} onChange={(e) => setName(e.target.value)} className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none text-sm font-bold transition-all bg-white/[0.04] text-[#f5eef2] border border-white/10 focus:border-[#e8829a]/50 placeholder:text-white/30" />
                 </div>
               )}
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input type="email" placeholder="이메일 주소" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-[#FEE500] focus:bg-white rounded-2xl outline-none text-sm font-bold transition-all" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                <input type="email" placeholder="이메일 주소" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none text-sm font-bold transition-all bg-white/[0.04] text-[#f5eef2] border border-white/10 focus:border-[#e8829a]/50 placeholder:text-white/30" />
               </div>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input type="password" placeholder="비밀번호" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-[#FEE500] focus:bg-white rounded-2xl outline-none text-sm font-bold transition-all" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                <input type="password" placeholder="비밀번호" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none text-sm font-bold transition-all bg-white/[0.04] text-[#f5eef2] border border-white/10 focus:border-[#e8829a]/50 placeholder:text-white/30" />
               </div>
-              <button disabled={loading} className="w-full bg-[#3C1E1E] text-white py-5 rounded-2xl font-black text-lg shadow-lg hover:bg-[#2A1515] active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4">
+              <button disabled={loading} className="w-full text-white py-5 rounded-2xl font-bold text-lg active:scale-[0.98] transition hover:brightness-110 flex items-center justify-center gap-2 mt-4" style={{ background: 'linear-gradient(135deg, #e8829a, #c2255c)', boxShadow: '0 4px 24px rgba(232,130,154,0.32), 0 1px 0 rgba(255,255,255,0.16) inset' }}>
                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (isSignUp ? '가입하기' : '로그인하기')}
               </button>
             </form>
           </div>
         </div>
-        <p className="mt-8 text-center text-xs text-gray-400 font-bold">
+        <p className="mt-8 text-center text-xs font-bold" style={{ color: 'rgba(240,232,238,0.34)' }}>
           로그인 시 <Link href="/terms" className="underline">이용약관</Link> 및 <Link href="/privacy" className="underline">개인정보처리방침</Link>에 동의하게 됩니다.
         </p>
       </div>

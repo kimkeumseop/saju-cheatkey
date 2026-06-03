@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Brain, RefreshCw } from 'lucide-react';
+import CosmicBackground from '@/components/CosmicBackground';
 import InstaStoryButton from '@/components/InstaStoryButton';
 import ShareButtons from '@/components/ShareButtons';
 import { buildMbtiFallbackProfile, getDefaultScoresForType, MBTI_DIMENSIONS, MBTI_RESULT_STORAGE_KEY, type MbtiAiProfile, type MbtiScores } from '@/lib/mbti';
@@ -141,10 +142,11 @@ export default function MbtiResultClient() {
 
   if (!typeInfo) {
     return (
-      <main className="min-h-screen px-6 pt-28">
-        <div className="mx-auto max-w-xl rounded-[2rem] border border-emerald-100 bg-white p-8 text-center shadow-sm">
-          <p className="text-xl font-black text-gray-900">존재하지 않는 MBTI 유형입니다.</p>
-          <Link href="/mbti" className="mt-6 inline-flex rounded-2xl bg-[#10B981] px-5 py-3 font-black text-white">
+      <main className="relative min-h-screen overflow-x-hidden px-6 pt-28" style={{ background: '#0d0710' }}>
+        <CosmicBackground />
+        <div className="relative z-10 mx-auto max-w-xl rounded-[2rem] p-8 text-center" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(0,229,160,0.16)' }}>
+          <p className="text-xl font-bold" style={{ color: '#f5eef2' }}>존재하지 않는 MBTI 유형입니다.</p>
+          <Link href="/mbti" className="mt-6 inline-flex rounded-2xl px-5 py-3 font-bold text-white" style={{ background: 'linear-gradient(135deg, #00e5a0, #059669)' }}>
             MBTI 홈으로 돌아가기
           </Link>
         </div>
@@ -153,60 +155,61 @@ export default function MbtiResultClient() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.2),transparent_30%),linear-gradient(180deg,#ecfdf5_0%,#f7fffb_55%,#ecfdf5_100%)] px-6 pb-28 pt-24">
-      <div className="mx-auto max-w-5xl">
-        <section className="rounded-[2.5rem] border border-emerald-100 bg-white/92 p-7 shadow-[0_20px_60px_rgba(16,185,129,0.12)] md:p-10">
+    <main className="relative min-h-screen overflow-x-hidden px-6 pb-28 pt-24" style={{ background: '#0d0710' }}>
+      <CosmicBackground />
+      <div className="relative z-10 mx-auto max-w-5xl">
+        <section className="rounded-[2.5rem] p-7 md:p-10" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(0,229,160,0.16)', boxShadow: '0 8px 40px rgba(0,229,160,0.08), 0 1px 0 rgba(255,255,255,0.04) inset' }}>
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-black tracking-[0.18em] text-emerald-700">
+              <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black tracking-[0.18em]" style={{ background: 'rgba(0,229,160,0.12)', border: '1px solid rgba(0,229,160,0.25)', color: '#00e5a0' }}>
                 <Brain className="h-3.5 w-3.5" />
                 MBTI RESULT
               </div>
               <div className="mt-5 flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-[1.6rem] text-3xl shadow-sm" style={{ backgroundColor: `${typeInfo.color}18`, color: typeInfo.color }}>
+                <div className="flex h-16 w-16 items-center justify-center rounded-[1.6rem] text-3xl" style={{ backgroundColor: `${typeInfo.color}26`, color: typeInfo.color, border: `1px solid ${typeInfo.color}40` }}>
                   {typeInfo.emoji}
                 </div>
                 <div>
-                  <p className="text-4xl font-black tracking-tight text-gray-900 md:text-6xl">{type}</p>
+                  <p className="text-4xl font-bold tracking-tight md:text-6xl" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>{type}</p>
                   <p className="mt-1 text-xl font-black" style={{ color: typeInfo.color }}>{typeInfo.name}</p>
                 </div>
               </div>
             </div>
 
-            <Link href="/mbti/test" className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-white px-5 py-3 text-sm font-black text-emerald-700">
+            <Link href="/mbti/test" className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition hover:bg-white/5" style={{ border: '1px solid rgba(0,229,160,0.2)', color: 'rgba(0,229,160,0.85)' }}>
               <RefreshCw className="h-4 w-4" />
               다시 테스트하기
             </Link>
           </div>
 
-          <p className="mt-8 text-base leading-8 text-gray-700 md:text-lg">
+          <p className="mt-8 text-base leading-8 md:text-lg" style={{ color: 'rgba(240,232,238,0.7)' }}>
             {profile.summary || typeInfo.desc}
           </p>
 
           {loadingAi || aiNotice ? (
-            <p className="mt-3 text-sm font-bold text-emerald-700">
+            <p className="mt-3 text-sm font-bold" style={{ color: '#00e5a0' }}>
               {loadingAi ? 'AI 설명을 불러오는 중이에요. 기본 결과를 먼저 보여드릴게요.' : aiNotice}
             </p>
           ) : null}
         </section>
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[2rem] border border-emerald-100 bg-white/90 p-6 shadow-[0_16px_40px_rgba(16,185,129,0.08)]">
-            <h2 className="text-xl font-black text-gray-900">척도 비율</h2>
+          <div className="rounded-[2rem] border border-emerald-400/15 bg-white/[0.025] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.22)]">
+            <h2 className="text-xl font-bold text-[#f5eef2]">척도 비율</h2>
             <div className="mt-5 space-y-5">
               {MBTI_DIMENSIONS.map((dimension) => {
                 const leftScore = scores[dimension.left];
                 const rightScore = scores[dimension.right];
                 return (
                   <div key={dimension.label}>
-                    <div className="mb-2 flex items-center justify-between text-sm font-bold text-gray-600">
+                    <div className="mb-2 flex items-center justify-between text-sm font-bold" style={{ color: 'rgba(240,232,238,0.6)' }}>
                       <span>{dimension.label}</span>
                       <span>{dimension.left} {leftScore}% / {dimension.right} {rightScore}%</span>
                     </div>
-                    <div className="relative h-4 overflow-hidden rounded-full bg-emerald-100">
-                      <div className="h-full rounded-full bg-[linear-gradient(90deg,#10B981,#34D399)]" style={{ width: `${leftScore}%` }} />
+                    <div className="relative h-4 overflow-hidden rounded-full" style={{ background: 'rgba(0,229,160,0.12)' }}>
+                      <div className="h-full rounded-full bg-[linear-gradient(90deg,#00e5a0,#34D399)]" style={{ width: `${leftScore}%` }} />
                     </div>
-                    <div className="mt-2 flex justify-between text-xs font-black text-gray-400">
+                    <div className="mt-2 flex justify-between text-xs font-black" style={{ color: 'rgba(240,232,238,0.4)' }}>
                       <span>{dimension.left}</span>
                       <span>{dimension.right}</span>
                     </div>
@@ -217,20 +220,20 @@ export default function MbtiResultClient() {
           </div>
 
           <div className="grid gap-6">
-            <div className="rounded-[2rem] border border-emerald-100 bg-white/90 p-6 shadow-[0_16px_40px_rgba(16,185,129,0.08)]">
-              <h2 className="text-xl font-black text-gray-900">강점 3가지</h2>
+            <div className="rounded-[2rem] border border-emerald-400/15 bg-white/[0.025] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.22)]">
+              <h2 className="text-xl font-bold text-[#f5eef2]">강점 3가지</h2>
               <div className="mt-4 space-y-3">
                 {profile.strengths.map((item) => (
-                  <div key={item} className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-gray-700">{item}</div>
+                  <div key={item} className="rounded-2xl px-4 py-3 text-sm font-bold" style={{ background: 'rgba(0,229,160,0.08)', border: '1px solid rgba(0,229,160,0.14)', color: 'rgba(240,232,238,0.78)' }}>{item}</div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-emerald-100 bg-white/90 p-6 shadow-[0_16px_40px_rgba(16,185,129,0.08)]">
-              <h2 className="text-xl font-black text-gray-900">약점 3가지</h2>
+            <div className="rounded-[2rem] border border-emerald-400/15 bg-white/[0.025] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.22)]">
+              <h2 className="text-xl font-bold text-[#f5eef2]">약점 3가지</h2>
               <div className="mt-4 space-y-3">
                 {profile.weaknesses.map((item) => (
-                  <div key={item} className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-gray-700">{item}</div>
+                  <div key={item} className="rounded-2xl px-4 py-3 text-sm font-bold" style={{ background: 'rgba(232,130,154,0.08)', border: '1px solid rgba(232,130,154,0.16)', color: 'rgba(240,232,238,0.78)' }}>{item}</div>
                 ))}
               </div>
             </div>
@@ -238,32 +241,32 @@ export default function MbtiResultClient() {
         </section>
 
         <section className="mt-6 grid gap-6 md:grid-cols-2">
-          <div className="rounded-[2rem] border border-emerald-100 bg-white/90 p-6 shadow-[0_16px_40px_rgba(16,185,129,0.08)]">
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-emerald-600">잘 맞는 유형</p>
-            <p className="mt-3 text-3xl font-black text-gray-900">{profile.goodMatch}</p>
-            <p className="mt-2 text-sm leading-7 text-gray-600">리듬이나 관점이 서로를 보완해 주는 편입니다. 차이를 장점으로 쓰면 협업과 관계에서 시너지가 납니다.</p>
+          <div className="rounded-[2rem] border border-emerald-400/15 bg-white/[0.025] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.22)]">
+            <p className="text-sm font-black uppercase tracking-[0.18em]" style={{ color: '#00e5a0' }}>잘 맞는 유형</p>
+            <p className="mt-3 text-3xl font-bold" style={{ color: '#f5eef2' }}>{profile.goodMatch}</p>
+            <p className="mt-2 text-sm leading-7" style={{ color: 'rgba(240,232,238,0.5)' }}>리듬이나 관점이 서로를 보완해 주는 편입니다. 차이를 장점으로 쓰면 협업과 관계에서 시너지가 납니다.</p>
           </div>
-          <div className="rounded-[2rem] border border-emerald-100 bg-white/90 p-6 shadow-[0_16px_40px_rgba(16,185,129,0.08)]">
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-emerald-600">주의할 유형</p>
-            <p className="mt-3 text-3xl font-black text-gray-900">{profile.cautionMatch}</p>
-            <p className="mt-2 text-sm leading-7 text-gray-600">선호하는 속도와 표현 방식이 달라 오해가 생기기 쉽습니다. 기준을 미리 맞추면 충돌을 크게 줄일 수 있습니다.</p>
+          <div className="rounded-[2rem] border border-emerald-400/15 bg-white/[0.025] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.22)]">
+            <p className="text-sm font-black uppercase tracking-[0.18em]" style={{ color: 'rgba(232,130,154,0.7)' }}>주의할 유형</p>
+            <p className="mt-3 text-3xl font-bold" style={{ color: '#f5eef2' }}>{profile.cautionMatch}</p>
+            <p className="mt-2 text-sm leading-7" style={{ color: 'rgba(240,232,238,0.5)' }}>선호하는 속도와 표현 방식이 달라 오해가 생기기 쉽습니다. 기준을 미리 맞추면 충돌을 크게 줄일 수 있습니다.</p>
           </div>
         </section>
 
-        <section className="mt-6 rounded-[2rem] border border-emerald-100 bg-white/90 p-6 shadow-[0_16px_40px_rgba(16,185,129,0.08)]">
-          <h2 className="text-xl font-black text-gray-900">더 이어서 보기</h2>
+        <section className="mt-6 rounded-[2rem] border border-emerald-400/15 bg-white/[0.025] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.22)]">
+          <h2 className="text-xl font-bold text-[#f5eef2]">더 이어서 보기</h2>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
-            <Link href="/saju" className="rounded-[1.6rem] border border-pink-100 bg-[linear-gradient(135deg,#fff1f6,#ffffff)] p-5 shadow-sm">
-              <p className="text-sm font-black text-pink-500">사주</p>
-              <p className="mt-2 text-lg font-black text-gray-900">사주로 더 깊이 알아보기</p>
+            <Link href="/saju" className="rounded-[1.6rem] p-5 transition hover:-translate-y-1" style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(232,130,154,0.12), rgba(18,8,16,0.6) 70%)', border: '1px solid rgba(232,130,154,0.18)' }}>
+              <p className="text-sm font-black" style={{ color: '#e8829a' }}>사주</p>
+              <p className="mt-2 text-lg font-bold" style={{ color: '#f5eef2' }}>사주로 더 깊이 알아보기</p>
             </Link>
-            <Link href="/gunghap" className="rounded-[1.6rem] border border-rose-100 bg-[linear-gradient(135deg,#fff1f2,#ffffff)] p-5 shadow-sm">
-              <p className="text-sm font-black text-rose-500">궁합</p>
-              <p className="mt-2 text-lg font-black text-gray-900">MBTI 궁합 확인하기</p>
+            <Link href="/gunghap" className="rounded-[1.6rem] p-5 transition hover:-translate-y-1" style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(212,104,138,0.12), rgba(18,8,16,0.6) 70%)', border: '1px solid rgba(212,104,138,0.18)' }}>
+              <p className="text-sm font-black" style={{ color: '#d4688a' }}>궁합</p>
+              <p className="mt-2 text-lg font-bold" style={{ color: '#f5eef2' }}>MBTI 궁합 확인하기</p>
             </Link>
-            <Link href="/tarot" className="rounded-[1.6rem] border border-violet-100 bg-[linear-gradient(135deg,#f5f3ff,#ffffff)] p-5 shadow-sm">
-              <p className="text-sm font-black text-violet-500">타로</p>
-              <p className="mt-2 text-lg font-black text-gray-900">오늘의 타로 받기</p>
+            <Link href="/tarot" className="rounded-[1.6rem] p-5 transition hover:-translate-y-1" style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(157,143,255,0.12), rgba(18,8,16,0.6) 70%)', border: '1px solid rgba(157,143,255,0.18)' }}>
+              <p className="text-sm font-black" style={{ color: '#9d8fff' }}>타로</p>
+              <p className="mt-2 text-lg font-bold" style={{ color: '#f5eef2' }}>오늘의 타로 받기</p>
             </Link>
           </div>
         </section>

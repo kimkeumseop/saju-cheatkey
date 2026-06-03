@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Sparkles, Gift, Flame, Calendar, ChevronRight, Zap, Moon, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import CosmicBackground from '@/components/CosmicBackground';
 import PaymentWidget from '@/components/PaymentWidget';
 import SajuModal from '@/components/SajuModal';
 
@@ -27,52 +28,55 @@ export default function UnsePage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#FFF5F7] pt-20 pb-32 overflow-x-hidden">
-      <Navbar />
-      
-      <div className="max-w-md mx-auto px-6 space-y-8 py-8">
+    <main className="relative min-h-screen overflow-x-hidden pt-20 pb-32" style={{ background: '#0d0710' }}>
+      <CosmicBackground />
+      <Navbar dark />
+
+      <div className="relative z-10 max-w-md mx-auto px-6 space-y-8 py-8">
         <div className="space-y-2 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-100 text-primary-600 text-xs font-black mb-2 shadow-sm">
-            <Moon className="w-3.5 h-3.5 fill-primary-400 text-primary-400" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black mb-2" style={{ background: 'rgba(232,130,154,0.10)', border: '1px solid rgba(232,130,154,0.22)', color: '#e8829a' }}>
+            <Moon className="w-3.5 h-3.5" style={{ fill: '#e8829a', color: '#e8829a' }} />
             운명의 속삭임
           </div>
-          <h1 className="text-3xl font-black text-primary-900 tracking-tight">오늘의 운세 & 2026</h1>
-          <p className="text-primary-300 font-bold text-sm">당신의 영혼을 위한 특별한 가이드</p>
+          <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>오늘의 운세 & 2026</h1>
+          <p className="font-bold text-sm" style={{ color: 'rgba(240,232,238,0.42)' }}>당신의 영혼을 위한 특별한 가이드</p>
         </div>
 
-        {/* 1순위 (최상단): 오늘의 운세 (무료) - 흰색/초록색 카드 */}
-        <section className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-pink-50 space-y-6 relative overflow-hidden group">
+        {/* 1순위 (최상단): 오늘의 운세 (무료) */}
+        <section className="rounded-[2.5rem] p-8 space-y-6 relative overflow-hidden group" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(0,229,160,0.16)', boxShadow: '0 8px 40px rgba(0,229,160,0.06)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-green-50 rounded-xl">
-                <Gift className="w-5 h-5 text-green-500" />
+              <div className="p-2 rounded-xl" style={{ background: 'rgba(0,229,160,0.12)' }}>
+                <Gift className="w-5 h-5" style={{ color: '#00e5a0' }} />
               </div>
-              <h3 className="text-xl font-black text-gray-800">오늘의 운세 (무료)</h3>
+              <h3 className="text-xl font-bold" style={{ color: '#f5eef2' }}>오늘의 운세 (무료)</h3>
             </div>
-            <span className="bg-green-500 text-white text-[10px] font-black px-2 py-1 rounded-full animate-pulse tracking-widest">FREE</span>
+            <span className="text-white text-[10px] font-black px-2 py-1 rounded-full animate-pulse tracking-widest" style={{ background: '#059669' }}>FREE</span>
           </div>
 
-          <div 
+          <div
             onClick={handleFreeUnse}
-            className="aspect-[16/9] bg-gray-50 rounded-3xl border-2 border-dashed border-gray-100 flex flex-col items-center justify-center space-y-3 cursor-pointer hover:bg-green-50/30 transition-all group active:scale-[0.98]"
+            className="aspect-[16/9] rounded-3xl border-2 border-dashed flex flex-col items-center justify-center space-y-3 cursor-pointer transition-all group active:scale-[0.98]"
+            style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(0,229,160,0.2)' }}
           >
-            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:rotate-12 transition-transform">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform" style={{ background: 'rgba(0,229,160,0.1)' }}>
               <span className="text-2xl">🪄</span>
             </div>
-            <p className="text-gray-400 font-bold text-sm text-center px-4 break-keep">오늘 나에게 찾아올 <br/> 행운의 메시지를 확인하세요</p>
+            <p className="font-bold text-sm text-center px-4 break-keep" style={{ color: 'rgba(240,232,238,0.5)' }}>오늘 나에게 찾아올 <br/> 행운의 메시지를 확인하세요</p>
           </div>
 
-          <button 
+          <button
             onClick={handleFreeUnse}
-            className="w-full bg-[#22C55E] hover:bg-[#16A34A] text-white py-5 rounded-2xl font-black text-lg shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-2"
+            className="w-full text-white py-5 rounded-2xl font-bold text-lg transition-all active:scale-[0.95] hover:brightness-110 flex items-center justify-center gap-2"
+            style={{ background: 'linear-gradient(135deg, #00e5a0, #059669)', boxShadow: '0 4px 24px rgba(0,229,160,0.3), 0 1px 0 rgba(255,255,255,0.16) inset' }}
           >
             지금 바로 확인하기
             <ChevronRight className="w-5 h-5" />
           </button>
         </section>
 
-        {/* 2순위 (중간): 오늘의 운세 프리미엄 - 어두운 갈색 카드 */}
-        <section className="bg-[#2D1B1E] rounded-[2.5rem] p-8 shadow-xl space-y-6 relative overflow-hidden">
+        {/* 2순위 (중간): 오늘의 운세 프리미엄 */}
+        <section className="rounded-[2.5rem] p-8 space-y-6 relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at 110% -10%, rgba(232,130,154,0.12), rgba(18,8,16,0.92) 55%)', border: '1px solid rgba(232,130,154,0.16)', boxShadow: '0 8px 40px rgba(232,130,154,0.08)' }}>
           <div className="absolute top-0 right-0 p-6">
             <Star className="w-8 h-8 text-primary-300 opacity-20" />
           </div>
@@ -80,20 +84,21 @@ export default function UnsePage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-white/5 rounded-xl border border-white/10">
-                <Zap className="w-5 h-5 text-primary-300 fill-primary-300" />
+                <Zap className="w-5 h-5" style={{ color: '#e8829a', fill: '#e8829a' }} />
               </div>
-              <h3 className="text-xl font-black text-white">오늘의 운세 프리미엄</h3>
+              <h3 className="text-xl font-bold text-white">오늘의 운세 프리미엄</h3>
             </div>
-            
-            <p className="text-gray-400 font-bold text-sm leading-relaxed break-keep">
+
+            <p className="font-bold text-sm leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.5)' }}>
               시간대별 기운의 흐름부터 <br/>
-              <span className="text-primary-200">럭키 아이템 & 피해야 할 귀신(?)</span>까지 <br/>
+              <span style={{ color: '#e8829a' }}>럭키 아이템 & 피해야 할 귀신(?)</span>까지 <br/>
               더 깊고 다정하게 속삭여드려요.
             </p>
 
-            <button 
+            <button
               onClick={() => handlePaidUnse('premium')}
-              className="w-full bg-primary-500 hover:bg-primary-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg transition-all active:scale-[0.95] flex items-center justify-center gap-2"
+              className="w-full text-white py-5 rounded-2xl font-bold text-lg transition-all active:scale-[0.95] hover:brightness-110 flex items-center justify-center gap-2"
+              style={{ background: 'linear-gradient(135deg, #e8829a, #c2255c)', boxShadow: '0 4px 24px rgba(232,130,154,0.32), 0 1px 0 rgba(255,255,255,0.16) inset' }}
             >
               777원으로 확인하기
               <ChevronRight className="w-5 h-5" />
@@ -150,7 +155,7 @@ export default function UnsePage() {
         onClose={() => setIsSajuModalOpen(false)} 
       />
 
-      <Footer />
+      <Footer dark />
     </main>
   );
 }

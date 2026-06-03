@@ -127,27 +127,41 @@ function SajuProcessingContent() {
   const isCompatibility = searchParams.get('type') === 'compatibility';
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#FFF5F7] p-6 text-center">
+    <div className="min-h-screen overflow-hidden p-6 text-center" style={{ background: '#0d0710' }}>
       <div className="flex min-h-screen flex-col items-center justify-center">
         <div className="relative mb-12">
-          <div className="relative z-10 flex h-32 w-32 items-center justify-center rounded-[3rem] bg-white shadow-2xl">
-            <Loader2 className="h-12 w-12 animate-spin stroke-[3] text-primary-400" />
+          <div
+            className="relative z-10 flex h-32 w-32 items-center justify-center rounded-[3rem]"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(232,130,154,0.18)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 8px 40px rgba(232,130,154,0.18), 0 1px 0 rgba(255,255,255,0.06) inset',
+            }}
+          >
+            <Loader2 className="h-12 w-12 animate-spin stroke-[3]" style={{ color: '#e8829a' }} />
           </div>
-          <div className="absolute inset-0 scale-150 rounded-full bg-primary-200/20 blur-3xl" />
+          <div className="absolute inset-0 scale-150 rounded-full blur-3xl" style={{ background: 'rgba(232,130,154,0.16)' }} />
           {isCompatibility
-            ? <Heart className="absolute -right-6 -top-6 h-12 w-12 animate-bounce fill-rose-400 text-rose-400" />
-            : <Moon className="absolute -right-6 -top-6 h-12 w-12 animate-bounce fill-primary-400 text-primary-400" />
+            ? <Heart className="absolute -right-6 -top-6 h-12 w-12 animate-bounce" style={{ fill: '#d4688a', color: '#d4688a' }} />
+            : <Moon className="absolute -right-6 -top-6 h-12 w-12 animate-bounce" style={{ fill: '#e8829a', color: '#e8829a' }} />
           }
         </div>
         <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-xs font-black text-primary-600 shadow-sm">
-            <Sparkles className="h-3.5 w-3.5 fill-primary-400 text-primary-400" />
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-black"
+            style={{ background: 'rgba(232,130,154,0.10)', border: '1px solid rgba(232,130,154,0.20)', color: '#e8829a' }}
+          >
+            <Sparkles className="h-3.5 w-3.5" style={{ fill: '#e8829a', color: '#e8829a' }} />
             ENERGY SCANNING
           </div>
-          <h2 className="text-3xl font-black leading-tight tracking-tight text-primary-900 md:text-4xl">
+          <h2
+            className="whitespace-pre-line text-3xl font-bold leading-tight tracking-tight md:text-4xl"
+            style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}
+          >
             {isCompatibility ? '두 사람의 운명선을\n 하나로 잇고 있어요' : '당신의 고유한 결을\n 분석하고 있어요'}
           </h2>
-          <p className="text-lg font-bold text-primary-300">{loadingStep}</p>
+          <p className="text-lg font-bold" style={{ color: 'rgba(240,232,238,0.42)' }}>{loadingStep}</p>
         </div>
       </div>
     </div>
@@ -169,7 +183,11 @@ function SajuEntryContent() {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-600 px-8 py-4 text-base font-black text-white shadow-lg shadow-primary-900/20 transition hover:bg-primary-700 hover:scale-[1.02] active:scale-[0.98]"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl px-8 py-4 text-base font-bold text-white transition hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
+          style={{
+            background: 'linear-gradient(135deg, #e8829a, #c2255c)',
+            boxShadow: '0 4px 24px rgba(232,130,154,0.32), 0 1px 0 rgba(255,255,255,0.16) inset',
+          }}
         >
           <Sparkles className="h-4 w-4" />
           무료 사주 분석 시작하기
@@ -184,7 +202,7 @@ export default function SajuPageClient() {
   return (
     <Suspense fallback={
       <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-400" />
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#e8829a' }} />
       </div>
     }>
       <SajuEntryContent />

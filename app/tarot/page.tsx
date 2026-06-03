@@ -2,6 +2,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import TodayTarotCard from '@/components/tarot/TodayTarotCard'
+import CosmicBackground from '@/components/CosmicBackground'
 
 export const metadata: Metadata = {
   title: '무료 타로 카드 리딩 AI 해석 | 사주 치트키',
@@ -45,20 +46,21 @@ export default function TarotPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
-    <main className="min-h-screen tarot-bg">
+    <main className="relative min-h-screen overflow-x-hidden" style={{ background: '#0d0710' }}>
+      <CosmicBackground />
 
       {/* 히어로 */}
-      <section className="pt-20 pb-12 px-4 text-center">
+      <section className="relative z-10 pt-20 pb-12 px-4 text-center">
         <div
-          className="inline-block px-4 py-1.5 rounded-full text-xs font-medium tracking-widest mb-6"
-          style={{ background: 'var(--tarot-50)', color: 'var(--tarot-600)' }}
+          className="inline-block px-4 py-1.5 rounded-full text-xs font-black tracking-widest mb-6"
+          style={{ background: 'rgba(157,143,255,0.12)', border: '1px solid rgba(157,143,255,0.25)', color: '#9d8fff' }}
         >
           ✦ TAROT READING ✦
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
           타로 카드로<br />
           <span style={{
-            background: 'linear-gradient(135deg, var(--tarot-500), var(--tarot-800))',
+            background: 'linear-gradient(135deg, #9d8fff, #c49fff)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -66,28 +68,28 @@ export default function TarotPage() {
             지금 이 순간을 읽다
           </span>
         </h1>
-        <p className="text-gray-500 text-base max-w-md mx-auto mb-8 leading-relaxed">
+        <p className="text-base max-w-md mx-auto mb-8 leading-relaxed" style={{ color: 'rgba(240,232,238,0.5)' }}>
           타로 리더 성월이 카드의 메시지를 해석해드려요.<br />
           마음속 질문을 가지고 카드를 선택해보세요 🌙
         </p>
         <div className="flex gap-3 justify-center flex-wrap">
           <Link
             href="/tarot/reading"
-            className="px-8 py-3.5 rounded-full text-white font-medium text-sm transition-all hover:-translate-y-0.5"
+            className="px-8 py-3.5 rounded-full text-white font-bold text-sm transition-all hover:-translate-y-0.5 hover:brightness-110"
             style={{
-              background: 'linear-gradient(135deg, var(--tarot-500), var(--tarot-800))',
-              boxShadow: '0 8px 24px rgba(127,119,221,0.3)',
+              background: 'linear-gradient(135deg, #9d8fff, #534ab7)',
+              boxShadow: '0 8px 24px rgba(157,143,255,0.3)',
             }}
           >
             🔮 카드 펼치기
           </Link>
           <Link
             href="/tarot/dictionary"
-            className="px-8 py-3.5 rounded-full font-medium text-sm transition-all hover:opacity-80"
+            className="px-8 py-3.5 rounded-full font-bold text-sm transition-all hover:bg-white/[0.08]"
             style={{
-              background: 'white',
-              border: '1px solid var(--tarot-200)',
-              color: 'var(--tarot-600)',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(157,143,255,0.25)',
+              color: '#9d8fff',
             }}
           >
             카드 사전 보기
@@ -96,23 +98,29 @@ export default function TarotPage() {
       </section>
 
       {/* 오늘의 타로 */}
-      <section className="px-4 max-w-sm mx-auto mb-12">
+      <section className="relative z-10 px-4 max-w-sm mx-auto mb-12">
         <TodayTarotCard />
       </section>
 
       {/* Features */}
-      <section className="px-4 max-w-3xl mx-auto pb-20">
-        <h2 className="text-center text-lg font-semibold text-gray-700 mb-6">✨ 타로 치트키만의 특별함</h2>
+      <section className="relative z-10 px-4 max-w-3xl mx-auto pb-20">
+        <h2 className="text-center text-lg font-bold mb-6" style={{ color: 'rgba(240,232,238,0.82)' }}>✨ 타로 치트키만의 특별함</h2>
         <div className="grid grid-cols-2 gap-3">
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="glass-card p-5 rounded-2xl"
-              style={{ borderColor: 'rgba(127,119,221,0.18)' }}
+              className="p-5 rounded-2xl"
+              style={{
+                background: 'rgba(255,255,255,0.025)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(157,143,255,0.16)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.22)',
+              }}
             >
               <div className="text-2xl mb-2">{f.icon}</div>
-              <div className="font-semibold text-gray-800 text-sm mb-1">{f.title}</div>
-              <div className="text-gray-500 text-xs leading-relaxed">{f.desc}</div>
+              <div className="font-bold text-sm mb-1" style={{ color: '#f5eef2' }}>{f.title}</div>
+              <div className="text-xs leading-relaxed" style={{ color: 'rgba(240,232,238,0.46)' }}>{f.desc}</div>
             </div>
           ))}
         </div>

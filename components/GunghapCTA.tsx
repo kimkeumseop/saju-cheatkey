@@ -12,7 +12,11 @@ export default function GunghapCTA() {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-600 px-8 py-4 text-base font-black text-white shadow-lg shadow-primary-900/20 transition hover:bg-primary-700 hover:scale-[1.02] active:scale-[0.98]"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl px-8 py-4 text-base font-bold text-white transition hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
+          style={{
+            background: 'linear-gradient(135deg, #d4688a, #9e1c4e)',
+            boxShadow: '0 4px 24px rgba(212,104,138,0.32), 0 1px 0 rgba(255,255,255,0.16) inset',
+          }}
         >
           <Sparkles className="h-4 w-4" />
           무료 궁합 분석 시작하기

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import CosmicBackground from '@/components/CosmicBackground';
 import GunghapCTA from '@/components/GunghapCTA';
 import { createMetadata } from '@/lib/site';
 
@@ -29,18 +30,28 @@ const WHAT_YOU_GET = [
 
 export default function GunghapPage() {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(250,162,193,0.18),transparent_30%),linear-gradient(180deg,#fff5f7_0%,#fffafb_60%,#fff5f7_100%)]">
-      <Navbar />
+    <main className="relative min-h-screen overflow-x-hidden" style={{ background: '#0d0710' }}>
+      <CosmicBackground />
+      <Navbar dark />
 
-      <div className="mx-auto max-w-4xl px-6 pt-28 pb-32 space-y-14">
+      <div className="relative z-10 mx-auto max-w-4xl px-6 pt-28 pb-32 space-y-14">
 
-        <header className="glass-panel rounded-[3rem] p-8 md:p-14 space-y-6">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-primary-400">Destiny Compatibility</p>
-          <h1 className="text-4xl font-black leading-tight tracking-tight text-gray-900 md:text-6xl break-keep">
+        <header
+          className="rounded-[3rem] p-8 md:p-14 space-y-6"
+          style={{
+            background: 'radial-gradient(ellipse at 110% -10%, rgba(212,104,138,0.12) 0%, rgba(18,8,16,0.90) 55%)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(212,104,138,0.18)',
+            boxShadow: '0 8px 40px rgba(212,104,138,0.10), 0 1px 0 rgba(255,255,255,0.04) inset',
+          }}
+        >
+          <p className="text-xs font-black uppercase tracking-[0.28em]" style={{ color: 'rgba(212,104,138,0.72)' }}>Destiny Compatibility</p>
+          <h1 className="text-4xl font-bold leading-tight tracking-tight md:text-6xl break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
             운명 궁합 분석<br />
-            <span className="text-primary-600">두 사람의 인연을 읽다</span>
+            <span style={{ background: 'linear-gradient(135deg, #d4688a 0%, #e8829a 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>두 사람의 인연을 읽다</span>
           </h1>
-          <p className="max-w-2xl text-base leading-8 text-gray-600 break-keep md:text-lg">
+          <p className="max-w-2xl text-base leading-8 break-keep md:text-lg" style={{ color: 'rgba(240,232,238,0.52)' }}>
             두 사람의 사주 오행 조합과 일주 궁합을 분석해 관계의 에너지 흐름을 읽어드립니다.
             맞고 틀림이 아닌, 서로의 차이와 보완 지점을 이해하는 참고 자료로 활용하세요.
           </p>
@@ -48,21 +59,40 @@ export default function GunghapPage() {
         </header>
 
         <section className="space-y-6">
-          <h2 className="text-2xl font-black text-gray-900">궁합 분석으로 무엇을 알 수 있나요</h2>
+          <h2 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>궁합 분석으로 무엇을 알 수 있나요</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {WHAT_YOU_GET.map((item) => (
-              <article key={item.title} className="bg-white rounded-[2rem] border border-pink-50 shadow-sm p-6 space-y-2">
+              <article
+                key={item.title}
+                className="rounded-[2rem] p-6 space-y-2"
+                style={{
+                  background: 'rgba(255,255,255,0.025)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(212,104,138,0.12)',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.22)',
+                }}
+              >
                 <div className="text-3xl">{item.icon}</div>
-                <h3 className="text-lg font-black text-gray-900">{item.title}</h3>
-                <p className="text-sm text-gray-500 leading-7 break-keep">{item.desc}</p>
+                <h3 className="text-lg font-bold" style={{ color: '#f5eef2' }}>{item.title}</h3>
+                <p className="text-sm leading-7 break-keep" style={{ color: 'rgba(240,232,238,0.46)' }}>{item.desc}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section className="bg-white rounded-[2.5rem] border border-pink-50 shadow-sm p-8 md:p-12 space-y-6">
-          <h2 className="text-2xl font-black text-gray-900">사주로 보는 궁합이란 무엇인가요</h2>
-          <div className="space-y-5 text-gray-600 leading-8 break-keep">
+        <section
+          className="rounded-[2.5rem] p-8 md:p-12 space-y-6"
+          style={{
+            background: 'rgba(255,255,255,0.025)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(212,104,138,0.10)',
+            boxShadow: '0 4px 32px rgba(212,104,138,0.05), 0 1px 0 rgba(255,255,255,0.04) inset',
+          }}
+        >
+          <h2 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>사주로 보는 궁합이란 무엇인가요</h2>
+          <div className="space-y-5 leading-8 break-keep" style={{ color: 'rgba(240,232,238,0.62)' }}>
             <p>
               사주 궁합은 두 사람의 태어난 날짜와 시간을 기반으로 각자의 오행 분포, 일주 구조, 에너지의 방향이 어떻게 교차하는지를 보는 분석 방법입니다.
               단순히 잘 맞는다, 안 맞는다를 판정하는 것이 아니라, 두 사람의 관계에서 어떤 패턴이 반복되기 쉽고 어떤 부분에서 보완이 필요한지를 파악하는 참고 도구입니다.
@@ -85,18 +115,28 @@ export default function GunghapPage() {
         </section>
 
         <section className="space-y-6">
-          <h2 className="text-2xl font-black text-gray-900">이용 방법</h2>
+          <h2 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>이용 방법</h2>
           <ol className="space-y-4">
             {[
               { step: '01', title: '두 사람 정보 입력', desc: '각자의 이름, 생년월일, 출생 시간, 성별과 관계 유형(연인·부부·친구 등)을 선택합니다.' },
               { step: '02', title: 'AI 궁합 분석', desc: '두 사람의 오행 조합과 일주 구조를 AI가 함께 읽어 맞춤 궁합 리포트를 작성합니다.' },
               { step: '03', title: '결과 확인', desc: '오행 상생·상극 분석, 관계 패턴, 보완 포인트, 주의할 상황을 설명형으로 확인할 수 있습니다.' },
             ].map((item) => (
-              <li key={item.step} className="flex gap-5 bg-white rounded-[1.5rem] border border-pink-50 shadow-sm p-6">
-                <span className="text-3xl font-black text-primary-200 shrink-0">{item.step}</span>
+              <li
+                key={item.step}
+                className="flex gap-5 rounded-[1.5rem] p-6"
+                style={{
+                  background: 'rgba(255,255,255,0.025)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(212,104,138,0.10)',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.22)',
+                }}
+              >
+                <span className="text-3xl font-black shrink-0" style={{ color: 'rgba(212,104,138,0.30)' }}>{item.step}</span>
                 <div>
-                  <h3 className="text-base font-black text-gray-900">{item.title}</h3>
-                  <p className="mt-1 text-sm text-gray-500 leading-7 break-keep">{item.desc}</p>
+                  <h3 className="text-base font-bold" style={{ color: '#f5eef2' }}>{item.title}</h3>
+                  <p className="mt-1 text-sm leading-7 break-keep" style={{ color: 'rgba(240,232,238,0.46)' }}>{item.desc}</p>
                 </div>
               </li>
             ))}
@@ -104,23 +144,38 @@ export default function GunghapPage() {
         </section>
 
         <section className="space-y-5">
-          <h2 className="text-2xl font-black text-gray-900">자주 묻는 질문</h2>
+          <h2 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>자주 묻는 질문</h2>
           <div className="space-y-3">
             {FAQ.map((item) => (
-              <details key={item.q} className="group bg-white rounded-[1.5rem] border border-pink-50 shadow-sm p-6 cursor-pointer">
-                <summary className="text-base font-black text-gray-900 list-none flex items-center justify-between gap-4">
+              <details
+                key={item.q}
+                className="group rounded-[1.5rem] p-6 cursor-pointer"
+                style={{
+                  background: 'rgba(255,255,255,0.025)',
+                  border: '1px solid rgba(212,104,138,0.10)',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+                }}
+              >
+                <summary className="text-base font-bold list-none flex items-center justify-between gap-4" style={{ color: '#f5eef2' }}>
                   {item.q}
-                  <span className="text-primary-400 shrink-0 text-xl leading-none group-open:rotate-45 transition-transform">+</span>
+                  <span className="shrink-0 text-xl leading-none group-open:rotate-45 transition-transform" style={{ color: '#d4688a' }}>+</span>
                 </summary>
-                <p className="mt-4 text-sm text-gray-500 leading-7 break-keep">{item.a}</p>
+                <p className="mt-4 text-sm leading-7 break-keep" style={{ color: 'rgba(240,232,238,0.46)' }}>{item.a}</p>
               </details>
             ))}
           </div>
         </section>
 
-        <section className="bg-[#2D1B1E] rounded-[2.5rem] p-8 md:p-10 space-y-5">
-          <h2 className="text-xl font-black text-white">함께 읽으면 좋은 가이드</h2>
-          <p className="text-white/50 text-sm leading-7 break-keep">궁합 결과를 더 잘 이해하고 싶다면 아래 기초 가이드를 먼저 읽어보세요.</p>
+        <section
+          className="rounded-[2.5rem] p-8 md:p-10 space-y-5"
+          style={{
+            background: 'radial-gradient(ellipse at 0% 0%, rgba(157,143,255,0.12) 0%, rgba(18,8,16,0.85) 60%)',
+            border: '1px solid rgba(157,143,255,0.16)',
+            boxShadow: '0 8px 40px rgba(157,143,255,0.08), 0 1px 0 rgba(255,255,255,0.04) inset',
+          }}
+        >
+          <h2 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>함께 읽으면 좋은 가이드</h2>
+          <p className="text-sm leading-7 break-keep" style={{ color: 'rgba(240,232,238,0.46)' }}>궁합 결과를 더 잘 이해하고 싶다면 아래 기초 가이드를 먼저 읽어보세요.</p>
           <div className="flex flex-wrap gap-3">
             {[
               { href: '/guide/how-to-read-gunghap', label: '궁합 보는 법' },
@@ -129,7 +184,12 @@ export default function GunghapPage() {
               { href: '/guide/what-is-saju', label: '사주란 무엇인가' },
               { href: '/saju', label: '내 사주 먼저 보기' },
             ].map((link) => (
-              <Link key={link.href} href={link.href} className="px-4 py-2 rounded-full bg-white/10 text-white text-sm font-bold hover:bg-white/20 transition-colors">
+              <Link
+                key={link.href}
+                href={link.href}
+                className="px-4 py-2 rounded-full text-sm font-bold transition-colors"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(157,143,255,0.18)', color: 'rgba(240,232,238,0.82)' }}
+              >
                 {link.label}
               </Link>
             ))}
@@ -138,7 +198,7 @@ export default function GunghapPage() {
 
       </div>
 
-      <Footer />
+      <Footer dark />
     </main>
   );
 }

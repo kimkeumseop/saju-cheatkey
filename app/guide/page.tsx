@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import CosmicBackground from '@/components/CosmicBackground';
 import { createMetadata, guides } from '@/lib/site';
 
 export const metadata = createMetadata({
@@ -68,29 +69,32 @@ const guideMap = Object.fromEntries(guides.map((g) => [g.slug, g]));
 
 export default function GuidePage() {
   return (
-    <main className="min-h-screen bg-[#FFF5F7] pt-24 pb-32">
-      <Navbar />
+    <main className="relative min-h-screen overflow-x-hidden pt-24 pb-32" style={{ background: '#0d0710' }}>
+      <CosmicBackground />
+      <Navbar dark />
 
-      <div className="mx-auto max-w-5xl px-6 space-y-16">
+      <div className="relative z-10 mx-auto max-w-5xl px-6 space-y-16">
         {/* Header */}
-        <header className="bg-white rounded-[3rem] border border-pink-50 shadow-sm p-8 md:p-12 space-y-5">
-          <p className="text-pink-400 text-xs font-black tracking-[0.25em] uppercase">Reading Library</p>
-          <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight break-keep">
+        <header className="rounded-[3rem] p-8 md:p-12 space-y-5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.14)', boxShadow: '0 8px 40px rgba(232,130,154,0.06)' }}>
+          <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(232,130,154,0.7)' }}>Reading Library</p>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
             사주 기초 가이드
           </h1>
-          <p className="text-gray-600 leading-relaxed break-keep text-base md:text-lg max-w-2xl">
+          <p className="leading-relaxed break-keep text-base md:text-lg max-w-2xl" style={{ color: 'rgba(240,232,238,0.6)' }}>
             사주를 처음 접하는 분도 쉽게 읽을 수 있도록 명리학의 기본 개념부터 운세 해석 방법까지 26편으로 정리했습니다. 결과를 더 잘 이해하고 싶을 때, 관심 주제부터 골라 읽어보세요.
           </p>
           <div className="flex flex-wrap gap-3 pt-2">
             <Link
               href="/"
-              className="px-4 py-2 rounded-full text-sm font-bold text-pink-600 bg-pink-50 hover:bg-pink-100 transition-colors"
+              className="px-4 py-2 rounded-full text-sm font-bold transition-colors"
+              style={{ color: '#e8829a', background: 'rgba(232,130,154,0.1)', border: '1px solid rgba(232,130,154,0.2)' }}
             >
               홈으로
             </Link>
             <Link
               href="/faq"
-              className="px-4 py-2 rounded-full text-sm font-bold text-pink-600 bg-pink-50 hover:bg-pink-100 transition-colors"
+              className="px-4 py-2 rounded-full text-sm font-bold transition-colors"
+              style={{ color: '#e8829a', background: 'rgba(232,130,154,0.1)', border: '1px solid rgba(232,130,154,0.2)' }}
             >
               자주 묻는 질문
             </Link>
@@ -109,8 +113,8 @@ export default function GuidePage() {
                   style={{ background: cat.accent }}
                 />
                 <div>
-                  <h2 className="text-2xl font-black text-gray-900">{cat.label}</h2>
-                  <p className="mt-1 text-sm text-gray-500 break-keep">{cat.description}</p>
+                  <h2 className="text-2xl font-bold" style={{ color: '#f5eef2' }}>{cat.label}</h2>
+                  <p className="mt-1 text-sm break-keep" style={{ color: 'rgba(240,232,238,0.42)' }}>{cat.description}</p>
                 </div>
               </div>
 
@@ -119,12 +123,13 @@ export default function GuidePage() {
                   <Link
                     key={guide.slug}
                     href={`/guide/${guide.slug}`}
-                    className="group bg-white rounded-[2rem] border border-pink-50 shadow-sm p-6 hover:shadow-md hover:-translate-y-0.5 transition-all space-y-3"
+                    className="group rounded-[2rem] p-6 hover:-translate-y-0.5 transition-all space-y-3"
+                    style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.12)' }}
                   >
-                    <h3 className="text-lg font-black text-gray-900 break-keep group-hover:text-pink-600 transition-colors">
+                    <h3 className="text-lg font-bold break-keep transition-colors" style={{ color: '#f5eef2' }}>
                       {guide.title}
                     </h3>
-                    <p className="text-sm text-gray-500 leading-7 break-keep">{guide.description}</p>
+                    <p className="text-sm leading-7 break-keep" style={{ color: 'rgba(240,232,238,0.5)' }}>{guide.description}</p>
                     <p
                       className="text-xs font-black flex items-center gap-1"
                       style={{ color: cat.accent }}
@@ -148,16 +153,17 @@ export default function GuidePage() {
         })}
 
         {/* CTA */}
-        <div className="bg-[#2D1B1E] rounded-[2.5rem] p-8 md:p-12 text-center space-y-5">
-          <h2 className="text-2xl md:text-3xl font-black text-white">
+        <div className="rounded-[2.5rem] p-8 md:p-12 text-center space-y-5" style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(232,130,154,0.14), rgba(18,8,16,0.85) 70%)', border: '1px solid rgba(232,130,154,0.16)' }}>
+          <h2 className="text-2xl md:text-3xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
             가이드를 읽었다면, 이제 나의 사주를 봐요
           </h2>
-          <p className="text-white/60 text-base leading-8 break-keep">
+          <p className="text-base leading-8 break-keep" style={{ color: 'rgba(240,232,238,0.5)' }}>
             생년월일시를 입력하면 오행 분포와 일주를 기반으로 한 맞춤 해석을 바로 확인할 수 있습니다.
           </p>
           <Link
             href="/saju"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-pink-900/30 hover:scale-[1.02] transition-transform"
+            className="inline-flex items-center gap-2 text-white px-8 py-4 rounded-2xl font-bold hover:scale-[1.02] transition-transform"
+            style={{ background: 'linear-gradient(135deg, #e8829a, #c2255c)', boxShadow: '0 4px 24px rgba(232,130,154,0.32), 0 1px 0 rgba(255,255,255,0.16) inset' }}
           >
             무료 사주 분석 시작하기
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

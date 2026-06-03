@@ -43,3 +43,9 @@ backup_old/
 .env*.local
 .aider*
 serviceAccount.json
+
+# local agent state (worktrees, backups, settings)
+.claude/
+
+# design-system skill (own git repo)
+interface-design/

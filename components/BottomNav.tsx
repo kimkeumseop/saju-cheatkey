@@ -30,8 +30,8 @@ export default function BottomNav() {
       label: '사주',
       subLabel: '운세 분석',
       emoji: '🔮',
-      accent: '#E64980',
-      accentSoft: 'rgba(240,101,149,0.12)',
+      accent: '#e8829a',
+      accentSoft: 'rgba(232,130,154,0.16)',
       active: pathname === '/saju' || pathname?.startsWith('/result'),
       action: () => setIsSajuModalOpen(true),
     },
@@ -40,8 +40,8 @@ export default function BottomNav() {
       label: '궁합',
       subLabel: '인연 확인',
       emoji: '💞',
-      accent: '#E64980',
-      accentSoft: 'rgba(230,73,128,0.12)',
+      accent: '#d4688a',
+      accentSoft: 'rgba(212,104,138,0.16)',
       active: pathname === '/gunghap',
       action: () => setIsGungHapModalOpen(true),
     },
@@ -50,8 +50,8 @@ export default function BottomNav() {
       label: '타로',
       subLabel: '오늘의 카드',
       emoji: '🌙',
-      accent: '#7F77DD',
-      accentSoft: 'rgba(127,119,221,0.14)',
+      accent: '#9d8fff',
+      accentSoft: 'rgba(157,143,255,0.16)',
       active: pathname === '/tarot' || pathname?.startsWith('/tarot/'),
       action: () => router.push('/tarot'),
     },
@@ -60,8 +60,8 @@ export default function BottomNav() {
       label: 'MBTI',
       subLabel: '성향 테스트',
       emoji: '🧠',
-      accent: '#10B981',
-      accentSoft: 'rgba(16,185,129,0.14)',
+      accent: '#00e5a0',
+      accentSoft: 'rgba(0,229,160,0.16)',
       active: pathname === '/mbti' || pathname?.startsWith('/mbti/'),
       action: () => router.push('/mbti'),
     },
@@ -71,7 +71,14 @@ export default function BottomNav() {
     <>
       <nav className="fixed bottom-0 left-0 z-50 w-full pb-safe">
         <div className="mx-4 mb-4 max-w-2xl md:mx-auto">
-          <div className="rounded-[2rem] border border-pink-100/60 bg-white/95 backdrop-blur-xl shadow-[0_-4px_24px_rgba(240,101,149,0.12),0_8px_40px_rgba(240,101,149,0.08)]">
+          <div
+            className="rounded-[2rem] backdrop-blur-xl"
+            style={{
+              background: 'rgba(13,7,16,0.82)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              boxShadow: '0 -4px 24px rgba(0,0,0,0.4), 0 8px 40px rgba(232,130,154,0.06), 0 1px 0 rgba(255,255,255,0.04) inset',
+            }}
+          >
             <div className="flex min-h-20 items-stretch px-3">
               {tabs.map((tab) => (
                 <button
@@ -82,16 +89,24 @@ export default function BottomNav() {
                   <div
                     className="flex w-full flex-col items-center justify-center gap-0.5 rounded-2xl px-2 py-2.5 transition-all duration-300 active:scale-95"
                     style={{
-                      background: tab.active ? `linear-gradient(180deg, ${tab.accentSoft}, rgba(255,255,255,0.98))` : 'transparent',
-                      boxShadow: tab.active ? `0 12px 28px ${tab.accentSoft}` : 'none',
+                      background: tab.active ? `linear-gradient(180deg, ${tab.accentSoft}, transparent)` : 'transparent',
+                      boxShadow: tab.active ? `0 8px 24px ${tab.accentSoft}, 0 0 0 1px ${tab.accent}26 inset` : 'none',
                     }}
                   >
-                    <span className="mb-0.5 text-2xl transition-transform duration-200 group-hover:scale-110">{tab.emoji}</span>
+                    <span
+                      className="mb-0.5 text-2xl transition-transform duration-200 group-hover:scale-110"
+                      style={tab.active ? { filter: `drop-shadow(0 0 8px ${tab.accent}aa)` } : undefined}
+                    >
+                      {tab.emoji}
+                    </span>
                     <div className="text-center leading-tight">
-                      <p className="text-[12px] font-black tracking-tight" style={{ color: tab.active ? tab.accent : '#7a7a7a' }}>
+                      <p
+                        className="text-[12px] font-black tracking-tight"
+                        style={{ color: tab.active ? tab.accent : 'rgba(255,238,245,0.50)', textShadow: tab.active ? `0 0 10px ${tab.accent}55` : 'none' }}
+                      >
                         {tab.label}
                       </p>
-                      <p className="text-[9px] font-bold" style={{ color: tab.active ? tab.accent : '#b9b9b9' }}>
+                      <p className="text-[9px] font-bold" style={{ color: tab.active ? tab.accent : 'rgba(255,238,245,0.26)' }}>
                         {tab.subLabel}
                       </p>
                     </div>

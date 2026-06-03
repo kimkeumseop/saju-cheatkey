@@ -157,58 +157,69 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
     }
   };
 
-  const inputClasses = "w-full bg-[#FFF5F7] text-gray-400 border border-pink-50 rounded-2xl py-3 sm:py-4 px-4 focus:ring-4 focus:ring-primary-100 focus:border-primary-200 outline-none transition-all placeholder:text-gray-400 font-medium [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer appearance-none";
+  const inputClasses = "w-full bg-white/[0.04] text-[#f5eef2] border border-white/10 rounded-2xl py-3 sm:py-4 px-4 focus:ring-4 focus:ring-[#e8829a]/20 focus:border-[#e8829a]/50 outline-none transition-all placeholder:text-white/30 font-medium [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer appearance-none [&>option]:bg-[#1a0e18] [&>option]:text-[#f5eef2]";
   const radioBtnClasses = (active: boolean) => cn(
-    "flex-1 py-2.5 sm:py-3.5 rounded-xl font-black transition-all flex items-center justify-center gap-2 border-2 text-sm",
-    active ? "bg-primary-900 border-primary-900 text-white shadow-md" : "bg-white border-pink-50 text-gray-400 hover:bg-pink-50/50"
+    "flex-1 py-2.5 sm:py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 border text-sm",
+    active ? "bg-[#e8829a] border-transparent text-white shadow-md shadow-[#e8829a]/30" : "bg-white/[0.03] border-white/10 text-white/40 hover:bg-white/[0.06]"
   );
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-300 max-h-[92vh] sm:max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+      <div
+        className="w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 sm:p-8 relative overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-300 max-h-[92vh] sm:max-h-[90vh] flex flex-col"
+        style={{
+          background: 'linear-gradient(180deg, rgba(26,14,24,0.96), rgba(13,7,16,0.97))',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(232,130,154,0.16)',
+          boxShadow: '0 -8px 60px rgba(0,0,0,0.6), 0 8px 40px rgba(232,130,154,0.10), 0 1px 0 rgba(255,255,255,0.05) inset',
+        }}
+      >
         <div className="flex items-center justify-between mb-4 sm:mb-8 flex-shrink-0">
           <div className="flex items-center gap-2">
-            {type === 'unse' ? <Moon className="w-6 h-6 text-primary-500 fill-primary-500" /> : <Sparkles className="w-6 h-6 text-primary-500 fill-primary-500" />}
-            <h3 className="text-2xl font-black text-primary-900 tracking-tight">
+            {type === 'unse'
+              ? <Moon className="w-6 h-6" style={{ color: '#e8829a', fill: '#e8829a' }} />
+              : <Sparkles className="w-6 h-6" style={{ color: '#e8829a', fill: '#e8829a' }} />}
+            <h3 className="text-2xl font-bold tracking-tight" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
               {type === 'unse' ? '오늘의 속삭임' : '사주 분석'}
             </h3>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full bg-pink-50 hover:bg-pink-100 transition-colors"><X className="w-5 h-5 text-primary-300" /></button>
+          <button onClick={onClose} className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"><X className="w-5 h-5 text-white/40" /></button>
         </div>
 
         <div className="overflow-y-auto flex-1 no-scrollbar -mx-1 px-1">
           {view === 'selection' ? (
             <div className="space-y-6">
               <div className="space-y-4">
-                <p className="text-primary-300 font-bold text-sm ml-1 italic">나의 인연 정보 선택</p>
+                <p className="font-bold text-sm ml-1 italic" style={{ color: 'rgba(232,130,154,0.7)' }}>나의 인연 정보 선택</p>
                 {profiles.length > 0 ? (
                   <div className="grid grid-cols-1 gap-3 max-h-[40vh] overflow-y-auto pr-1 no-scrollbar">
                     {profiles.map((profile, index) => (
-                      <button key={profile.id || index} onClick={() => handleProfileSelect(profile)} className="w-full flex items-center gap-4 p-4 bg-[#FFF5F7] hover:bg-primary-50 border border-pink-50 rounded-[1.5rem] transition-all group">
-                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-primary-400 font-black">👤</div>
+                      <button key={profile.id || index} onClick={() => handleProfileSelect(profile)} className="w-full flex items-center gap-4 p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-[1.5rem] transition-all group">
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-lg">👤</div>
                         <div className="flex-1 text-left">
-                          <p className="font-black text-sm text-primary-900">{profile.name || '무명'}</p>
-                          <p className="text-[10px] text-primary-300 font-bold">{profile.birthDate} · {profile.gender === 'male' ? '남성' : '여성'}</p>
+                          <p className="font-bold text-sm" style={{ color: '#f5eef2' }}>{profile.name || '무명'}</p>
+                          <p className="text-[10px] font-bold" style={{ color: 'rgba(240,232,238,0.36)' }}>{profile.birthDate} · {profile.gender === 'male' ? '남성' : '여성'}</p>
                         </div>
                         <div className="flex items-center gap-1">
-                          <button onClick={(e) => handleDelete(e, profile.id)} className="p-2 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 text-red-300 hover:text-red-500 transition-all">
+                          <button onClick={(e) => handleDelete(e, profile.id)} className="p-2 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-red-400/50 hover:text-red-400 transition-all">
                             <Trash2 className="w-4 h-4" />
                           </button>
-                          <ChevronRight className="w-5 h-5 text-primary-200 group-hover:text-primary-500 transition-colors" />
+                          <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-[#e8829a] transition-colors" />
                         </div>
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <div className="py-8 text-center bg-pink-50/30 rounded-[1.5rem] border-2 border-dashed border-pink-100">
-                    <p className="text-primary-200 font-bold text-sm">아직 등록된 정보가 없어요!</p>
+                  <div className="py-8 text-center rounded-[1.5rem] border-2 border-dashed border-white/10 bg-white/[0.02]">
+                    <p className="font-bold text-sm" style={{ color: 'rgba(240,232,238,0.36)' }}>아직 등록된 정보가 없어요!</p>
                   </div>
                 )}
-                <button onClick={() => setView('form')} className="w-full flex items-center gap-4 p-5 rounded-[1.5rem] bg-white border-2 border-dashed border-pink-100 hover:border-primary-200 transition-all group">
-                  <div className="w-12 h-12 rounded-xl bg-pink-50 group-hover:bg-primary-50 flex items-center justify-center transition-colors">
-                    <Plus className="w-6 h-6 text-primary-300 group-hover:text-primary-500" />
+                <button onClick={() => setView('form')} className="w-full flex items-center gap-4 p-5 rounded-[1.5rem] bg-white/[0.02] border-2 border-dashed border-white/10 hover:border-[#e8829a]/40 transition-all group">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 group-hover:bg-[#e8829a]/15 flex items-center justify-center transition-colors">
+                    <Plus className="w-6 h-6 text-white/40 group-hover:text-[#e8829a]" />
                   </div>
-                  <p className="font-black text-primary-900 flex-1 text-left">새로운 정보 등록하기</p>
+                  <p className="font-bold flex-1 text-left" style={{ color: '#f5eef2' }}>새로운 정보 등록하기</p>
                 </button>
               </div>
             </div>
@@ -217,19 +228,19 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
               <div className="space-y-4 sm:space-y-6 flex-1">
                 <input type="text" placeholder="성함을 알려주세요" className={inputClasses} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  <div className="flex p-1 bg-[#FFF5F7] rounded-2xl border border-pink-50">
+                  <div className="flex p-1 bg-white/[0.03] rounded-2xl border border-white/10">
                     <button type="button" onClick={() => setFormData({...formData, gender: 'male'})} className={radioBtnClasses(formData.gender === 'male')}>남성</button>
                     <button type="button" onClick={() => setFormData({...formData, gender: 'female'})} className={radioBtnClasses(formData.gender === 'female')}>여성</button>
                   </div>
-                  <div className="flex p-1 bg-[#FFF5F7] rounded-2xl border border-pink-50">
+                  <div className="flex p-1 bg-white/[0.03] rounded-2xl border border-white/10">
                     <button type="button" onClick={() => setFormData({...formData, calendarType: 'solar'})} className={radioBtnClasses(formData.calendarType === 'solar')}>양력</button>
                     <button type="button" onClick={() => setFormData({...formData, calendarType: 'lunar'})} className={radioBtnClasses(formData.calendarType === 'lunar')}>음력</button>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-black text-primary-900 ml-1 flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-primary-400" />태어난 생년월일
+                  <label className="text-sm font-bold text-[#f5eef2] ml-1 flex items-center gap-2">
+                    <Calendar className="w-4 h-4" style={{ color: '#e8829a' }} />태어난 생년월일
                   </label>
                   <div className="flex gap-2">
                     <div className="flex-1 relative">
@@ -242,7 +253,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                         <option value="" disabled>년</option>
                         {years.map(y => <option key={y} value={y}>{y}년</option>)}
                       </select>
-                      <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 pointer-events-none" />
+                      <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
                     </div>
                     <div className="flex-1 relative">
                       <select 
@@ -254,7 +265,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                         <option value="" disabled>월</option>
                         {months.map(m => <option key={m} value={m}>{m}월</option>)}
                       </select>
-                      <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 pointer-events-none" />
+                      <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
                     </div>
                     <div className="flex-1 relative">
                       <select 
@@ -266,15 +277,15 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                         <option value="" disabled>일</option>
                         {days.map(d => <option key={d} value={d}>{d}일</option>)}
                       </select>
-                      <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 pointer-events-none" />
+                      <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4 sm:space-y-6 pt-3 sm:pt-4 border-t border-pink-50">
+                <div className="space-y-4 sm:space-y-6 pt-3 sm:pt-4 border-t border-white/10">
                   <div className="space-y-2 sm:space-y-3">
-                    <label className="text-sm font-black text-primary-900 ml-1 flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-primary-400" />태어난 시간을 아시나요?
+                    <label className="text-sm font-bold text-[#f5eef2] ml-1 flex items-center gap-2">
+                      <Clock className="w-4 h-4" style={{ color: '#e8829a' }} />태어난 시간을 아시나요?
                     </label>
                     <div className="flex gap-3">
                       <button type="button" onClick={() => setFormData({...formData, isTimeKnown: true})} className={radioBtnClasses(formData.isTimeKnown)}>예</button>
@@ -283,7 +294,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                   </div>
                   {formData.isTimeKnown && (
                     <div className="space-y-2 sm:space-y-3 animate-in slide-in-from-top-2 duration-300">
-                      <label className="text-sm font-black text-primary-900 ml-1 italic">정확한 시간인가요?</label>
+                      <label className="text-sm font-bold text-[#f5eef2] ml-1 italic">정확한 시간인가요?</label>
                       <div className="flex gap-3">
                         <button type="button" onClick={() => setFormData({...formData, isExactTime: true})} className={radioBtnClasses(formData.isExactTime)}>예</button>
                         <button type="button" onClick={() => setFormData({...formData, isExactTime: false})} className={radioBtnClasses(!formData.isExactTime)}>아니오</button>
@@ -292,7 +303,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                   )}
                   {formData.isTimeKnown && formData.isExactTime && (
                     <div className="space-y-2 sm:space-y-3 animate-in slide-in-from-top-2 duration-300">
-                      <label className="text-sm font-black text-primary-900 ml-1">태어난 시각 입력</label>
+                      <label className="text-sm font-bold text-[#f5eef2] ml-1">태어난 시각 입력</label>
                       <div className="flex gap-2">
                         <div className="flex-1 relative">
                           <select 
@@ -304,7 +315,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                             <option value="AM">오전</option>
                             <option value="PM">오후</option>
                           </select>
-                          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 pointer-events-none" />
+                          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
                         </div>
                         <div className="flex-1 relative">
                           <select 
@@ -316,7 +327,7 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                             <option value="" disabled>시</option>
                             {hours.map(h => <option key={h} value={h}>{h}시</option>)}
                           </select>
-                          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 pointer-events-none" />
+                          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
                         </div>
                         <div className="flex-1 relative">
                           <select 
@@ -328,16 +339,20 @@ export default function SajuModal({ isOpen, onClose, type = 'saju' }: SajuModalP
                             <option value="" disabled>분</option>
                             {minutes.map(m => <option key={m} value={m}>{m.padStart(2, '0')}분</option>)}
                           </select>
-                          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-primary-300 pointer-events-none" />
+                          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
                         </div>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
-              <div className="flex gap-3 pt-2 sm:pt-4 sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-pink-50/50 pb-1 flex-shrink-0">
-                <button type="button" onClick={() => setView('selection')} className="flex-1 bg-pink-50 text-primary-300 py-3.5 sm:py-5 rounded-2xl font-black text-lg">뒤로</button>
-                <button type="submit" className="flex-[2] bg-primary-600 hover:bg-primary-700 text-white py-3.5 sm:py-5 rounded-2xl font-black text-lg shadow-xl active:scale-[0.98]">
+              <div className="flex gap-3 pt-2 sm:pt-4 sticky bottom-0 backdrop-blur-sm border-t border-white/10 pb-1 flex-shrink-0" style={{ background: 'rgba(13,7,16,0.85)' }}>
+                <button type="button" onClick={() => setView('selection')} className="flex-1 bg-white/5 text-white/50 py-3.5 sm:py-5 rounded-2xl font-bold text-lg hover:bg-white/10 transition-colors">뒤로</button>
+                <button
+                  type="submit"
+                  className="flex-[2] text-white py-3.5 sm:py-5 rounded-2xl font-bold text-lg active:scale-[0.98] transition hover:brightness-110"
+                  style={{ background: 'linear-gradient(135deg, #e8829a, #c2255c)', boxShadow: '0 4px 24px rgba(232,130,154,0.32), 0 1px 0 rgba(255,255,255,0.16) inset' }}
+                >
                   {type === 'unse' ? '속삭임 듣기 ✨' : '분석 시작하기 🚀'}
                 </button>
               </div>

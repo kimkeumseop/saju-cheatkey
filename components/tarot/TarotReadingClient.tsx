@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TAROT_CARDS, SPREAD_LABELS, TarotCard } from '@/data/tarotCards'
 import TarotResultView from './TarotResultView'
+import CosmicBackground from '@/components/CosmicBackground'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
 
@@ -29,16 +30,16 @@ const T = {
     color: 'var(--tarot-600)',
   } as React.CSSProperties,
   cardSelected: {
-    border: '2px solid var(--tarot-400)',
-    background: 'var(--tarot-50)',
+    border: '2px solid #9d8fff',
+    background: 'rgba(157,143,255,0.12)',
   } as React.CSSProperties,
   cardDefault: {
-    border: '1px solid #e5e7eb',
-    background: 'white',
+    border: '1px solid rgba(255,255,255,0.1)',
+    background: 'rgba(255,255,255,0.03)',
   } as React.CSSProperties,
-  chip: { background: 'var(--tarot-50)', border: '0.5px solid var(--tarot-200)', color: 'var(--tarot-700, var(--tarot-600))' } as React.CSSProperties,
+  chip: { background: 'rgba(157,143,255,0.12)', border: '1px solid rgba(157,143,255,0.25)', color: '#9d8fff' } as React.CSSProperties,
   dot: (active: boolean, passed: boolean) => ({
-    background: active ? 'var(--tarot-500)' : passed ? 'var(--tarot-300, var(--tarot-200))' : '#e5e7eb',
+    background: active ? '#9d8fff' : passed ? 'rgba(157,143,255,0.4)' : 'rgba(255,255,255,0.12)',
     transform: active ? 'scale(1.25)' : 'scale(1)',
   }) as React.CSSProperties,
 }
@@ -118,14 +119,15 @@ export default function TarotReadingClient() {
   }
 
   return (
-    <main className="min-h-screen tarot-bg pb-20">
-      <div className="max-w-lg mx-auto px-4 pt-8">
+    <main className="relative min-h-screen overflow-x-hidden pb-20" style={{ background: '#0d0710' }}>
+      <CosmicBackground />
+      <div className="relative z-10 max-w-lg mx-auto px-4 pt-8">
 
         {/* 헤더 */}
         <div className="text-center mb-8">
-          <div className="text-xs tracking-widest mb-2" style={{ color: 'var(--tarot-500)' }}>✦ TAROT READING ✦</div>
-          <h1 className="text-2xl font-bold text-gray-800">타로 리딩</h1>
-          <p className="text-sm text-gray-400 mt-1">마음속 질문을 품고 카드를 선택해요</p>
+          <div className="text-xs font-black tracking-widest mb-2" style={{ color: '#9d8fff' }}>✦ TAROT READING ✦</div>
+          <h1 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>타로 리딩</h1>
+          <p className="text-sm mt-1" style={{ color: 'rgba(240,232,238,0.42)' }}>마음속 질문을 품고 카드를 선택해요</p>
         </div>
 
         {/* 진행 바 */}
@@ -136,7 +138,7 @@ export default function TarotReadingClient() {
                 className="w-2 h-2 rounded-full transition-all duration-300"
                 style={T.dot(step === s, STEPS.indexOf(step) > i)}
               />
-              {i < 4 && <div className="w-6 h-px bg-gray-200" />}
+              {i < 4 && <div className="w-6 h-px bg-white/10" />}
             </div>
           ))}
         </div>
@@ -146,7 +148,7 @@ export default function TarotReadingClient() {
           {/* STEP 1: 스프레드 */}
           {step === 'spread' && (
             <motion.div key="spread" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
-              <h2 className="text-sm font-semibold text-gray-600 mb-4 text-center">스프레드를 선택해요</h2>
+              <h2 className="text-sm font-bold text-[#e8dfe6] mb-4 text-center">스프레드를 선택해요</h2>
               <div className="space-y-3">
                 {SPREADS.map((s) => (
                   <button
@@ -155,8 +157,8 @@ export default function TarotReadingClient() {
                     className="w-full p-4 rounded-2xl text-left transition-all"
                     style={spreadType === s.value ? T.cardSelected : T.cardDefault}
                   >
-                    <div className="font-semibold text-gray-800 text-sm">{s.label}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">{s.desc}</div>
+                    <div className="font-bold text-[#f5eef2] text-sm">{s.label}</div>
+                    <div className="text-xs text-white/40 mt-0.5">{s.desc}</div>
                   </button>
                 ))}
               </div>
@@ -173,19 +175,19 @@ export default function TarotReadingClient() {
           {/* STEP 2: 질문 */}
           {step === 'question' && (
             <motion.div key="question" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
-              <h2 className="text-sm font-semibold text-gray-600 mb-2 text-center">마음속 질문을 적어요</h2>
-              <p className="text-xs text-gray-400 text-center mb-5">질문이 없으면 넘어가도 괜찮아요 ✨</p>
+              <h2 className="text-sm font-bold text-[#e8dfe6] mb-2 text-center">마음속 질문을 적어요</h2>
+              <p className="text-xs text-white/40 text-center mb-5">질문이 없으면 넘어가도 괜찮아요 ✨</p>
               <textarea
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="예) 이 연애, 계속 이어나가야 할까요?"
-                className="w-full h-28 p-4 rounded-2xl text-sm text-gray-700 placeholder:text-gray-300 resize-none outline-none transition-all"
-                style={{ border: '1px solid var(--tarot-100)', background: 'white' }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--tarot-300, var(--tarot-400))' }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--tarot-100)' }}
+                className="w-full h-28 p-4 rounded-2xl text-sm resize-none outline-none transition-all text-[#f5eef2] placeholder:text-white/30"
+                style={{ border: '1px solid rgba(157,143,255,0.2)', background: 'rgba(255,255,255,0.04)' }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(157,143,255,0.5)' }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(157,143,255,0.2)' }}
               />
               <div className="flex gap-3 mt-4">
-                <button onClick={() => setStep('spread')} className="flex-1 py-3.5 rounded-2xl border border-gray-200 text-gray-400 text-sm">
+                <button onClick={() => setStep('spread')} className="flex-1 py-3.5 rounded-2xl border border-white/15 text-white/50 text-sm hover:bg-white/5 transition-colors">
                   ← 뒤로
                 </button>
                 <button onClick={() => setStep('shuffle')} className="flex-[2] py-3.5 rounded-2xl text-white font-medium text-sm" style={T.btnPrimary}>
@@ -198,8 +200,8 @@ export default function TarotReadingClient() {
           {/* STEP 3: 셔플 */}
           {step === 'shuffle' && (
             <motion.div key="shuffle" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} className="text-center">
-              <h2 className="text-sm font-semibold text-gray-600 mb-2">마음을 집중하고</h2>
-              <p className="text-xs text-gray-400 mb-8">덱을 탭하여 셔플해요</p>
+              <h2 className="text-sm font-bold text-[#e8dfe6] mb-2">마음을 집중하고</h2>
+              <p className="text-xs text-white/40 mb-8">덱을 탭하여 셔플해요</p>
               <div className="relative w-32 h-52 mx-auto mb-8 cursor-pointer" onClick={!shuffling ? handleShuffle : undefined}>
                 {[2, 1, 0].map((i) => (
                   <motion.div
@@ -227,15 +229,15 @@ export default function TarotReadingClient() {
                   </motion.div>
                 ))}
               </div>
-              <p className="text-xs text-gray-400">{shuffling ? '셔플 중...' : '덱을 탭하면 카드가 섞여요'}</p>
+              <p className="text-xs text-white/40">{shuffling ? '셔플 중...' : '덱을 탭하면 카드가 섞여요'}</p>
             </motion.div>
           )}
 
           {/* STEP 4: 카드 뽑기 */}
           {step === 'drawn' && (
             <motion.div key="drawn" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
-              <h2 className="text-sm font-semibold text-gray-600 mb-1 text-center">카드를 탭하여 펼쳐요</h2>
-              <p className="text-xs text-gray-400 text-center mb-6">
+              <h2 className="text-sm font-bold text-[#e8dfe6] mb-1 text-center">카드를 탭하여 펼쳐요</h2>
+              <p className="text-xs text-white/40 text-center mb-6">
                 {flipped.every(Boolean) ? '모두 펼쳤어요! AI 해석을 받아볼까요?' : `${flipped.filter(Boolean).length}/${spreadType}장 펼침`}
               </p>
               <div className={`flex gap-3 justify-center mb-8 ${spreadType === 5 ? 'flex-wrap' : ''}`}>
@@ -277,7 +279,7 @@ export default function TarotReadingClient() {
                           </div>
                         </motion.div>
                       </div>
-                      <div className="text-[10px] text-gray-400 text-center">{card.position}</div>
+                      <div className="text-[10px] text-white/40 text-center">{card.position}</div>
                     </div>
                   )
                 })}

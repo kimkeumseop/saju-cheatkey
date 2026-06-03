@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import CosmicBackground from '@/components/CosmicBackground';
 import { createMetadata, guideMap, guides } from '@/lib/site';
 
 export async function generateStaticParams() {
@@ -36,22 +37,23 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   const relatedGuides = guide.relatedSlugs.map((relatedSlug) => guideMap[relatedSlug]).filter(Boolean);
 
   return (
-    <main className="min-h-screen bg-[#FFF5F7] pt-24 pb-32">
-      <Navbar />
+    <main className="relative min-h-screen overflow-x-hidden pt-24 pb-32" style={{ background: '#0d0710' }}>
+      <CosmicBackground />
+      <Navbar dark />
 
-      <article className="max-w-4xl mx-auto px-6 space-y-10">
-        <header className="bg-white rounded-[3rem] border border-pink-50 shadow-sm p-8 md:p-12 space-y-5">
-          <p className="text-primary-500 text-xs font-black tracking-[0.25em] uppercase">Guide</p>
-          <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight break-keep">{guide.title}</h1>
-          <p className="text-gray-600 leading-relaxed break-keep text-base md:text-lg">{guide.intro}</p>
-          <div className="flex flex-wrap gap-3 text-sm font-bold text-primary-700">
-            <Link href="/" className="px-4 py-2 rounded-full bg-primary-50 hover:bg-primary-100 transition-colors">
+      <article className="relative z-10 max-w-4xl mx-auto px-6 space-y-10">
+        <header className="rounded-[3rem] p-8 md:p-12 space-y-5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.14)', boxShadow: '0 8px 40px rgba(232,130,154,0.06)' }}>
+          <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(232,130,154,0.7)' }}>Guide</p>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>{guide.title}</h1>
+          <p className="leading-relaxed break-keep text-base md:text-lg" style={{ color: 'rgba(240,232,238,0.6)' }}>{guide.intro}</p>
+          <div className="flex flex-wrap gap-3 text-sm font-bold">
+            <Link href="/" className="px-4 py-2 rounded-full transition-colors" style={{ background: 'rgba(232,130,154,0.1)', border: '1px solid rgba(232,130,154,0.2)', color: '#e8829a' }}>
               홈으로
             </Link>
-            <Link href="/faq" className="px-4 py-2 rounded-full bg-primary-50 hover:bg-primary-100 transition-colors">
+            <Link href="/faq" className="px-4 py-2 rounded-full transition-colors" style={{ background: 'rgba(232,130,154,0.1)', border: '1px solid rgba(232,130,154,0.2)', color: '#e8829a' }}>
               FAQ
             </Link>
-            <Link href="/about" className="px-4 py-2 rounded-full bg-primary-50 hover:bg-primary-100 transition-colors">
+            <Link href="/about" className="px-4 py-2 rounded-full transition-colors" style={{ background: 'rgba(232,130,154,0.1)', border: '1px solid rgba(232,130,154,0.2)', color: '#e8829a' }}>
               서비스 소개
             </Link>
           </div>
@@ -59,9 +61,9 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
 
         <div className="space-y-6">
           {guide.sections.map((section) => (
-            <section key={section.title} className="bg-white rounded-[2.5rem] border border-pink-50 shadow-sm p-8 md:p-10 space-y-5">
-              <h2 className="text-2xl font-black text-primary-900 tracking-tight break-keep">{section.title}</h2>
-              <div className="space-y-4 text-gray-600 leading-8 break-keep">
+            <section key={section.title} className="rounded-[2.5rem] p-8 md:p-10 space-y-5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.12)' }}>
+              <h2 className="text-2xl font-bold tracking-tight break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>{section.title}</h2>
+              <div className="space-y-4 leading-8 break-keep" style={{ color: 'rgba(240,232,238,0.62)' }}>
                 {section.body.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
@@ -70,33 +72,34 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           ))}
         </div>
 
-        <section className="bg-[#2D1B1E] rounded-[2.5rem] p-8 md:p-10 text-white space-y-4">
-          <p className="text-primary-200 text-xs font-black tracking-[0.25em] uppercase">정리</p>
-          <h2 className="text-2xl font-black">읽고 나서 기억하면 좋은 점</h2>
-          <p className="text-white/80 leading-8 break-keep">{guide.closing}</p>
+        <section className="rounded-[2.5rem] p-8 md:p-10 space-y-4" style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(157,143,255,0.12), rgba(18,8,16,0.85) 60%)', border: '1px solid rgba(157,143,255,0.16)' }}>
+          <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(157,143,255,0.7)' }}>정리</p>
+          <h2 className="text-2xl font-bold" style={{ color: '#f5eef2' }}>읽고 나서 기억하면 좋은 점</h2>
+          <p className="leading-8 break-keep" style={{ color: 'rgba(240,232,238,0.6)' }}>{guide.closing}</p>
         </section>
 
-        <section className="bg-white rounded-[2.5rem] border border-pink-50 shadow-sm p-8 md:p-10 space-y-6">
+        <section className="rounded-[2.5rem] p-8 md:p-10 space-y-6" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.12)' }}>
           <div className="space-y-2">
-            <p className="text-primary-500 text-xs font-black tracking-[0.25em] uppercase">Related</p>
-            <h2 className="text-2xl font-black text-primary-900">관련 글 더 읽기</h2>
+            <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(232,130,154,0.7)' }}>Related</p>
+            <h2 className="text-2xl font-bold" style={{ color: '#f5eef2' }}>관련 글 더 읽기</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {relatedGuides.map((relatedGuide) => (
               <Link
                 key={relatedGuide.slug}
                 href={`/guide/${relatedGuide.slug}`}
-                className="rounded-[1.75rem] bg-[#FFF5F7] border border-pink-50 p-5 space-y-2 hover:bg-primary-50 transition-colors"
+                className="rounded-[1.75rem] p-5 space-y-2 transition-colors hover:-translate-y-0.5"
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(232,130,154,0.1)' }}
               >
-                <h3 className="font-black text-primary-900 break-keep">{relatedGuide.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed break-keep">{relatedGuide.description}</p>
+                <h3 className="font-bold break-keep" style={{ color: '#f5eef2' }}>{relatedGuide.title}</h3>
+                <p className="text-sm leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.5)' }}>{relatedGuide.description}</p>
               </Link>
             ))}
           </div>
         </section>
       </article>
 
-      <Footer />
+      <Footer dark />
     </main>
   );
 }
