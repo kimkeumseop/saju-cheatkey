@@ -49,3 +49,6 @@ serviceAccount.json
 
 # design-system skill (own git repo)
 interface-design/
+
+# stale snapshot backups
+backups/
