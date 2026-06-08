@@ -110,6 +110,26 @@ function mergeSectionsByMajorPatterns(sections: AnalysisSection[], patterns: str
   }, []);
 }
 
+function isSajuCoverSection(section: AnalysisSection) {
+  const compactTitle = normalizeCompact(section.title);
+  const compactContent = normalizeCompact(section.content);
+  const looksLikeReportCover =
+    compactTitle.includes('인생가이드') ||
+    compactTitle.includes('사주치트키리포트') ||
+    compactTitle.includes('리포트');
+  const looksLikeGreeting =
+    compactContent.includes('안녕하세요') ||
+    compactContent.includes('준비했어요') ||
+    compactContent.includes('탐색해볼까요');
+  const hasOnlySeparator = section.content
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .some((line) => /^-{3,}$/.test(line));
+
+  return looksLikeReportCover && (looksLikeGreeting || hasOnlySeparator);
+}
+
 function hasUsefulContent(content: string) {
   return content
     .replace(/\*\*/g, '')
@@ -211,11 +231,12 @@ export function parseAnalysisSections(value: unknown): ParsedSectionsResult {
 
 export function normalizeSajuAiResult(value: unknown): ParsedSectionsResult {
   const normalized = parseAnalysisSections(value);
-  const mergedSections = mergeSectionsByMajorPatterns(normalized.sections, SAJU_MAJOR_SECTION_PATTERNS);
+  const contentSections = normalized.sections.filter((section) => !isSajuCoverSection(section));
+  const mergedSections = mergeSectionsByMajorPatterns(contentSections, SAJU_MAJOR_SECTION_PATTERNS);
 
   return {
     rawText: normalized.rawText,
-    sections: mergedSections.length > 0 ? mergedSections : normalized.sections,
+    sections: mergedSections.length > 0 ? mergedSections : contentSections.length > 0 ? contentSections : normalized.sections,
   };
 }
 
