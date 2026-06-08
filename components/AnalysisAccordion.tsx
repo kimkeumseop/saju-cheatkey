@@ -101,24 +101,117 @@ function splitContent(content: string): {
   };
 }
 
-// ── 텍스트 렌더링 ──────────────────────────────────────────────────
-function renderParagraph(rawText: string, className?: string) {
-  const cleaned = cleanBodyText(rawText);
-  const parts = cleaned.split(/(\*\*.*?\*\*)/g);
+function renderInlineText(rawText: string) {
+  const parts = rawText.split(/(\*\*.*?\*\*)/g);
 
   return (
-    <p className={cn('whitespace-pre-wrap break-keep', className)}>
+    <>
       {parts.map((part, i) => {
         if (part.startsWith('**') && part.endsWith('**')) {
           return (
-            <strong key={i} className="font-black" style={{ color: '#e8829a' }}>
+            <strong key={i} className="font-black" style={{ color: '#f5eef2' }}>
               {part.slice(2, -2)}
             </strong>
           );
         }
         return <span key={i}>{part}</span>;
       })}
-    </p>
+    </>
+  );
+}
+
+function stripLineMarker(line: string) {
+  return line
+    .replace(/^\s*[-*•]\s*/, '')
+    .replace(/^\s*\d+[.)]\s+/, '')
+    .trim();
+}
+
+function normalizeStructuredPart(part: string) {
+  return part
+    .replace(/^근거\s*[:：]\s*/, '좋은 이유: ')
+    .replace(/^왜\s*이렇게\s*보나요\s*[:：]\s*/, '좋은 이유: ')
+    .replace(/^행동\s*[:：]\s*/, '추천 행동: ')
+    .replace(/^추천\s*행동\s*[:：]\s*/, '추천 행동: ')
+    .trim();
+}
+
+function parseStructuredLine(rawLine: string) {
+  const line = stripLineMarker(rawLine);
+  if (!line.includes('|') || !/(근거|행동|추천\s*행동|왜\s*이렇게\s*보나요)/.test(line)) return null;
+
+  const [headline = '', ...details] = line
+    .split('|')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (!headline || details.length === 0) return null;
+
+  return {
+    headline,
+    details: details.map(normalizeStructuredPart).filter(Boolean),
+  };
+}
+
+function renderStructuredLine(rawLine: string, key: string | number) {
+  const parsed = parseStructuredLine(rawLine);
+  if (!parsed) return null;
+
+  return (
+    <div
+      key={key}
+      className="rounded-2xl px-4 py-3 space-y-2"
+      style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.10)' }}
+    >
+      <p className="text-[14px] md:text-[15px] font-black leading-relaxed break-keep" style={{ color: '#f5eef2' }}>
+        {renderInlineText(parsed.headline)}
+      </p>
+      <div className="space-y-1.5">
+        {parsed.details.map((detail, index) => {
+          const [label, ...bodyParts] = detail.split(':');
+          const body = bodyParts.join(':').trim();
+          const hasLabel = body.length > 0 && /^(좋은 이유|추천 행동|조심할 점|근거|행동)$/.test(label.trim());
+
+          return (
+            <div key={`${key}-${index}`} className="grid gap-1 md:grid-cols-[5.5rem_1fr] md:items-start">
+              {hasLabel ? (
+                <>
+                  <span className="text-[11px] font-black" style={{ color: '#e8829a' }}>{label.trim()}</span>
+                  <span className="text-[13px] md:text-sm font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.66)' }}>
+                    {renderInlineText(body)}
+                  </span>
+                </>
+              ) : (
+                <span className="text-[13px] md:text-sm font-medium leading-relaxed break-keep md:col-span-2" style={{ color: 'rgba(240,232,238,0.66)' }}>
+                  {renderInlineText(detail)}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── 텍스트 렌더링 ──────────────────────────────────────────────────
+function renderParagraph(rawText: string, className?: string) {
+  const cleaned = cleanBodyText(rawText);
+  const lines = cleaned.split('\n');
+
+  return (
+    <div className={cn('space-y-2 whitespace-pre-wrap break-keep', className)}>
+      {lines.map((line, index) => {
+        const structuredLine = renderStructuredLine(line, index);
+        if (structuredLine) return structuredLine;
+
+        return (
+          <p key={index} className="leading-relaxed">
+            {renderInlineText(line)}
+          </p>
+        );
+      })}
+    </div>
   );
 }
 
