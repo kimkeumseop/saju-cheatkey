@@ -208,57 +208,74 @@ function isLowPrioritySajuSection(section: BriefingSection) {
 }
 
 function SajuBriefingPanel({ sections, userName, currentYear }: { sections: BriefingSection[]; userName: string; currentYear: number }) {
-  const daeyunSection = findReportSection(sections, ['향후대운10년돈타이밍', '대운10년돈타이밍'], ['대박 가능 구간', '손실 주의 구간']);
-  const moneyTimingSection = findReportSection(sections, [`${currentYear}년돈이움직이는시기표`, '돈이움직이는시기표', '돈들어오는시기'], ['돈이 들어오기 쉬운 구간', '지출과 손실']);
+  const daeyunSection = findReportSection(sections, ['향후대운10년인생타이밍', '대운10년인생타이밍', '향후대운10년돈타이밍'], ['확장 구간', '정비 구간', '주의 구간']);
+  const yearlyCalendarSection = findReportSection(sections, [`${currentYear}년월별운세캘린더`, '월별운세캘린더'], ['일과 성장에 좋은 구간', '컨디션과 감정 관리']);
+  const moneyTimingSection = yearlyCalendarSection || findReportSection(sections, [`${currentYear}년돈이움직이는시기표`, '돈이움직이는시기표', '돈들어오는시기'], ['돈이 들어오기 쉬운 구간', '지출과 손실']);
   const wealthSection = findReportSection(sections, ['재물운', '지갑', '돈'], ['재물 포인트', '수입']);
-  const yearSection = findReportSection(sections, [`${currentYear}년`, '운세흐름', '럭키포인트']);
+  const careerSection = findReportSection(sections, ['직업운', '성장운', '커리어']);
+  const recoverySection = findReportSection(sections, ['컨디션과회복루틴', '회복루틴', '컨디션']);
+  const yearSection = yearlyCalendarSection || findReportSection(sections, [`${currentYear}년`, '운세흐름', '럭키포인트']);
   const natureSection = findReportSection(sections, ['기질', '본성', '진짜모습']);
 
-  const daeyunJackpotLines = getBlockLines(
+  const daeyunExpandLines = getBlockLines(
     daeyunSection,
-    ['대박 가능 구간', '승부'],
-    ['돈이 쌓이는 구간', '손실 주의 구간', '인생 의사결정'],
+    ['확장 구간', '승부'],
+    ['정비 구간', '주의 구간', '중요 결정', '인생 의사결정'],
+    2
+  );
+  const daeyunMaintenanceLines = getBlockLines(
+    daeyunSection,
+    ['정비 구간', '축적'],
+    ['주의 구간', '중요 결정', '확장 구간'],
     2
   );
   const daeyunCautionLines = getBlockLines(
     daeyunSection,
-    ['손실 주의 구간', '주의'],
-    ['인생 의사결정', '대박 가능 구간', '돈이 쌓이는 구간'],
+    ['주의 구간', '손실 주의 구간', '주의'],
+    ['중요 결정', '인생 의사결정', '확장 구간', '정비 구간'],
     2
   );
   const daeyunDecisionLines = getBlockLines(
     daeyunSection,
-    ['인생 의사결정 포인트', '의사결정'],
-    ['대박 가능 구간', '돈이 쌓이는 구간', '손실 주의 구간'],
+    ['중요 결정 포인트', '인생 의사결정 포인트', '의사결정'],
+    ['확장 구간', '정비 구간', '주의 구간'],
     3
   );
 
+  const careerLines = getBlockLines(
+    yearlyCalendarSection,
+    ['일과 성장에 좋은 구간'],
+    ['돈 관리에 유리한 구간', '컨디션과 감정 관리', '바로 할 일'],
+    3
+  );
   const opportunityLines = getBlockLines(
     moneyTimingSection,
-    ['돈이 들어오기 쉬운', '기회가 커지는', '승부 구간'],
-    ['대박을 노려볼', '지출과 손실', '조심할 구간', '바로 할 일'],
-    3
+    ['돈 관리에 유리한 구간', '돈이 들어오기 쉬운', '기회가 커지는', '승부 구간'],
+    ['컨디션과 감정 관리', '지출과 손실', '조심할 구간', '바로 할 일', '확장 방식'],
+    2
   );
   const cautionLines = getBlockLines(
     moneyTimingSection,
-    ['지출과 손실', '조심할 구간', '주의'],
-    ['바로 할 일', '돈이 들어오기', '대박을 노려볼'],
+    ['컨디션과 감정 관리', '지출과 손실', '조심할 구간', '주의'],
+    ['바로 할 일', '돈이 들어오기', '돈 관리에 유리한', '확장 방식'],
     3
   );
   const actionLines = getBlockLines(
     moneyTimingSection,
     ['바로 할 일', '지금 할 일', '액션'],
-    ['돈이 들어오기', '지출과 손실', '대박을 노려볼'],
+    ['돈이 들어오기', '지출과 손실', '확장 방식'],
     3
   );
   const winLines = getBlockLines(
     moneyTimingSection,
-    ['대박을 노려볼', '승부 구간', '승부 방식'],
+    ['확장 방식', '승부 구간', '승부 방식'],
     ['지출과 손실', '조심할 구간', '바로 할 일'],
     2
   );
 
   const moneyFallback = getUsefulLines(wealthSection, 3);
+  const careerFallback = getUsefulLines(careerSection, 3);
+  const recoveryFallback = getUsefulLines(recoverySection, 3);
   const yearFallback = getUsefulLines(yearSection, 3);
   const natureFallback = getUsefulLines(natureSection, 2);
 
@@ -266,21 +283,24 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
   const cautions = cautionLines.length > 0 ? cautionLines : yearFallback.slice(0, 3);
   const actions = actionLines.length > 0 ? actionLines : [
     `${currentYear}년 일정표에 수입 목표와 큰 지출 예정일을 먼저 적어두세요.`,
-    '돈이 움직이는 달에는 제안, 협상, 계약 조건을 한 번 더 확인하세요.',
+    '중요한 제안이나 계약은 조건, 일정, 내 컨디션을 함께 확인하세요.',
     '조심 구간에는 충동 지출보다 정산과 기록을 우선해보세요.',
   ];
   const wins = winLines.length > 0 ? winLines : [
-    '한 번에 크게 베팅하기보다 이미 가진 강점을 수입 루트로 바꾸는 방식이 좋아요.',
-    '협상, 성과 정리, 부업 테스트처럼 결과가 숫자로 남는 움직임에 힘을 주세요.',
+    '무리하게 판을 키우기보다 잘하는 일을 반복 가능한 구조로 바꾸는 쪽이 좋아요.',
+    '성과 정리, 역할 조정, 루틴 재설계처럼 결과가 남는 움직임에 힘을 주세요.',
   ];
-  const daeyunWins = daeyunJackpotLines.length > 0 ? daeyunJackpotLines : wins;
+  const daeyunWins = daeyunExpandLines.length > 0 ? daeyunExpandLines : wins;
+  const daeyunMaintenance = daeyunMaintenanceLines.length > 0 ? daeyunMaintenanceLines : (careerFallback.length > 0 ? careerFallback.slice(0, 2) : wins);
   const daeyunRisks = daeyunCautionLines.length > 0 ? daeyunCautionLines : cautions.slice(0, 2);
   const daeyunDecisions = daeyunDecisionLines.length > 0 ? daeyunDecisionLines : actions;
+  const careerBrief = careerLines.length > 0 ? careerLines : (careerFallback.length > 0 ? careerFallback : yearFallback);
+  const recoveryBrief = recoveryFallback.length > 0 ? recoveryFallback : cautions;
 
   const opportunityMonths = extractMonths(opportunities);
   const cautionMonths = extractMonths(cautions);
   const hasMonthSignals = opportunityMonths.size > 0 || cautionMonths.size > 0;
-  const quickHeadline = natureFallback[0] || `${userName}님의 올해는 방향을 넓히기보다 돈과 에너지가 새는 곳을 먼저 잡는 쪽이 유리해요.`;
+  const quickHeadline = natureFallback[0] || `${userName}님의 운세는 밀어붙일 때와 쉬어야 할 때를 나누는 것이 핵심이에요.`;
 
   const monthTone = (month: number) => {
     if (opportunityMonths.has(month)) return { label: '기회', color: '#00d18f', bg: 'rgba(0,209,143,0.10)', border: 'rgba(0,209,143,0.26)' };
@@ -312,19 +332,19 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
         <BriefingCard
           icon={<TrendingUp className="w-5 h-5" />}
           label="대운"
-          title="향후 10년 승부 구간"
+          title="향후 10년 확장 구간"
           lines={daeyunWins}
           accent="#9d8fff"
         />
         <BriefingCard
-          icon={<AlertTriangle className="w-5 h-5" />}
-          label="대운 주의"
-          title="크게 새기 쉬운 구간"
-          lines={daeyunRisks}
-          accent="#ffb86b"
+          icon={<CheckCircle2 className="w-5 h-5" />}
+          label="정비"
+          title="차분히 다듬을 구간"
+          lines={daeyunMaintenance}
+          accent="#00d18f"
         />
         <BriefingCard
-          icon={<CheckCircle2 className="w-5 h-5" />}
+          icon={<CalendarDays className="w-5 h-5" />}
           label="결정"
           title="인생 의사결정 포인트"
           lines={daeyunDecisions}
@@ -334,25 +354,25 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <BriefingCard
+          icon={<TrendingUp className="w-5 h-5" />}
+          label="일"
+          title={`${currentYear}년 성장 포인트`}
+          lines={careerBrief}
+          accent="#9d8fff"
+        />
+        <BriefingCard
           icon={<CircleDollarSign className="w-5 h-5" />}
           label="돈"
-          title={`${currentYear}년 들어오기 쉬운 구간`}
+          title="돈 관리 포인트"
           lines={opportunities}
           accent="#00d18f"
         />
         <BriefingCard
           icon={<AlertTriangle className="w-5 h-5" />}
-          label="주의"
-          title="새기 쉬운 구간"
-          lines={cautions}
+          label="컨디션"
+          title="무리하면 흔들리는 지점"
+          lines={recoveryBrief}
           accent="#ffb86b"
-        />
-        <BriefingCard
-          icon={<CheckCircle2 className="w-5 h-5" />}
-          label="액션"
-          title="지금 바로 할 일"
-          lines={actions}
-          accent="#e8829a"
         />
       </div>
 
@@ -360,7 +380,7 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
         <div className="rounded-[2rem] p-5 md:p-6 space-y-4" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="flex items-center gap-2">
             <CalendarDays className="w-5 h-5" style={{ color: '#9d8fff' }} />
-            <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>{currentYear} 돈 타이밍</h4>
+            <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>{currentYear} 운세 캘린더</h4>
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-2">
             {Array.from({ length: 12 }, (_, index) => {
@@ -383,17 +403,17 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <BriefingCard
-          icon={<TrendingUp className="w-5 h-5" />}
-          label="승부"
-          title="대박을 노려볼 방식"
-          lines={wins}
-          accent="#9d8fff"
+          icon={<AlertTriangle className="w-5 h-5" />}
+          label="주의"
+          title="조심해야 할 구간"
+          lines={daeyunRisks.length ? daeyunRisks : cautions}
+          accent="#ffb86b"
         />
         <BriefingCard
-          icon={<CalendarDays className="w-5 h-5" />}
-          label="올해"
-          title={`${currentYear}년에 특히 볼 것`}
-          lines={yearFallback.length > 0 ? yearFallback : actions}
+          icon={<CheckCircle2 className="w-5 h-5" />}
+          label="액션"
+          title="지금 바로 할 일"
+          lines={actions}
           accent="#e8829a"
         />
       </div>
