@@ -241,6 +241,12 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
     ['확장 구간', '정비 구간', '주의 구간'],
     3
   );
+  const daeyunYearLines = getBlockLines(
+    daeyunSection,
+    ['연도별 체크포인트'],
+    ['확장 구간', '정비 구간', '주의 구간', '중요 결정'],
+    3
+  );
 
   const careerLines = getBlockLines(
     yearlyCalendarSection,
@@ -253,6 +259,18 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
     ['돈 관리에 유리한 구간', '돈이 들어오기 쉬운', '기회가 커지는', '승부 구간'],
     ['컨디션과 감정 관리', '지출과 손실', '조심할 구간', '바로 할 일', '확장 방식'],
     2
+  );
+  const wealthGoodYearLines = getBlockLines(
+    wealthSection,
+    ['재물운 좋은 해', '수입 확장에 좋은 해'],
+    ['지출 주의 해', '돈을 쌓는 방법'],
+    3
+  );
+  const wealthCautionYearLines = getBlockLines(
+    wealthSection,
+    ['지출 주의 해'],
+    ['돈을 쌓는 방법', '재물운 좋은 해', '수입 확장에 좋은 해'],
+    3
   );
   const cautionLines = getBlockLines(
     moneyTimingSection,
@@ -279,8 +297,8 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
   const yearFallback = getUsefulLines(yearSection, 3);
   const natureFallback = getUsefulLines(natureSection, 2);
 
-  const opportunities = opportunityLines.length > 0 ? opportunityLines : (moneyFallback.length > 0 ? moneyFallback : yearFallback);
-  const cautions = cautionLines.length > 0 ? cautionLines : yearFallback.slice(0, 3);
+  const opportunities = wealthGoodYearLines.length > 0 ? wealthGoodYearLines : (opportunityLines.length > 0 ? opportunityLines : (moneyFallback.length > 0 ? moneyFallback : yearFallback));
+  const cautions = wealthCautionYearLines.length > 0 ? wealthCautionYearLines : (cautionLines.length > 0 ? cautionLines : yearFallback.slice(0, 3));
   const actions = actionLines.length > 0 ? actionLines : [
     `${currentYear}년 일정표에 수입 목표와 큰 지출 예정일을 먼저 적어두세요.`,
     '중요한 제안이나 계약은 조건, 일정, 내 컨디션을 함께 확인하세요.',
@@ -293,7 +311,7 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
   const daeyunWins = daeyunExpandLines.length > 0 ? daeyunExpandLines : wins;
   const daeyunMaintenance = daeyunMaintenanceLines.length > 0 ? daeyunMaintenanceLines : (careerFallback.length > 0 ? careerFallback.slice(0, 2) : wins);
   const daeyunRisks = daeyunCautionLines.length > 0 ? daeyunCautionLines : cautions.slice(0, 2);
-  const daeyunDecisions = daeyunDecisionLines.length > 0 ? daeyunDecisionLines : actions;
+  const daeyunDecisions = daeyunYearLines.length > 0 ? daeyunYearLines : (daeyunDecisionLines.length > 0 ? daeyunDecisionLines : actions);
   const careerBrief = careerLines.length > 0 ? careerLines : (careerFallback.length > 0 ? careerFallback : yearFallback);
   const recoveryBrief = recoveryFallback.length > 0 ? recoveryFallback : cautions;
 
@@ -363,7 +381,7 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
         <BriefingCard
           icon={<CircleDollarSign className="w-5 h-5" />}
           label="돈"
-          title="돈 관리 포인트"
+          title="재물운 좋은 해"
           lines={opportunities}
           accent="#00d18f"
         />
@@ -732,11 +750,13 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                         {isSelected && (
                           <div className="mt-3 pt-3 space-y-1.5" style={{ borderTop: '1px solid rgba(157,143,255,0.16)' }}>
                             <p className="text-sm font-bold break-keep leading-relaxed" style={{ color: 'rgba(245,238,242,0.82)' }}>
-                              &ldquo;<span style={{ color: '#9d8fff' }}>{ganInfo.keyword}</span>&rdquo;를 바탕으로{' '}
-                              &ldquo;<span style={{ color: '#9d8fff' }}>{zhiInfo.keyword}</span>&rdquo;을 꽃피우는 시기
+                              <span style={{ color: '#9d8fff' }}>{ganInfo.keyword}</span>
+                              {' + '}
+                              <span style={{ color: '#9d8fff' }}>{zhiInfo.keyword}</span>
+                              {' '}기운이 함께 들어오는 시기
                             </p>
                             <p className="text-xs" style={{ color: 'rgba(240,232,238,0.4)' }}>
-                              {dy.age}세부터 10년간 흐르는 주된 에너지 · {ganInfo.desc} / {zhiInfo.desc}
+                              {dy.age}세부터 10년간 보는 큰 방향입니다. 자세한 좋고 조심할 해는 상단 브리핑과 상세 리포트에서 연도별로 확인하세요.
                             </p>
                           </div>
                         )}

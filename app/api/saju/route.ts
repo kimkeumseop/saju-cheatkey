@@ -14,11 +14,11 @@ const HANJA_TO_KO: Record<string, string> = {
 };
 
 const ELEMENT_NATURE: Record<string, string> = {
-  '木': '새싹처럼 커지는 성장의 기운',
-  '火': '불빛처럼 주목받는 확장의 기운',
-  '土': '땅처럼 쌓고 지키는 안정의 기운',
-  '金': '보석처럼 결실을 거두는 정리의 기운',
-  '水': '물길처럼 흐름을 읽는 지혜의 기운',
+  '木': '성장',
+  '火': '확장',
+  '土': '안정',
+  '金': '결실',
+  '水': '지혜',
 };
 
 function getElement(char: string) {
@@ -34,7 +34,7 @@ function formatGanZhiContext(gz: string) {
   const [gan, zhi] = gz.split('');
   const ganElement = getElement(gan);
   const zhiElement = getElement(zhi);
-  return `${HANJA_TO_KO[gan] || gan}${HANJA_TO_KO[zhi] || zhi}: ${ELEMENT_NATURE[ganElement]} + ${ELEMENT_NATURE[zhiElement]}`;
+  return `${HANJA_TO_KO[gan] || gan}${HANJA_TO_KO[zhi] || zhi}: ${ELEMENT_NATURE[ganElement]}+${ELEMENT_NATURE[zhiElement]}`;
 }
 
 function getKoreanDateParts() {
@@ -55,11 +55,11 @@ function getKoreanDateParts() {
   };
 }
 
-function buildYearlyFlowText(currentYear: number) {
-  return Array.from({ length: 3 }, (_, index) => currentYear + index)
+function buildYearlyFlowText(currentYear: number, currentAge: number) {
+  return Array.from({ length: 10 }, (_, index) => currentYear + index)
     .map((year) => {
       const yearGz = Solar.fromYmd(year, 6, 15).getLunar().getYearInGanZhiExact();
-      return `${year}년(${formatGanZhiContext(yearGz)})`;
+      return `${year}년/${currentAge + (year - currentYear)}세(${formatGanZhiContext(yearGz)})`;
     })
     .join(' / ');
 }
@@ -75,7 +75,7 @@ function buildMonthlyFlowText(currentYear: number) {
 function buildDaYunText(daYun: any[]) {
   if (!Array.isArray(daYun) || daYun.length === 0) return '대운 정보 없음';
   return daYun
-    .map((dy) => `${dy.age}세~: ${dy.ganKo}${dy.zhiKo}(${ELEMENT_NATURE[dy.ganElement]} + ${ELEMENT_NATURE[dy.zhiElement]})`)
+    .map((dy) => `${dy.age}세~: ${dy.ganKo}${dy.zhiKo}(${ELEMENT_NATURE[dy.ganElement]}+${ELEMENT_NATURE[dy.zhiElement]})`)
     .join(' / ');
 }
 
@@ -92,7 +92,7 @@ function buildDaYunRangeText(daYun: any[], currentYear: number, currentAge: numb
       const nextAge = daYun[index + 1]?.age ?? dy.age + 10;
       const startYear = currentYear + (dy.age - currentAge);
       const endYear = startYear + Math.max(1, nextAge - dy.age) - 1;
-      return `${dy.age}세~${nextAge - 1}세(약 ${startYear}~${endYear}년): ${dy.ganKo}${dy.zhiKo} / ${ELEMENT_NATURE[dy.ganElement]} + ${ELEMENT_NATURE[dy.zhiElement]}`;
+      return `${dy.age}~${nextAge - 1}세(${startYear}~${endYear}년): ${dy.ganKo}${dy.zhiKo}/${ELEMENT_NATURE[dy.ganElement]}+${ELEMENT_NATURE[dy.zhiElement]}`;
     })
     .join(' / ');
 }
@@ -128,7 +128,7 @@ export async function POST(req: Request) {
     const elementDist = `목:${sajuData.elementsCount['목']}, 화:${sajuData.elementsCount['화']}, 토:${sajuData.elementsCount['토']}, 금:${sajuData.elementsCount['금']}, 수:${sajuData.elementsCount['수']}`;
     const { todayText, currentYear } = getKoreanDateParts();
     const currentAge = calcAge(birthDate, currentYear);
-    const yearlyFlowText = buildYearlyFlowText(currentYear);
+    const yearlyFlowText = buildYearlyFlowText(currentYear, currentAge);
     const monthlyFlowText = buildMonthlyFlowText(currentYear);
     const daYunText = buildDaYunText(sajuData.daYun);
     const daYunRangeText = buildDaYunRangeText(sajuData.daYun, currentYear, currentAge);
@@ -177,16 +177,19 @@ export async function POST(req: Request) {
       - 10년 주기 흐름: ${daYunText}
       - 10년 주기 상세 구간: ${daYunRangeText}
       - ${currentYear}년 월별 흐름 참고값: ${monthlyFlowText}
-      - 향후 3년 흐름 참고값: ${yearlyFlowText}
+      - 향후 10년 연도별 흐름 참고값: ${yearlyFlowText}
 
       [🔥 반복 방지 및 개인화 규칙 - 절대 준수]
       1. 다른 사용자에게도 그대로 붙여 넣을 수 있는 뻔한 문장을 금지한다.
-      2. 각 섹션마다 반드시 위 유저 정보 중 최소 2개(오행 분포, 일간, 10년 주기 흐름, 월별 흐름, 향후 3년 흐름)를 근거로 삼아 유저별로 다른 판단을 내려라.
+      2. 각 섹션마다 반드시 위 유저 정보 중 최소 2개(오행 분포, 일간, 10년 주기 흐름, 월별 흐름, 향후 10년 연도별 흐름)를 근거로 삼아 유저별로 다른 판단을 내려라.
       3. 같은 표현을 반복하지 마라. 특히 "빛나요", "같아요", "흐름", "기회"를 과하게 반복하지 말고 섹션마다 다른 어휘를 써라.
       4. 돈, 대박, 주의 시점은 전체 운세의 일부로만 다뤄라. 사주 운세 전체가 돈 이야기처럼 보이면 실패다.
       5. 근거는 화면에 전문 용어로 노출하지 말고, 자연물과 생활 언어로 번역해서 설명해라.
       6. 모든 시기를 좋게 쓰지 마라. 좋은 시기, 보통의 준비 시기, 조심할 시기를 반드시 나누어라.
       7. 올해 운세만 과하게 강조하지 마라. 올해는 월별 실전 계획으로만 다루고, 큰 흐름은 10년 주기 대운에서 판단해라.
+      8. 오행 조합을 길게 풀어쓴 괄호 표현을 금지한다. 긴 비유 문장을 괄호 안에 넣지 마라.
+      9. 오행 조합이 필요하면 "결실+성장", "안정+지혜"처럼 짧은 키워드 2개만 써라.
+      10. 재물운과 대운 시기는 "2028~2030년"처럼 범위만 쓰지 마라. 반드시 "2028년", "2029년"처럼 개별 연도로 찍어라.
 
       [💎 유료 리포트 깊이 규칙 - 돈 주고 보는 느낌]
       1. 각 섹션은 얕은 칭찬으로 끝내지 말고 반드시 아래 4단계를 포함해라.
@@ -197,7 +200,7 @@ export async function POST(req: Request) {
       2. 섹션마다 6~9줄로 작성해라. 길게 늘어놓기보다 핵심이 보이게 완결성 있게 써라.
       3. 뭉뚱그린 조언을 금지한다. "열심히 하세요", "긍정적으로 생각하세요", "기회를 잡으세요"처럼 누구에게나 맞는 말은 쓰지 마라.
       4. 사용자가 "나를 실제로 보고 쓴 것 같다"고 느끼도록 관찰 문장을 넣어라. 예: "시작은 빠른데 마무리 전에 마음이 먼저 지치는 패턴이 보여요."
-      5. 직업/재물/올해운 섹션은 반드시 **좋은 시기**, **주의 시기**, **추천 행동**, **피해야 할 행동**을 모두 담아라.
+      5. 직업/재물/올해운 섹션은 반드시 **좋은 해**, **주의 해**, **추천 행동**, **피해야 할 행동**을 모두 담아라.
       6. 대운 섹션은 반드시 **확장 구간 2개**, **정비 구간 2개**, **주의 구간 2개**, **중요 결정 포인트 3개**를 담아라.
       7. 대운 섹션에서는 모든 10년 구간을 좋다고 하지 말고, 구간마다 등급을 나누어라. 등급은 "확장", "축적", "정비", "주의" 중 하나만 사용해라.
       8. 건강/컨디션 섹션은 질병을 단정하지 말고, 에너지 소모 패턴, 수면/루틴/과로 주의, 회복 루틴을 현실적으로 제시해라.
@@ -211,6 +214,7 @@ export async function POST(req: Request) {
       4. 같은 문장 구조를 반복하지 마라. "~같아요"로 끝나는 문장이 연속 2번 나오면 실패다.
       5. 섹션마다 **한 줄 결론**, **핵심 포인트**, **실전 조언**이라는 소제목을 자연스럽게 넣어라.
       6. 사용자가 훑어봐도 핵심이 보이도록 굵은 글씨 키워드를 많이 쓰되, 과한 장식 문장은 줄여라.
+      7. 연도 표기는 한눈에 보이게 써라. 예: "2028년: 수입 확장", "2029년: 계약 주의".
 
       [필수 지시사항 - 구조와 형식]
       1. 반드시 아래 8개의 주제를 모두 포함하여 8개의 독립된 분석 섹션을 빠짐없이 작성해. AI가 임의로 섹션을 생략하거나 합치거나 중간에 답변을 끊는 것은 절대 금지.
@@ -234,10 +238,24 @@ export async function POST(req: Request) {
         3) **주의 구간 2개**
         4) **중요 결정 포인트 3개**
       - 각 구간에는 나이대와 예상 연도 범위를 함께 써라.
+      - 구간 설명 뒤에는 반드시 **연도별 체크포인트**를 넣어라.
+      - **연도별 체크포인트**에는 향후 10년 중 최소 6개 연도를 골라 "2028년: 확장", "2029년: 정비"처럼 개별 연도로 써라.
       - 각 구간은 "왜 그 구간인지", "일/돈/건강 중 무엇이 커지는지", "무엇을 조심해야 하는지"를 포함해라.
       - 확장 구간은 2개를 넘기지 마라.
       - 주의 구간도 반드시 2개를 골라라.
       - 투자 종목, 로또, 코인 대박처럼 위험한 확정 표현은 금지한다.
+
+      [🔥 5번 섹션: 재물운과 현실적인 돈 관리 작성 규칙 - 절대 준수]
+      - 섹션 제목은 반드시 "## 💰 재물운과 현실적인 돈 관리" 로 작성해.
+      - 반드시 아래 4개 블록 라벨을 글자 그대로 포함해라.
+        1) **재물운 좋은 해 3개**
+        2) **수입 확장에 좋은 해 2개**
+        3) **지출 주의 해 3개**
+        4) **돈을 쌓는 방법 3개**
+      - 각 해는 반드시 "2028년", "2029년"처럼 개별 연도로 써라.
+      - "2028~2030년 좋음"처럼 범위만 쓰는 방식은 금지한다.
+      - 각 해마다 왜 좋은지/주의인지, 어떤 행동이 돈으로 연결되는지 한 줄로 붙여라.
+      - 돈 이야기는 현실적으로 써라. 계약, 이직, 성과급, 부업, 지출 정리, 세금/정산, 건강으로 인한 지출 같은 생활 단어를 써라.
 
       [🔥 6번 섹션: ${currentYear}년 월별 운세 캘린더 작성 규칙 - 절대 준수]
       - 섹션 제목은 반드시 "## 📅 ${currentYear}년 월별 운세 캘린더" 로 작성해.
