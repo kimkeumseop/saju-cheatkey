@@ -180,7 +180,8 @@ function cleanInsightLine(line: string) {
   return line
     .replace(/^#+\s*/, '')
     .replace(/\*\*/g, '')
-    .replace(/^[✅📌💡💰💸⚠️🔥✨🌱🌊🌙⭐️⭐\-*•\d.)\s]+/u, '')
+    .replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\-*•\s]+/u, '')
+    .replace(/^\d+[.)]\s+/u, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
@@ -488,7 +489,41 @@ function BriefingCard({ icon, label, title, lines, accent }: { icon: ReactNode; 
   const displayLines = lines
     .map((line) => cleanInsightLine(line))
     .filter((line) => line.length >= 6)
+    .filter((line) => !/^년\s*[:：]/.test(line))
     .slice(0, 3);
+
+  const describeTiming = (value: string, unit: 'year' | 'month') => {
+    const suffix = unit === 'year' ? '해예요' : '달이에요';
+    if (value.includes('확장')) return `밀어붙이고 넓히기 좋은 ${suffix}`;
+    if (value.includes('성장')) return `새 일을 키우기 좋은 ${suffix}`;
+    if (value.includes('정비')) return `정리하고 다듬어야 하는 ${suffix}`;
+    if (value.includes('축적')) return `차분히 쌓아두기 좋은 ${suffix}`;
+    if (value.includes('주의')) return `무리하지 말고 점검해야 하는 ${suffix}`;
+    if (value.includes('결정')) return `중요한 선택을 점검하기 좋은 ${suffix}`;
+    if (value.includes('수입')) return `수입 흐름을 만들기 좋은 ${suffix}`;
+    if (value.includes('지출')) return `지출을 조심해야 하는 ${suffix}`;
+    return value;
+  };
+
+  const formatTimingHeadline = (value: string) => {
+    const yearMatch = value.match(/^(\d{4})년\s*:\s*(.+)$/);
+    if (yearMatch) {
+      return `${yearMatch[1]}년은 ${describeTiming(yearMatch[2], 'year')}`;
+    }
+
+    const monthMatch = value.match(/^(\d{1,2})월\s*:\s*(.+)$/);
+    if (monthMatch) {
+      return `${monthMatch[1]}월은 ${describeTiming(monthMatch[2], 'month')}`;
+    }
+
+    return value;
+  };
+
+  const formatTimingDetail = (value: string) => value
+    .replace(/^근거\s*:\s*/, '좋은 이유: ')
+    .replace(/^왜\s*이렇게\s*보나요\s*:\s*/, '좋은 이유: ')
+    .replace(/^행동\s*:\s*/, '추천 행동: ')
+    .replace(/^추천\s*행동\s*:\s*/, '추천 행동: ');
 
   return (
     <article
@@ -515,11 +550,11 @@ function BriefingCard({ icon, label, title, lines, accent }: { icon: ReactNode; 
             <div key={`${title}-${index}`} className="space-y-1.5 rounded-2xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}>
               <p className="text-[13px] md:text-sm font-black leading-relaxed break-keep" style={{ color: 'rgba(245,238,242,0.86)' }}>
                 <span style={{ color: accent }}>{index + 1}. </span>
-                {headline}
+                {formatTimingHeadline(headline)}
               </p>
               {details.slice(0, 2).map((detail, detailIndex) => (
                 <p key={`${title}-${index}-${detailIndex}`} className="text-[12px] md:text-[13px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.56)' }}>
-                  {detail.replace(/^근거\s*:\s*/, '왜 이렇게 보나요: ').replace(/^행동\s*:\s*/, '추천 행동: ')}
+                  {formatTimingDetail(detail)}
                 </p>
               ))}
             </div>
