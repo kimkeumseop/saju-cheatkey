@@ -244,6 +244,14 @@ function isLowPrioritySajuSection(section: BriefingSection) {
     title.includes('관계의비결');
 }
 
+function isSajuOverviewSection(section: BriefingSection) {
+  const title = section.title.replace(/\s/g, '');
+  return title.includes('핵심운세') ||
+    title.includes('핵심브리핑') ||
+    title.includes('운세브리핑') ||
+    title.includes('가장먼저알아야할결론');
+}
+
 function SajuBriefingPanel({ sections, userName, currentYear }: { sections: BriefingSection[]; userName: string; currentYear: number }) {
   const daeyunSection = findReportSection(sections, ['향후대운10년인생타이밍', '대운10년인생타이밍', '향후대운10년돈타이밍'], ['확장 구간', '정비 구간', '주의 구간']);
   const yearlyCalendarSection = findReportSection(sections, [`${currentYear}년월별운세캘린더`, '월별운세캘린더'], ['일과 성장에 좋은 구간', '컨디션과 감정 관리']);
@@ -501,12 +509,22 @@ function BriefingCard({ icon, label, title, lines, accent }: { icon: ReactNode; 
       </div>
       <h4 className="text-lg font-bold leading-snug break-keep" style={{ color: '#f5eef2' }}>{title}</h4>
       <div className="space-y-2.5">
-        {(displayLines.length > 0 ? displayLines : ['리포트 내용을 다시 정리하는 중이에요.']).map((line, index) => (
-          <p key={`${title}-${index}`} className="text-[13px] md:text-sm font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.64)' }}>
-            <span className="font-black" style={{ color: accent }}>{index + 1}. </span>
-            {line}
-          </p>
-        ))}
+        {(displayLines.length > 0 ? displayLines : ['리포트 내용을 다시 정리하는 중이에요.']).map((line, index) => {
+          const [headline = line, ...details] = line.split('|').map((part) => part.trim()).filter(Boolean);
+          return (
+            <div key={`${title}-${index}`} className="space-y-1.5 rounded-2xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <p className="text-[13px] md:text-sm font-black leading-relaxed break-keep" style={{ color: 'rgba(245,238,242,0.86)' }}>
+                <span style={{ color: accent }}>{index + 1}. </span>
+                {headline}
+              </p>
+              {details.slice(0, 2).map((detail, detailIndex) => (
+                <p key={`${title}-${index}-${detailIndex}`} className="text-[12px] md:text-[13px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.56)' }}>
+                  {detail.replace(/^근거\s*:\s*/, '왜 이렇게 보나요: ').replace(/^행동\s*:\s*/, '추천 행동: ')}
+                </p>
+              ))}
+            </div>
+          );
+        })}
       </div>
     </article>
   );
@@ -814,7 +832,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                   const storySection = result.sections.find(
                     (s) => s.title.includes('인스타 스토리') || s.title.includes('스토리 요약')
                   );
-                  const accordionSections = result.sections.filter((s) => s !== storySection && !isLowPrioritySajuSection(s));
+                  const accordionSections = result.sections.filter((s) => s !== storySection && !isLowPrioritySajuSection(s) && !isSajuOverviewSection(s));
                   return (
                     <>
                       <SajuBriefingPanel

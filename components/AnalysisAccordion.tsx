@@ -34,7 +34,9 @@ function cleanBodyText(text: string): string {
     .replace(/✅\s*/g, '✓ ')
     .replace(/❌\s*/g, '✗ ')
     .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
-    .replace(/\s{2,}/g, ' ')
+    .replace(/[ \t]*(\*\*(?:한 줄 결론|왜 이렇게 보나요\??|왜 이렇게 보는지|핵심 포인트|실전 조언|추천 행동|피해야 할 행동)[^*]*\*\*)/g, '\n\n$1')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 

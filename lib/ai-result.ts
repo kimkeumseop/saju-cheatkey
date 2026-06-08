@@ -17,6 +17,25 @@ type ParsedGunghapResult = ParsedSectionsResult & {
   headline?: string;
 };
 
+const SAJU_MAJOR_SECTION_PATTERNS = [
+  '핵심운세',
+  '브리핑',
+  '기질',
+  '생활패턴',
+  '대운10년',
+  '인생타이밍',
+  '직업운',
+  '성장운',
+  '재물운',
+  '돈관리',
+  '월별운세',
+  '운세캘린더',
+  '컨디션',
+  '회복루틴',
+  '인스타',
+  '스토리요약',
+];
+
 function normalizeLineBreaks(text: string) {
   return text
     .replace(/\r\n/g, '\n')
@@ -28,6 +47,10 @@ function normalizeLineBreaks(text: string) {
     .replace(/년\s*[~\-–—]\s*(\d{4})년/g, '$1년')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+function normalizeCompact(value: string) {
+  return value.replace(/\s/g, '');
 }
 
 function expandYearRange(startYearText: string, endYearText: string) {
@@ -154,7 +177,25 @@ export function parseAnalysisSections(value: unknown): ParsedSectionsResult {
 }
 
 export function normalizeSajuAiResult(value: unknown): ParsedSectionsResult {
-  return parseAnalysisSections(value);
+  const normalized = parseAnalysisSections(value);
+  const mergedSections = normalized.sections.reduce<AnalysisSection[]>((sections, section) => {
+    const compactTitle = normalizeCompact(section.title);
+    const isMajorSection = SAJU_MAJOR_SECTION_PATTERNS.some((pattern) => compactTitle.includes(pattern));
+
+    if (sections.length === 0 || isMajorSection) {
+      sections.push(section);
+      return sections;
+    }
+
+    const previous = sections[sections.length - 1];
+    previous.content = normalizeLineBreaks(`${previous.content}\n\n**${section.title}**\n${section.content}`);
+    return sections;
+  }, []);
+
+  return {
+    rawText: normalized.rawText,
+    sections: mergedSections.length > 0 ? mergedSections : normalized.sections,
+  };
 }
 
 export function normalizeGunghapAiResult(value: unknown): ParsedGunghapResult {
