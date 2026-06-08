@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import CosmicBackground from '@/components/CosmicBackground'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
+import TarotCardImage from './TarotCardImage'
 
 // 아르카나별 색상 (퍼플 베이스 + 아르카나 고유색)
 const ARCANA_STYLE: Record<string, { bg: string; color: string; border: string; label: string }> = {
@@ -28,7 +29,9 @@ export default function TarotDictionaryClient() {
       const map: Record<number, string> = {}
       snap.forEach((doc) => {
         const d = doc.data()
-        if (d.imageUrl) map[d.id] = d.imageUrl
+        const id = Number(d.id ?? doc.id)
+        const imageUrl = typeof d.imageUrl === 'string' ? d.imageUrl.trim() : ''
+        if (Number.isFinite(id) && imageUrl) map[id] = imageUrl
       })
       setCardImages(map)
     }).catch(() => {})
@@ -104,10 +107,7 @@ export default function TarotDictionaryClient() {
                 style={{ borderColor: 'rgba(127,119,221,0.15)' }}
               >
                 <div className="mb-1.5 w-full aspect-[2/3] rounded-xl overflow-hidden flex items-center justify-center" style={{ background: 'var(--tarot-50)' }}>
-                  {cardImages[card.id]
-                    ? <img src={cardImages[card.id]} alt={card.name} className="w-full h-full object-contain" />
-                    : <span className="text-3xl">{card.emoji}</span>
-                  }
+                  <TarotCardImage imageUrl={cardImages[card.id]} name={card.name} emoji={card.emoji} fallbackClassName="text-3xl" />
                 </div>
                 <div className="text-[10px] mb-0.5" style={{ color: 'rgba(240,232,238,0.4)' }}>{card.num}</div>
                 <div className="text-xs font-bold leading-tight mb-2" style={{ color: '#f5eef2' }}>{card.name}</div>
@@ -150,10 +150,7 @@ export default function TarotDictionaryClient() {
               <div className="flex gap-4 mb-5">
                 <div className="w-20 h-32 rounded-2xl overflow-hidden flex items-center justify-center text-4xl flex-shrink-0"
                   style={{ background: 'linear-gradient(135deg, var(--tarot-50), #f3f2ff)', border: '1px solid var(--tarot-100)' }}>
-                  {cardImages[selected.id]
-                    ? <img src={cardImages[selected.id]} alt={selected.name} className="w-full h-full object-contain" />
-                    : selected.emoji
-                  }
+                  <TarotCardImage imageUrl={cardImages[selected.id]} name={selected.name} emoji={selected.emoji} fallbackClassName="text-4xl" showName />
                 </div>
                 <div className="flex-1">
                   <div className="text-[10px] tracking-widest mb-1" style={{ color: '#9d8fff' }}>{selected.num}</div>

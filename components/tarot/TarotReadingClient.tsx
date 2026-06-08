@@ -7,6 +7,7 @@ import TarotResultView from './TarotResultView'
 import CosmicBackground from '@/components/CosmicBackground'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
+import TarotCardImage from './TarotCardImage'
 
 interface DrawnCard extends TarotCard { isReversed: boolean; position: string }
 
@@ -55,7 +56,9 @@ export default function TarotReadingClient() {
       const map: Record<number, string> = {}
       snap.forEach((doc) => {
         const d = doc.data()
-        if (d.imageUrl) map[d.id] = d.imageUrl
+        const id = Number(d.id ?? doc.id)
+        const imageUrl = typeof d.imageUrl === 'string' ? d.imageUrl.trim() : ''
+        if (Number.isFinite(id) && imageUrl) map[id] = imageUrl
       })
       setCardImages(map)
     }).catch(() => {})
@@ -270,10 +273,14 @@ export default function TarotReadingClient() {
                               background: 'linear-gradient(135deg, var(--tarot-50), #f8f7ff)',
                               border: '1px solid var(--tarot-100)',
                             }}>
-                            {card.imageUrl
-                              ? <img src={card.imageUrl} alt={card.name} className="w-full h-full object-contain rounded-xl" style={{ maxHeight: h - 24 }} />
-                              : <div className="text-3xl">{card.emoji}</div>
-                            }
+                            <TarotCardImage
+                              imageUrl={card.imageUrl}
+                              name={card.name}
+                              emoji={card.emoji}
+                              className="w-full h-full object-contain rounded-xl"
+                              style={{ maxHeight: h - 24 }}
+                              fallbackClassName="text-3xl"
+                            />
                             <div className="text-[10px] font-medium text-center leading-tight" style={{ color: 'var(--tarot-800)' }}>{card.name}</div>
                             {card.isReversed && <div className="text-[9px]" style={{ color: 'var(--tarot-400)' }}>역방향</div>}
                           </div>

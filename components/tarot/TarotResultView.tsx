@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import ShareButtons from '@/components/ShareButtons'
 import { AlertTriangle, CheckCircle2, Compass, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
+import TarotCardImage from './TarotCardImage'
 
 interface DrawnCard extends TarotCard { isReversed: boolean; position: string }
 
@@ -156,10 +157,9 @@ export default function TarotResultView({ cards, aiResult, loading, question, on
           {cards.map((c, i) => (
             <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-full"
               style={{ background: 'rgba(157,143,255,0.1)', border: '1px solid rgba(157,143,255,0.2)' }}>
-              {c.imageUrl
-                ? <img src={c.imageUrl} alt={c.name} className="w-6 h-9 object-cover rounded" />
-                : <span className="text-base">{c.emoji}</span>
-              }
+              <div className="h-9 w-6 overflow-hidden rounded">
+                <TarotCardImage imageUrl={c.imageUrl} name={c.name} emoji={c.emoji} className="h-full w-full object-cover" fallbackClassName="text-base" />
+              </div>
               <span className="text-xs" style={{ color: 'rgba(240,232,238,0.7)' }}>{c.name}</span>
               {c.isReversed && <span className="text-[10px]" style={{ color: 'var(--tarot-400)' }}>역</span>}
             </div>
@@ -214,10 +214,7 @@ export default function TarotResultView({ cards, aiResult, loading, question, on
             <div key={i} className="flex gap-3 items-start">
               <div className="w-8 h-12 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0"
                 style={{ background: 'var(--tarot-50)' }}>
-                {c.imageUrl
-                  ? <img src={c.imageUrl} alt={c.name} className="w-full h-full object-cover" />
-                  : <span className="text-lg">{c.emoji}</span>
-                }
+                <TarotCardImage imageUrl={c.imageUrl} name={c.name} emoji={c.emoji} className="h-full w-full object-cover" fallbackClassName="text-lg" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5 flex-wrap">

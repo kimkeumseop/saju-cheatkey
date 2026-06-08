@@ -4,6 +4,7 @@ import { TAROT_CARDS, TarotCard } from '@/data/tarotCards'
 import { motion, AnimatePresence } from 'framer-motion'
 import { db } from '@/lib/firebase'
 import { doc, getDoc } from 'firebase/firestore'
+import TarotCardImage from './TarotCardImage'
 
 type Period = 'morning' | 'afternoon' | 'evening'
 
@@ -49,7 +50,10 @@ export default function TodayTarotCard() {
   async function fetchImageUrl(id: number) {
     if (!db) return
     const snap = await getDoc(doc(db, 'tarotCards', String(id))).catch(() => null)
-    if (snap?.exists()) setImageUrl(snap.data().imageUrl ?? null)
+    if (snap?.exists()) {
+      const url = snap.data().imageUrl
+      setImageUrl(typeof url === 'string' && url.trim() ? url.trim() : null)
+    }
   }
 
   useEffect(() => {
@@ -154,10 +158,16 @@ export default function TodayTarotCard() {
               initial={{ rotateY: -90 }}
               animate={{ rotateY: 0, transition: { duration: 0.3 } }}
             >
-              {imageUrl
-                ? <img src={imageUrl} alt={card?.name} className="w-full h-full object-contain rounded-2xl" />
-                : <div className="text-5xl">{card?.emoji}</div>
-              }
+              {card && (
+                <TarotCardImage
+                  imageUrl={imageUrl}
+                  name={card.name}
+                  emoji={card.emoji}
+                  className="w-full h-full object-contain rounded-2xl"
+                  fallbackClassName="text-5xl"
+                  showName
+                />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
