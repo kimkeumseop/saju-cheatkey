@@ -21,6 +21,48 @@ const ELEMENT_NATURE: Record<string, string> = {
   '水': '지혜',
 };
 
+function describeElementPair(primaryElement: string, secondaryElement: string) {
+  const primary = ELEMENT_NATURE[primaryElement] || '정리';
+  const secondary = ELEMENT_NATURE[secondaryElement] || '균형';
+
+  if (primaryElement === secondaryElement) {
+    const sameElementGuide: Record<string, string> = {
+      '木': '새로운 시작과 성장 욕구가 강해지는 시기',
+      '火': '드러내고 확장하려는 힘이 커지는 시기',
+      '土': '기반을 다지고 안정감을 회복하는 시기',
+      '金': '성과를 정리하고 결과를 손에 쥐기 좋은 시기',
+      '水': '생각을 정리하고 다음 방향을 고르기 좋은 시기',
+    };
+    return sameElementGuide[primaryElement] || `${primary}의 힘이 강해지는 시기`;
+  }
+
+  const pairKey = `${primaryElement}${secondaryElement}`;
+  const pairGuide: Record<string, string> = {
+    '木火': '새로 시작한 일을 밖으로 알리기 좋은 시기',
+    '火木': '아이디어를 빠르게 실행으로 옮기기 좋은 시기',
+    '木土': '성장하고 싶은 일을 현실 기반 위에 올리는 시기',
+    '土木': '흔들린 루틴을 다시 세우고 새 계획을 붙이는 시기',
+    '木金': '키운 일을 성과로 정리해야 하는 시기',
+    '金木': '완성된 결과를 바탕으로 다음 성장을 여는 시기',
+    '木水': '배우고 준비한 것을 천천히 키우는 시기',
+    '水木': '생각한 방향을 실제 행동으로 옮기는 시기',
+    '火土': '확장한 일을 안정적인 구조로 묶어야 하는 시기',
+    '土火': '준비한 기반을 밖으로 보여주기 좋은 시기',
+    '火金': '눈에 띄는 성과와 평가가 함께 들어오는 시기',
+    '金火': '성과를 더 넓게 알리되 과열을 조심할 시기',
+    '火水': '속도와 판단이 부딪혀 결정 피로가 생기기 쉬운 시기',
+    '水火': '조용히 준비한 것을 드러내야 하는 시기',
+    '土金': '쌓아둔 기반이 성과와 돈으로 바뀌기 쉬운 시기',
+    '金土': '성과를 안정적으로 지키고 관리해야 하는 시기',
+    '土水': '생활 기반과 마음의 속도를 함께 정리할 시기',
+    '水土': '생각이 많아질수록 루틴과 기준이 필요한 시기',
+    '金水': '결과를 정리하고 다음 선택을 계산하기 좋은 시기',
+    '水金': '판단력을 바탕으로 성과를 선별해야 하는 시기',
+  };
+
+  return pairGuide[pairKey] || `${primary}을 중심으로 ${secondary}을 보태는 시기`;
+}
+
 const REQUIRED_REPORT_LABELS = [
   '확장 구간 2개',
   '정비 구간 2개',
@@ -61,7 +103,7 @@ function formatGanZhiContext(gz: string) {
   const [gan, zhi] = gz.split('');
   const ganElement = getElement(gan);
   const zhiElement = getElement(zhi);
-  return `${HANJA_TO_KO[gan] || gan}${HANJA_TO_KO[zhi] || zhi}: ${ELEMENT_NATURE[ganElement]}+${ELEMENT_NATURE[zhiElement]}`;
+  return describeElementPair(ganElement, zhiElement);
 }
 
 function getKoreanDateParts() {
@@ -82,11 +124,11 @@ function getKoreanDateParts() {
   };
 }
 
-function buildYearlyFlowText(currentYear: number, currentAge: number) {
+function buildYearlyFlowText(currentYear: number, _currentAge: number) {
   return Array.from({ length: 10 }, (_, index) => currentYear + index)
     .map((year) => {
       const yearGz = Solar.fromYmd(year, 6, 15).getLunar().getYearInGanZhiExact();
-      return `${year}년/${currentAge + (year - currentYear)}세(${formatGanZhiContext(yearGz)})`;
+      return `${year}년: ${formatGanZhiContext(yearGz)}`;
     })
     .join(' / ');
 }
@@ -95,14 +137,14 @@ function buildMonthlyFlowText(currentYear: number) {
   return Array.from({ length: 12 }, (_, monthIndex) => {
     const month = monthIndex + 1;
     const monthGz = Solar.fromYmd(currentYear, month, 15).getLunar().getMonthInGanZhiExact();
-    return `${month}월(${formatGanZhiContext(monthGz)})`;
+    return `${month}월: ${formatGanZhiContext(monthGz)}`;
   }).join(' / ');
 }
 
 function buildDaYunText(daYun: any[]) {
   if (!Array.isArray(daYun) || daYun.length === 0) return '대운 정보 없음';
   return daYun
-    .map((dy) => `${dy.age}세~: ${dy.ganKo}${dy.zhiKo}(${ELEMENT_NATURE[dy.ganElement]}+${ELEMENT_NATURE[dy.zhiElement]})`)
+    .map((dy, index) => `${index + 1}번째 10년 구간: ${describeElementPair(dy.ganElement, dy.zhiElement)}`)
     .join(' / ');
 }
 
@@ -119,7 +161,7 @@ function buildDaYunRangeText(daYun: any[], currentYear: number, currentAge: numb
       const nextAge = daYun[index + 1]?.age ?? dy.age + 10;
       const startYear = currentYear + (dy.age - currentAge);
       const endYear = startYear + Math.max(1, nextAge - dy.age) - 1;
-      return `${dy.age}~${nextAge - 1}세(${startYear}~${endYear}년): ${dy.ganKo}${dy.zhiKo}/${ELEMENT_NATURE[dy.ganElement]}+${ELEMENT_NATURE[dy.zhiElement]}`;
+      return `${startYear}년부터 ${endYear}년까지: ${describeElementPair(dy.ganElement, dy.zhiElement)}`;
     })
     .join(' / ');
 }
@@ -177,8 +219,8 @@ function buildRepairPrompt(basePrompt: string, issues: string[]) {
 
       [🚨 연도별 근거 형식 - 절대 준수]
       좋은 해와 주의 해는 반드시 아래 형식으로 써라.
-      - 2028년: 수입 확장 | 근거: 결실+성장의 해라서 성과가 돈으로 연결되기 쉽다 | 행동: 계약, 성과급, 부업 정산을 확인한다.
-      - 2029년: 지출 주의 | 근거: 안정+정비가 강해 새는 돈이 보이기 쉽다 | 행동: 큰 결제와 장기 약정은 조건을 다시 본다.
+      - 2028년: 수입 확장 | 근거: 쌓아둔 기반이 성과와 돈으로 바뀌기 쉬운 해 | 행동: 계약, 성과급, 부업 정산을 확인한다.
+      - 2029년: 지출 주의 | 근거: 돈이 새는 곳을 정리해야 하는 해 | 행동: 큰 결제와 장기 약정은 조건을 다시 본다.
 
       [최종 출력]
       설명이나 사과 없이 리포트 본문만 출력해라.
@@ -279,9 +321,10 @@ export async function POST(req: Request) {
       5. 근거는 화면에 전문 용어로 노출하지 말고, 자연물과 생활 언어로 번역해서 설명해라.
       6. 모든 시기를 좋게 쓰지 마라. 좋은 시기, 보통의 준비 시기, 조심할 시기를 반드시 나누어라.
       7. 올해 운세만 과하게 강조하지 마라. 올해는 월별 실전 계획으로만 다루고, 큰 흐름은 10년 주기 대운에서 판단해라.
-      8. 오행 조합을 길게 풀어쓴 괄호 표현을 금지한다. 긴 비유 문장을 괄호 안에 넣지 마라.
-      9. 오행 조합이 필요하면 "결실+성장", "안정+지혜"처럼 짧은 키워드 2개만 써라.
+      8. 오행 조합, 한자, 전문용어, 플러스 기호로 묶은 조합 표기를 화면에 쓰지 마라.
+      9. 시기 근거가 필요하면 "성과가 돈으로 연결되기 쉬운 해", "루틴을 다시 세워야 하는 해"처럼 생활 언어로 번역해라.
       10. 재물운과 대운 시기는 "2028~2030년"처럼 범위만 쓰지 마라. 반드시 "2028년", "2029년"처럼 개별 연도로 찍어라.
+      11. 최종 결과에는 "(37세~41세)"처럼 나이를 괄호로 길게 붙이지 마라. 나이는 필요할 때 한 번만 짧게 쓰고, 핵심 표기는 연도로 한다.
 
       [💎 유료 리포트 깊이 규칙 - 돈 주고 보는 느낌]
       1. 각 섹션은 얕은 칭찬으로 끝내지 말고 반드시 아래 4단계를 포함해라.
@@ -331,10 +374,12 @@ export async function POST(req: Request) {
         2) **정비 구간 2개**
         3) **주의 구간 2개**
         4) **중요 결정 포인트 3개**
-      - 각 구간에는 나이대와 예상 연도 범위를 함께 써라.
+      - 각 구간에는 나이대보다 연도를 우선해서 써라. "2029년까지", "2030년부터"처럼 짧게 쓰고 "(37세~41세)" 같은 괄호 나열은 금지한다.
       - 구간 설명 뒤에는 반드시 **연도별 체크포인트**를 넣어라.
       - **연도별 체크포인트**에는 향후 10년 중 최소 6개 연도를 골라 "2028년: 확장", "2029년: 정비"처럼 개별 연도로 써라.
       - **연도별 체크포인트**는 반드시 "2028년: 확장 | 근거: ... | 행동: ..." 형식으로 써라.
+      - "1. 년 ~ 2029년 (37세~41세)"처럼 시작 연도가 비어 보이는 표기는 실패다. 시작과 끝을 모두 쓰거나, 더 좋게는 연도별 체크포인트로 풀어라.
+      - 플러스 기호로 묶은 조합표는 절대 쓰지 말고 "성과가 밖으로 커지는 시기"처럼 해석 문장으로 바꿔라.
       - 각 구간은 "왜 그 구간인지", "일/돈/건강 중 무엇이 커지는지", "무엇을 조심해야 하는지"를 포함해라.
       - 확장 구간은 2개를 넘기지 마라.
       - 주의 구간도 반드시 2개를 골라라.

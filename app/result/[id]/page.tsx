@@ -124,6 +124,43 @@ const ELEMENT_INFO: Record<string, { emoji: string; keyword: string; desc: strin
 
 const KO_TO_ZH: Record<string, string> = { '목': '木', '화': '火', '토': '土', '금': '金', '수': '水' };
 
+const ELEMENT_PAIR_GUIDE: Record<string, { badge: string; title: string; focus: string; caution: string }> = {
+  '木木': { badge: '성장', title: '새 일을 키우는 시기', focus: '새로운 계획, 공부, 준비한 일을 밖으로 꺼내기', caution: '벌리기만 하고 마무리를 미루는 패턴' },
+  '木火': { badge: '확장', title: '시작한 일을 알리는 시기', focus: '홍보, 발표, 제안, 사이드 프로젝트 공개', caution: '속도가 빨라져 약속과 일정이 과해지는 것' },
+  '木土': { badge: '기반', title: '성장을 현실에 붙이는 시기', focus: '루틴, 자격, 계약, 생활 기반 정리', caution: '답답하다고 계획을 중간에 갈아엎는 것' },
+  '木金': { badge: '성과', title: '키운 일을 결과로 묶는 시기', focus: '포트폴리오, 성과 정리, 평가와 보상 협상', caution: '완벽주의 때문에 결과 공개를 늦추는 것' },
+  '木水': { badge: '준비', title: '배우고 키우는 시기', focus: '공부, 자료 수집, 방향성 점검', caution: '생각만 많아지고 실행이 밀리는 것' },
+  '火木': { badge: '실행', title: '아이디어를 빠르게 움직이는 시기', focus: '기획 실행, 사람 앞에 서는 일, 콘텐츠화', caution: '초반 열기로 체력을 한 번에 쓰는 것' },
+  '火火': { badge: '확장', title: '존재감이 커지는 시기', focus: '브랜딩, 발표, 영업, 영향력 확장', caution: '과열, 말실수, 무리한 일정' },
+  '火土': { badge: '정착', title: '확장한 일을 안정시키는 시기', focus: '업무 체계화, 팀/고객 관리, 장기 계획', caution: '책임이 늘면서 몸이 먼저 지치는 것' },
+  '火金': { badge: '평가', title: '성과가 눈에 띄는 시기', focus: '평가, 승진, 성과급, 결과 발표', caution: '인정 욕구 때문에 무리한 선택을 하는 것' },
+  '火水': { badge: '조율', title: '속도와 판단을 맞춰야 하는 시기', focus: '중요 결정 전 검토, 감정 조절, 일정 조율', caution: '급하게 결정하고 뒤늦게 수정하는 것' },
+  '土木': { badge: '재정비', title: '기반 위에 새 계획을 붙이는 시기', focus: '환경 정리, 루틴 재설계, 다음 성장 준비', caution: '익숙한 방식에만 머무르는 것' },
+  '土火': { badge: '공개', title: '준비한 것을 보여주는 시기', focus: '성과 공유, 발표, 제안, 사업/일 확장', caution: '준비보다 이미지에 힘을 너무 쓰는 것' },
+  '土土': { badge: '안정', title: '기반을 단단히 다지는 시기', focus: '저축, 생활 안정, 장기 계약, 체력 회복', caution: '변화를 미루다가 기회를 놓치는 것' },
+  '土金': { badge: '축적', title: '쌓은 것이 성과로 바뀌는 시기', focus: '보상 협상, 수입 구조화, 자산 관리', caution: '한 번에 크게 벌려는 욕심' },
+  '土水': { badge: '정리', title: '생활과 마음의 속도를 정리하는 시기', focus: '휴식, 정산, 관계와 일의 기준 세우기', caution: '걱정이 늘어 실행이 늦어지는 것' },
+  '金木': { badge: '재시작', title: '결과를 바탕으로 새 판을 여는 시기', focus: '경험을 상품화하기, 새 업무 전환, 재도전', caution: '이전 성과에만 기대는 것' },
+  '金火': { badge: '확산', title: '성과를 더 넓게 알리는 시기', focus: '브랜딩, 영업, 발표, 영향력 확장', caution: '성과를 과장하거나 일정이 과열되는 것' },
+  '金土': { badge: '관리', title: '성과를 지키고 관리하는 시기', focus: '수입 관리, 계약 검토, 장기 안정화', caution: '안정만 보다가 성장 타이밍을 놓치는 것' },
+  '金金': { badge: '결실', title: '결과를 손에 쥐는 시기', focus: '평가, 정산, 수익화, 마무리', caution: '냉정한 판단이 지나쳐 관계가 딱딱해지는 것' },
+  '金水': { badge: '선별', title: '결과를 정리하고 다음 선택을 고르는 시기', focus: '우선순위 정리, 계약 조건 검토, 재무 점검', caution: '계산이 많아져 타이밍을 놓치는 것' },
+  '水木': { badge: '실행', title: '생각한 방향을 행동으로 옮기는 시기', focus: '새 공부 시작, 진로 전환, 준비한 계획 실행', caution: '확신이 생길 때까지 계속 미루는 것' },
+  '水火': { badge: '표현', title: '조용히 준비한 것을 드러내는 시기', focus: '공개, 발표, 대화, 콘텐츠 제작', caution: '감정 기복에 따라 속도가 흔들리는 것' },
+  '水土': { badge: '기준', title: '생각을 현실 기준으로 묶는 시기', focus: '생활 기준, 돈 관리, 건강 루틴', caution: '걱정이 커져 선택을 미루는 것' },
+  '水金': { badge: '판단', title: '선택과 성과를 선별하는 시기', focus: '계약 검토, 일 정리, 수익성 판단', caution: '너무 재다가 좋은 제안을 놓치는 것' },
+  '水水': { badge: '전략', title: '방향을 깊게 고르는 시기', focus: '전략, 공부, 재정비, 다음 10년 준비', caution: '생각이 길어져 현실 행동이 늦어지는 것' },
+};
+
+function getDaeunGuide(ganElement: string, zhiElement: string) {
+  return ELEMENT_PAIR_GUIDE[`${ganElement}${zhiElement}`] || {
+    badge: '흐름',
+    title: '삶의 방향을 조율하는 시기',
+    focus: '일, 돈, 컨디션의 우선순위를 다시 세우기',
+    caution: '한쪽으로만 무리하게 몰아가는 것',
+  };
+}
+
 type BriefingSection = {
   title: string;
   content: string;
@@ -684,10 +721,10 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                 {daeunList.map((dy: any, idx: number) => {
                   const isCurrent = currentDaeunIdx === idx;
                   const isSelected = selectedDaeunIdx === idx;
-                  const ganInfo = ELEMENT_INFO[dy.ganElement] || { emoji: '✨', keyword: '기운', desc: '' };
-                  const zhiInfo = ELEMENT_INFO[dy.zhiElement] || { emoji: '✨', keyword: '기운', desc: '' };
-                  const ganStyle = dy.ganColor || getSafeColor(dy.ganElement);
-                  const zhiStyle = dy.zhiColor || getSafeColor(dy.zhiElement);
+                  const nextAge = daeunList[idx + 1]?.age ?? dy.age + 10;
+                  const startYear = currentYear + (dy.age - userAge);
+                  const endYear = startYear + Math.max(1, nextAge - dy.age) - 1;
+                  const daeunGuide = getDaeunGuide(dy.ganElement, dy.zhiElement);
 
                   return (
                     <div key={idx} className="flex items-start gap-3 relative">
@@ -719,44 +756,42 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                       >
                         {/* 카드 상단 행 */}
                         <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
+                          <div className="min-w-0 space-y-1">
                             <span className="text-sm font-black" style={{ color: isCurrent ? '#9d8fff' : 'rgba(240,232,238,0.42)' }}>
-                              {dy.age}세~
+                              {startYear}년 - {endYear}년
                             </span>
                             {isCurrent && (
-                              <span className="px-2 py-0.5 text-[10px] font-black rounded-full leading-none" style={{ background: 'rgba(157,143,255,0.18)', color: '#9d8fff' }}>
+                              <span className="ml-2 px-2 py-0.5 text-[10px] font-black rounded-full leading-none" style={{ background: 'rgba(157,143,255,0.18)', color: '#9d8fff' }}>
                                 현재
                               </span>
                             )}
+                            <p className="text-base font-black leading-snug break-keep" style={{ color: '#f5eef2' }}>
+                              {daeunGuide.title}
+                            </p>
                           </div>
-                          <div className="flex gap-1.5">
-                            <div className={cn(ganStyle.bg, ganStyle.text, 'w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black shadow-sm border border-white/10')}>
-                              {dy.ganKo}
-                            </div>
-                            <div className={cn(zhiStyle.bg, zhiStyle.text, 'w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black shadow-sm border border-white/10')}>
-                              {dy.zhiKo}
-                            </div>
-                          </div>
+                          <span className="shrink-0 rounded-full px-3 py-1 text-[11px] font-black" style={{ background: 'rgba(157,143,255,0.14)', color: '#c8bdff', border: '1px solid rgba(157,143,255,0.22)' }}>
+                            {daeunGuide.badge}
+                          </span>
                         </div>
 
-                        {/* 키워드 행 */}
-                        <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-medium" style={{ color: 'rgba(240,232,238,0.5)' }}>{ganInfo.emoji} {ganInfo.keyword}</span>
-                          <span className="text-xs" style={{ color: 'rgba(240,232,238,0.25)' }}>+</span>
-                          <span className="text-xs font-medium" style={{ color: 'rgba(240,232,238,0.5)' }}>{zhiInfo.emoji} {zhiInfo.keyword}</span>
+                        {/* 실전 포인트 */}
+                        <div className="mt-2 space-y-1.5">
+                          <p className="text-xs font-medium break-keep leading-relaxed" style={{ color: 'rgba(240,232,238,0.56)' }}>
+                            하면 좋은 것: {daeunGuide.focus}
+                          </p>
+                          <p className="text-xs font-medium break-keep leading-relaxed" style={{ color: 'rgba(240,232,238,0.38)' }}>
+                            조심할 것: {daeunGuide.caution}
+                          </p>
                         </div>
 
                         {/* 선택 시 상세 설명 (툴팁 패널) */}
                         {isSelected && (
                           <div className="mt-3 pt-3 space-y-1.5" style={{ borderTop: '1px solid rgba(157,143,255,0.16)' }}>
                             <p className="text-sm font-bold break-keep leading-relaxed" style={{ color: 'rgba(245,238,242,0.82)' }}>
-                              <span style={{ color: '#9d8fff' }}>{ganInfo.keyword}</span>
-                              {' + '}
-                              <span style={{ color: '#9d8fff' }}>{zhiInfo.keyword}</span>
-                              {' '}기운이 함께 들어오는 시기
+                              이 구간은 <span style={{ color: '#9d8fff' }}>{daeunGuide.focus}</span>에 힘을 쓰면 결과가 잘 쌓이는 흐름이에요.
                             </p>
-                            <p className="text-xs" style={{ color: 'rgba(240,232,238,0.4)' }}>
-                              {dy.age}세부터 10년간 보는 큰 방향입니다. 자세한 좋고 조심할 해는 상단 브리핑과 상세 리포트에서 연도별로 확인하세요.
+                            <p className="text-xs break-keep leading-relaxed" style={{ color: 'rgba(240,232,238,0.4)' }}>
+                              나이보다 중요한 건 실제 선택의 해예요. 좋은 해와 조심할 해는 위 브리핑과 상세 리포트에서 연도별로 확인하세요.
                             </p>
                           </div>
                         )}
