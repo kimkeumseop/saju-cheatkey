@@ -1,11 +1,83 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
+import { Solar } from 'lunar-javascript';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
+
+const HANJA_TO_KO: Record<string, string> = {
+  '甲': '갑', '乙': '을', '丙': '병', '丁': '정', '戊': '무', '己': '기', '庚': '경', '辛': '신', '壬': '임', '癸': '계',
+  '子': '자', '丑': '축', '寅': '인', '卯': '묘', '辰': '진', '巳': '사', '午': '오', '未': '미', '申': '신', '酉': '유', '戌': '술', '亥': '해'
+};
+
+const ELEMENT_NATURE: Record<string, string> = {
+  '木': '새싹처럼 커지는 성장의 기운',
+  '火': '불빛처럼 주목받는 확장의 기운',
+  '土': '땅처럼 쌓고 지키는 안정의 기운',
+  '金': '보석처럼 결실을 거두는 정리의 기운',
+  '水': '물길처럼 흐름을 읽는 지혜의 기운',
+};
+
+function getElement(char: string) {
+  if ('甲乙寅卯'.includes(char)) return '木';
+  if ('丙丁巳午'.includes(char)) return '火';
+  if ('戊己辰戌丑未'.includes(char)) return '土';
+  if ('庚辛申酉'.includes(char)) return '金';
+  if ('壬癸亥子'.includes(char)) return '水';
+  return '土';
+}
+
+function formatGanZhiContext(gz: string) {
+  const [gan, zhi] = gz.split('');
+  const ganElement = getElement(gan);
+  const zhiElement = getElement(zhi);
+  return `${HANJA_TO_KO[gan] || gan}${HANJA_TO_KO[zhi] || zhi}: ${ELEMENT_NATURE[ganElement]} + ${ELEMENT_NATURE[zhiElement]}`;
+}
+
+function getKoreanDateParts() {
+  const formatter = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  const yearFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+  });
+
+  return {
+    todayText: formatter.format(new Date()),
+    currentYear: Number(yearFormatter.format(new Date())),
+  };
+}
+
+function buildYearlyFlowText(currentYear: number) {
+  return Array.from({ length: 3 }, (_, index) => currentYear + index)
+    .map((year) => {
+      const yearGz = Solar.fromYmd(year, 6, 15).getLunar().getYearInGanZhiExact();
+      return `${year}년(${formatGanZhiContext(yearGz)})`;
+    })
+    .join(' / ');
+}
+
+function buildMonthlyFlowText(currentYear: number) {
+  return Array.from({ length: 12 }, (_, monthIndex) => {
+    const month = monthIndex + 1;
+    const monthGz = Solar.fromYmd(currentYear, month, 15).getLunar().getMonthInGanZhiExact();
+    return `${month}월(${formatGanZhiContext(monthGz)})`;
+  }).join(' / ');
+}
+
+function buildDaYunText(daYun: any[]) {
+  if (!Array.isArray(daYun) || daYun.length === 0) return '대운 정보 없음';
+  return daYun
+    .map((dy) => `${dy.age}세~: ${dy.ganKo}${dy.zhiKo}(${ELEMENT_NATURE[dy.ganElement]} + ${ELEMENT_NATURE[dy.zhiElement]})`)
+    .join(' / ');
+}
 
 async function generateWithRetry(model: any, prompt: string, maxRetries = 2) {
   for (let i = 0; i < maxRetries; i++) {
@@ -36,6 +108,10 @@ export async function POST(req: Request) {
       .map(p => `${p.ganKo}${p.zhiKo}(${p.tenGodGan}/${p.tenGodZhi})`)
       .join(' ');
     const elementDist = `목:${sajuData.elementsCount['목']}, 화:${sajuData.elementsCount['화']}, 토:${sajuData.elementsCount['토']}, 금:${sajuData.elementsCount['금']}, 수:${sajuData.elementsCount['수']}`;
+    const { todayText, currentYear } = getKoreanDateParts();
+    const yearlyFlowText = buildYearlyFlowText(currentYear);
+    const monthlyFlowText = buildMonthlyFlowText(currentYear);
+    const daYunText = buildDaYunText(sajuData.daYun);
 
     if (!apiKey) {
       return NextResponse.json(
@@ -73,27 +149,49 @@ export async function POST(req: Request) {
 
       [유저 정보]
       - 성함: ${name} (${gender})
+      - 분석 기준일: ${todayText}
       - 사주 데이터: ${pillarsText}
       - 타고난 일간: ${sajuData.dayGanKo}
       - 오행 분포: ${elementDist}
+      - 10년 주기 흐름: ${daYunText}
+      - ${currentYear}년 월별 흐름 참고값: ${monthlyFlowText}
+      - 향후 3년 흐름 참고값: ${yearlyFlowText}
+
+      [🔥 반복 방지 및 개인화 규칙 - 절대 준수]
+      1. 다른 사용자에게도 그대로 붙여 넣을 수 있는 뻔한 문장을 금지한다.
+      2. 각 섹션마다 반드시 위 유저 정보 중 최소 2개(오행 분포, 일간, 10년 주기 흐름, 월별 흐름, 향후 3년 흐름)를 근거로 삼아 유저별로 다른 판단을 내려라.
+      3. 같은 표현을 반복하지 마라. 특히 "빛나요", "같아요", "흐름", "기회"를 과하게 반복하지 말고 섹션마다 다른 어휘를 써라.
+      4. 돈, 대박, 주의 시점은 단정적 예언처럼 말하지 말고 "기회가 커지는 구간", "지출이 새기 쉬운 구간", "준비하면 터질 수 있는 구간"처럼 현실적 행동과 함께 말해라.
+      5. 근거는 화면에 전문 용어로 노출하지 말고, 자연물과 생활 언어로 번역해서 설명해라.
 
       [필수 지시사항 - 구조와 형식]
-      1. 반드시 아래 7개의 주제를 모두 포함하여 7개의 독립된 분석 섹션을 빠짐없이 작성해. AI가 임의로 섹션을 생략하거나 합치거나 중간에 답변을 끊는 것은 절대 금지.
+      1. 반드시 아래 8개의 주제를 모두 포함하여 8개의 독립된 분석 섹션을 빠짐없이 작성해. AI가 임의로 섹션을 생략하거나 합치거나 중간에 답변을 끊는 것은 절대 금지.
          ① 타고난 기질과 본성 (나도 몰랐던 나의 진짜 모습)
-         ② 재물운 (나에게 찾아올 부의 크기와 그릇)
-         ③ 직업운 (내가 가장 빛날 수 있는 커리어 무대와 성공 전략)
-         ④ 연애운 & 인간관계 (나의 인연이 머무는 곳과 관계의 비결)
-         ⑤ 숨겨진 아픔과 다정한 위로 (지친 영혼을 위한 따뜻한 응원)
-         ⑥ 2026년 운세 흐름 & 럭키 포인트 (올해 꼭 잡아야 할 기회)
-         ⑦ 인스타 스토리 요약 (SNS 공유용 초핵심 요약)
-      2. **각 주제(섹션)로 넘어갈 때마다 우리가 프론트엔드에서 카드를 쪼개는 기준점인 "## [이모지] [주제에 맞는 다정한 소제목]" 포맷을 절대 빼먹지 말고 매번 반복해서 작성해! (총 7번 등장해야 함)**
+         ② 재물운 (나에게 맞는 돈의 그릇과 수입 방식)
+         ③ 돈 들어오는 시기 & 조심할 시기 (월/분기/나이대 기반 타이밍)
+         ④ 직업운 (내가 가장 빛날 수 있는 커리어 무대와 성공 전략)
+         ⑤ 연애운 & 인간관계 (나의 인연이 머무는 곳과 관계의 비결)
+         ⑥ 숨겨진 아픔과 다정한 위로 (지친 영혼을 위한 따뜻한 응원)
+         ⑦ ${currentYear}년 운세 흐름 & 럭키 포인트 (올해 꼭 잡아야 할 기회)
+         ⑧ 인스타 스토리 요약 (SNS 공유용 초핵심 요약)
+      2. **각 주제(섹션)로 넘어갈 때마다 우리가 프론트엔드에서 카드를 쪼개는 기준점인 "## [이모지] [주제에 맞는 다정한 소제목]" 포맷을 절대 빼먹지 말고 매번 반복해서 작성해! (총 8번 등장해야 함)**
          - 소제목(##) 후킹 최적화: 단순히 '재물운'이 아니라, "내 지갑은 언제쯤 두둑해질까? 💰" 처럼 유저의 호기심을 자극하고 공감할 수 있는 대화형 문장으로 작성해라.
 
-      [🔥 인스타 스토리 요약 (7번 섹션) 작성 특별 규칙 - 절대 준수]
+      [🔥 3번 섹션: 돈 들어오는 시기 & 조심할 시기 작성 규칙 - 절대 준수]
+      - 섹션 제목은 반드시 "## 💸 돈이 움직이는 시기표" 로 작성해.
+      - 반드시 아래 4개 블록을 포함해라.
+        1) **돈이 들어오기 쉬운 구간 3개**: ${currentYear}년 월/분기 또는 나이대 기준으로 3개를 골라라.
+        2) **대박을 노려볼 만한 방식 2개**: 투자 종목을 찍지 말고, 부업/협상/성과급/콘텐츠/영업/이직/계약 같은 행동 방식으로 말해라.
+        3) **지출과 손실을 조심할 구간 3개**: 충동구매, 계약, 인간관계 돈거래, 과로, 세금/정산처럼 현실적인 위험으로 말해라.
+        4) **바로 할 일 3개**: 캘린더에 적을 수 있을 만큼 구체적인 행동으로 말해라.
+      - "무조건 돈이 들어온다", "반드시 대박난다", "로또", "주식 종목", "코인 종목"처럼 확정적이거나 고위험 투자를 부추기는 표현은 금지한다.
+      - 그래도 사용자가 설레야 하므로, 가장 좋은 구간 하나는 "승부 구간"으로 짚어줘라.
+
+      [🔥 인스타 스토리 요약 (8번 섹션) 작성 특별 규칙 - 절대 준수]
       - 섹션 제목은 반드시 "## 📸 인스타 스토리 요약" 으로 작성해.
       - 후킹 제목: 유저의 타고난 기질을 다정하고 직관적인 '한 문장 비유'로 표현해. (예: "${name}님은 웅장한 산봉우리 같은 든든한 존재예요.")
       - 핵심 특징 3가지: 전체 분석에서 가장 듣기 좋은 특징 3가지만 글머리 기호(💡, ✅ 등)를 사용해 초단문으로 요약해.
-      - 바이럴 포인트: "2026년 재물운 대폭발 💸"처럼 유저가 자랑하고 싶은 '특별한 혜택' 문구 한 줄을 반드시 마지막에 포함해.
+      - 바이럴 포인트: "${currentYear}년 재물운 대폭발 💸"처럼 유저가 자랑하고 싶은 '특별한 혜택' 문구 한 줄을 반드시 마지막에 포함해.
 
       [필수 지시사항 - AI 글쓰기 절대 규칙 (가독성 최우선, 스낵 컬처 스타일)]
       1. AI가 줄글(수필) 형태로 길게 쓰는 것을 엄격히 금지한다.
