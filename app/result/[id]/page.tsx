@@ -422,6 +422,11 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
 }
 
 function BriefingCard({ icon, label, title, lines, accent }: { icon: ReactNode; label: string; title: string; lines: string[]; accent: string }) {
+  const displayLines = lines
+    .map((line) => cleanInsightLine(line))
+    .filter((line) => line.length >= 6)
+    .slice(0, 3);
+
   return (
     <article
       className="rounded-[2rem] p-5 md:p-6 min-h-[13rem] flex flex-col gap-4"
@@ -441,7 +446,7 @@ function BriefingCard({ icon, label, title, lines, accent }: { icon: ReactNode; 
       </div>
       <h4 className="text-lg font-bold leading-snug break-keep" style={{ color: '#f5eef2' }}>{title}</h4>
       <div className="space-y-2.5">
-        {lines.slice(0, 3).map((line, index) => (
+        {(displayLines.length > 0 ? displayLines : ['리포트 내용을 다시 정리하는 중이에요.']).map((line, index) => (
           <p key={`${title}-${index}`} className="text-[13px] md:text-sm font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.64)' }}>
             <span className="font-black" style={{ color: accent }}>{index + 1}. </span>
             {line}

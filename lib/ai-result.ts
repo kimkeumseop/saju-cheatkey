@@ -40,6 +40,15 @@ function cleanTitle(title: string) {
   return title.replace(/^#+\s*/, '').trim();
 }
 
+function hasUsefulContent(content: string) {
+  return content
+    .replace(/\*\*/g, '')
+    .replace(/^[✅📌💡💰💸⚠️🔥✨🌱🌊🌙⭐️⭐\-*•\d.)\s]+/gm, '')
+    .split('\n')
+    .map((line) => line.trim())
+    .some((line) => line.length >= 6 && !line.endsWith(':'));
+}
+
 function normalizeObjectSections(value: unknown): AnalysisSection[] {
   if (!value || typeof value !== 'object') return [];
 
@@ -58,8 +67,8 @@ function normalizeObjectSections(value: unknown): AnalysisSection[] {
         content,
       };
     })
-    .filter((section): section is AnalysisSection => Boolean(section))
-    .slice(0, 6);
+    .filter((section): section is AnalysisSection => Boolean(section && hasUsefulContent(section.content)))
+    .slice(0, 10);
 }
 
 export function parseAnalysisSections(value: unknown): ParsedSectionsResult {
@@ -114,6 +123,7 @@ export function parseAnalysisSections(value: unknown): ParsedSectionsResult {
       };
     })
     .filter((section) => section.title || section.content)
+    .filter((section) => hasUsefulContent(section.content))
     .map((section, index) => ({
       title: section.title || `분석 ${index + 1}`,
       content: section.content || '',

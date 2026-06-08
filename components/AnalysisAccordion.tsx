@@ -60,6 +60,9 @@ function splitContent(content: string): {
     return { summaryParagraph: content, restParagraphs: [], hasMore: false };
   }
 
+  const previewParagraphs = paragraphs.slice(0, 2);
+  const restAfterPreview = paragraphs.slice(2);
+
   // 단일 단락: 체크리스트 항목이 3개 초과면 분할
   if (paragraphs.length === 1) {
     const lines = paragraphs[0].split('\n');
@@ -90,9 +93,9 @@ function splitContent(content: string): {
   }
 
   return {
-    summaryParagraph: firstParagraph,
-    restParagraphs: paragraphs.slice(1),
-    hasMore: true,
+    summaryParagraph: previewParagraphs.join('\n\n'),
+    restParagraphs: restAfterPreview,
+    hasMore: restAfterPreview.length > 0,
   };
 }
 
@@ -117,12 +120,17 @@ function renderParagraph(rawText: string, className?: string) {
   );
 }
 
+function hasRenderableText(item: AnalysisItem) {
+  const content = cleanBodyText(item.content || '');
+  return content.length >= 6;
+}
+
 // ── 메인 컴포넌트 ──────────────────────────────────────────────────
 export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
   const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [expandedIndexes, setExpandedIndexes] = useState<Set<number>>(new Set());
-  const [liveData, setLiveData] = useState<AnalysisItem[]>(() => data.map((item) => ({ ...item })));
+  const [liveData, setLiveData] = useState<AnalysisItem[]>(() => data.filter(hasRenderableText).map((item) => ({ ...item })));
 
   const dataSignature = useMemo(
     () => data.map((item, index) => `${index}:${item.title}::${item.content}`).join('\u0001'),
@@ -130,7 +138,7 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
   );
 
   useEffect(() => {
-    setLiveData(data.map((item) => ({ ...item })));
+    setLiveData(data.filter(hasRenderableText).map((item) => ({ ...item })));
   }, [dataSignature, data]);
 
   const handleSpeak = (text: string, index: number) => {
@@ -166,12 +174,18 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
 
   return (
     <div className="space-y-5 w-full">
+      {liveData.length === 0 && (
+        <div className="rounded-[2rem] p-5 text-sm font-medium" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.14)', color: 'rgba(240,232,238,0.62)' }}>
+          리포트 내용을 정리하는 중입니다. 다시 생성하면 더 안정적으로 표시돼요.
+        </div>
+      )}
       {liveData.map((item, index) => {
         const isExpanded = expandedIndexes.has(index);
         const isSpeaking = speakingIndex === index;
         const isCopied = copiedIndex === index;
         const cleanTitle = keepOneEmoji(item.title);
         const { summaryParagraph, restParagraphs, hasMore } = splitContent(item.content);
+        if (!cleanBodyText(summaryParagraph)) return null;
 
         return (
           <article
