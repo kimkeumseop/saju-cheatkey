@@ -724,6 +724,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                   const nextAge = daeunList[idx + 1]?.age ?? dy.age + 10;
                   const startYear = currentYear + (dy.age - userAge);
                   const endYear = startYear + Math.max(1, nextAge - dy.age) - 1;
+                  const midYear = Math.min(endYear, startYear + 4);
                   const daeunGuide = getDaeunGuide(dy.ganElement, dy.zhiElement);
 
                   return (
@@ -758,7 +759,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0 space-y-1">
                             <span className="text-sm font-black" style={{ color: isCurrent ? '#9d8fff' : 'rgba(240,232,238,0.42)' }}>
-                              {startYear}년 - {endYear}년
+                              {startYear}년 시작
                             </span>
                             {isCurrent && (
                               <span className="ml-2 px-2 py-0.5 text-[10px] font-black rounded-full leading-none" style={{ background: 'rgba(157,143,255,0.18)', color: '#9d8fff' }}>
@@ -778,6 +779,9 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                         <div className="mt-2 space-y-1.5">
                           <p className="text-xs font-medium break-keep leading-relaxed" style={{ color: 'rgba(240,232,238,0.56)' }}>
                             하면 좋은 것: {daeunGuide.focus}
+                          </p>
+                          <p className="text-xs font-medium break-keep leading-relaxed" style={{ color: 'rgba(240,232,238,0.46)' }}>
+                            대표 체크: {startYear}년, {midYear}년, {endYear}년
                           </p>
                           <p className="text-xs font-medium break-keep leading-relaxed" style={{ color: 'rgba(240,232,238,0.38)' }}>
                             조심할 것: {daeunGuide.caution}

@@ -161,7 +161,8 @@ function buildDaYunRangeText(daYun: any[], currentYear: number, currentAge: numb
       const nextAge = daYun[index + 1]?.age ?? dy.age + 10;
       const startYear = currentYear + (dy.age - currentAge);
       const endYear = startYear + Math.max(1, nextAge - dy.age) - 1;
-      return `${startYear}년부터 ${endYear}년까지: ${describeElementPair(dy.ganElement, dy.zhiElement)}`;
+      const sampleYears = Array.from({ length: Math.min(3, Math.max(1, endYear - startYear + 1)) }, (_, offset) => `${startYear + offset}년`).join(', ');
+      return `${index + 1}번째 10년 구간: ${describeElementPair(dy.ganElement, dy.zhiElement)} / 대표 연도: ${sampleYears}`;
     })
     .join(' / ');
 }
@@ -172,6 +173,24 @@ function normalizeReportText(text: string) {
     .replace(/\\n\\n/g, '\n\n')
     .replace(/\\n/g, '\n')
     .trim();
+}
+
+function expandYearRange(startYearText: string, endYearText: string) {
+  const startYear = Number(startYearText);
+  const endYear = Number(endYearText);
+  if (!startYear || !endYear || endYear < startYear || endYear - startYear > 10) {
+    return `${startYearText}년, ${endYearText}년`;
+  }
+
+  return Array.from({ length: endYear - startYear + 1 }, (_, index) => `${startYear + index}년`).join(', ');
+}
+
+function sanitizeYearRangeText(text: string) {
+  return normalizeReportText(text)
+    .replace(/(\d{4})년\s*[~\-–—]\s*(\d{4})년/g, (_match, startYear, endYear) => expandYearRange(startYear, endYear))
+    .replace(/(^|\n)(\s*(?:[-*•]|\d+[.)])?\s*)년\s*[~\-–—]\s*(\d{4})년\s*(?:\([^)\n]*\))?/g, (_match, lineStart, prefix, endYear) => `${lineStart}${prefix}${endYear}년`)
+    .replace(/\s*\(\s*\d{1,3}\s*세\s*[~\-–—]\s*\d{1,3}\s*세\s*\)/g, '')
+    .replace(/년\s*[~\-–—]\s*(\d{4})년/g, '$1년');
 }
 
 function getSajuReportIssues(text: string, finishReason?: string) {
@@ -323,8 +342,9 @@ export async function POST(req: Request) {
       7. 올해 운세만 과하게 강조하지 마라. 올해는 월별 실전 계획으로만 다루고, 큰 흐름은 10년 주기 대운에서 판단해라.
       8. 오행 조합, 한자, 전문용어, 플러스 기호로 묶은 조합 표기를 화면에 쓰지 마라.
       9. 시기 근거가 필요하면 "성과가 돈으로 연결되기 쉬운 해", "루틴을 다시 세워야 하는 해"처럼 생활 언어로 번역해라.
-      10. 재물운과 대운 시기는 "2028~2030년"처럼 범위만 쓰지 마라. 반드시 "2028년", "2029년"처럼 개별 연도로 찍어라.
-      11. 최종 결과에는 "(37세~41세)"처럼 나이를 괄호로 길게 붙이지 마라. 나이는 필요할 때 한 번만 짧게 쓰고, 핵심 표기는 연도로 한다.
+      10. 재물운과 대운 시기는 범위로 쓰지 마라. 반드시 "2028년", "2029년"처럼 개별 연도로 찍어라.
+      11. 최종 결과에는 나이를 괄호로 길게 붙이지 마라. 나이는 필요할 때 한 번만 짧게 쓰고, 핵심 표기는 연도로 한다.
+      12. 물결표, 하이픈, 시작-끝 구조로 시기를 묶는 범위 표기는 절대 금지다. 여러 해를 말할 때는 "2028년, 2029년, 2030년"처럼 쉼표로 나열해라.
 
       [💎 유료 리포트 깊이 규칙 - 돈 주고 보는 느낌]
       1. 각 섹션은 얕은 칭찬으로 끝내지 말고 반드시 아래 4단계를 포함해라.
@@ -374,11 +394,11 @@ export async function POST(req: Request) {
         2) **정비 구간 2개**
         3) **주의 구간 2개**
         4) **중요 결정 포인트 3개**
-      - 각 구간에는 나이대보다 연도를 우선해서 써라. "2029년까지", "2030년부터"처럼 짧게 쓰고 "(37세~41세)" 같은 괄호 나열은 금지한다.
+      - 각 구간에는 나이대보다 연도를 우선해서 써라. 단, 범위 표기는 금지하고 "2028년, 2029년, 2030년"처럼 개별 연도로 나열해라.
       - 구간 설명 뒤에는 반드시 **연도별 체크포인트**를 넣어라.
       - **연도별 체크포인트**에는 향후 10년 중 최소 6개 연도를 골라 "2028년: 확장", "2029년: 정비"처럼 개별 연도로 써라.
       - **연도별 체크포인트**는 반드시 "2028년: 확장 | 근거: ... | 행동: ..." 형식으로 써라.
-      - "1. 년 ~ 2029년 (37세~41세)"처럼 시작 연도가 비어 보이는 표기는 실패다. 시작과 끝을 모두 쓰거나, 더 좋게는 연도별 체크포인트로 풀어라.
+      - 시작 연도가 비어 보이는 범위 표기는 실패다. 이런 표기 대신 "2029년: 정비 | 근거: ... | 행동: ..."처럼 한 해씩 써라.
       - 플러스 기호로 묶은 조합표는 절대 쓰지 말고 "성과가 밖으로 커지는 시기"처럼 해석 문장으로 바꿔라.
       - 각 구간은 "왜 그 구간인지", "일/돈/건강 중 무엇이 커지는지", "무엇을 조심해야 하는지"를 포함해라.
       - 확장 구간은 2개를 넘기지 마라.
@@ -393,7 +413,7 @@ export async function POST(req: Request) {
         3) **지출 주의 해 3개**
         4) **돈을 쌓는 방법 3개**
       - 각 해는 반드시 "2028년", "2029년"처럼 개별 연도로 써라.
-      - "2028~2030년 좋음"처럼 범위만 쓰는 방식은 금지한다.
+      - 여러 해를 한 덩어리로 묶어 좋다고 쓰는 방식은 금지한다.
       - 각 해는 반드시 "2028년: 수입 확장 | 근거: ... | 행동: ..." 형식으로 써라.
       - 각 해마다 왜 좋은지/주의인지, 어떤 행동이 돈으로 연결되는지 한 줄로 붙여라.
       - 돈 이야기는 현실적으로 써라. 계약, 이직, 성과급, 부업, 지출 정리, 세금/정산, 건강으로 인한 지출 같은 생활 단어를 써라.
@@ -448,7 +468,7 @@ export async function POST(req: Request) {
       console.warn('[Gemini/Saju] Report completed with validation warnings:', firstIssues);
     }
 
-    return NextResponse.json({ success: true, saju: sajuData, analysis: responseText.trim() });
+    return NextResponse.json({ success: true, saju: sajuData, analysis: sanitizeYearRangeText(responseText) });
 
   } catch (error: any) {
     console.error('Saju API Error:', {

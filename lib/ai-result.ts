@@ -22,8 +22,22 @@ function normalizeLineBreaks(text: string) {
     .replace(/\r\n/g, '\n')
     .replace(/\\n\\n/g, '\n\n')
     .replace(/\\n/g, '\n')
+    .replace(/(\d{4})년\s*[~\-–—]\s*(\d{4})년/g, (_match, startYear, endYear) => expandYearRange(startYear, endYear))
+    .replace(/(^|\n)(\s*(?:[-*•]|\d+[.)])?\s*)년\s*[~\-–—]\s*(\d{4})년\s*(?:\([^)\n]*\))?/g, (_match, lineStart, prefix, endYear) => `${lineStart}${prefix}${endYear}년`)
+    .replace(/\s*\(\s*\d{1,3}\s*세\s*[~\-–—]\s*\d{1,3}\s*세\s*\)/g, '')
+    .replace(/년\s*[~\-–—]\s*(\d{4})년/g, '$1년')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+function expandYearRange(startYearText: string, endYearText: string) {
+  const startYear = Number(startYearText);
+  const endYear = Number(endYearText);
+  if (!startYear || !endYear || endYear < startYear || endYear - startYear > 10) {
+    return `${startYearText}년, ${endYearText}년`;
+  }
+
+  return Array.from({ length: endYear - startYear + 1 }, (_, index) => `${startYear + index}년`).join(', ');
 }
 
 function stripCodeFence(text: string) {
