@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CosmicBackground from '@/components/CosmicBackground';
 import GunghapCTA from '@/components/GunghapCTA';
+import GungHapProcessingClient from '@/components/GungHapProcessingClient';
 import { createMetadata } from '@/lib/site';
 
 export const metadata: Metadata = createMetadata({
@@ -33,6 +34,7 @@ export default function GunghapPage() {
     <main className="relative min-h-screen overflow-x-hidden" style={{ background: '#0d0710' }}>
       <CosmicBackground />
       <Navbar dark />
+      <GungHapProcessingClient />
 
       <div className="relative z-10 mx-auto max-w-4xl px-6 pt-28 pb-32 space-y-14">
 

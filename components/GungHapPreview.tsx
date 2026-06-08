@@ -40,9 +40,36 @@ function cleanLine(line: string) {
   return line
     .replace(/^#+\s*/, '')
     .replace(/\*\*/g, '')
-    .replace(/^[✅📌💡💖💕⚠️✨🌙⭐️⭐\-*•\d.)\s]+/u, '')
+    .replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\-*•\s]+/u, '')
+    .replace(/^\d+[.)]\s+/u, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
+}
+
+function normalizeBriefingPart(part: string) {
+  return part
+    .replace(/^근거\s*[:：]\s*/, '좋은 이유: ')
+    .replace(/^왜\s*이렇게\s*보나요\s*[:：]\s*/, '좋은 이유: ')
+    .replace(/^행동\s*[:：]\s*/, '추천 행동: ')
+    .replace(/^추천\s*행동\s*[:：]\s*/, '추천 행동: ')
+    .trim();
+}
+
+function parseBriefingLine(line: string) {
+  const cleaned = cleanLine(line);
+  if (!cleaned.includes('|')) {
+    return { headline: cleaned, details: [] };
+  }
+
+  const [headline = '', ...details] = cleaned
+    .split('|')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    headline: headline || cleaned,
+    details: details.map(normalizeBriefingPart).filter(Boolean),
+  };
 }
 
 function findRelationSection(sections: RelationSection[], titleWords: string[], contentWords: string[] = []) {
@@ -91,20 +118,20 @@ function RelationBriefingPanel({ sections, theme }: { sections: RelationSection[
 
   const closerLines = getRelationBlockLines(
     timingSection,
-    ['가까워지는 구간'],
-    ['멀어지기 쉬운 구간', '관계를 결정해야', '그 시기에 하면 좋은 행동'],
+    ['가까워지는 해', '가까워지는 구간'],
+    ['멀어지기 쉬운 해', '멀어지기 쉬운 구간', '관계를 결정해야', '그 시기에 하면 좋은 행동'],
     2
   );
   const distanceLines = getRelationBlockLines(
     timingSection,
-    ['멀어지기 쉬운 구간'],
-    ['관계를 결정해야', '그 시기에 하면 좋은 행동', '가까워지는 구간'],
+    ['멀어지기 쉬운 해', '멀어지기 쉬운 구간'],
+    ['관계를 결정해야', '그 시기에 하면 좋은 행동', '가까워지는 해', '가까워지는 구간'],
     2
   );
   const decisionLines = getRelationBlockLines(
     timingSection,
-    ['관계를 결정해야 하는 포인트', '결정해야'],
-    ['그 시기에 하면 좋은 행동', '가까워지는 구간', '멀어지기 쉬운 구간'],
+    ['관계를 결정해야 하는 해', '관계를 결정해야 하는 포인트', '결정해야'],
+    ['그 시기에 하면 좋은 행동', '가까워지는 해', '가까워지는 구간', '멀어지기 쉬운 해', '멀어지기 쉬운 구간'],
     3
   );
 
@@ -162,12 +189,34 @@ function RelationBriefingCard({ icon, label, title, lines, accent }: { icon: Rea
       </div>
       <h4 className="text-lg font-bold leading-snug break-keep" style={{ color: '#f5eef2' }}>{title}</h4>
       <div className="space-y-2.5">
-        {(lines.length ? lines : ['아직 리포트 내용을 정리하는 중이에요.']).slice(0, 3).map((line, index) => (
-          <p key={`${title}-${index}`} className="text-[13px] md:text-sm font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.64)' }}>
-            <span className="font-black" style={{ color: accent }}>{index + 1}. </span>
-            {line}
-          </p>
-        ))}
+        {(lines.length ? lines : ['아직 리포트 내용을 정리하는 중이에요.']).slice(0, 3).map((line, index) => {
+          const parsed = parseBriefingLine(line);
+          return (
+            <div key={`${title}-${index}`} className="space-y-1.5 rounded-2xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <p className="text-[13px] md:text-sm font-bold leading-relaxed break-keep" style={{ color: 'rgba(245,238,242,0.84)' }}>
+                <span className="font-black" style={{ color: accent }}>{index + 1}. </span>
+                {parsed.headline}
+              </p>
+              {parsed.details.map((detail, detailIndex) => {
+                const [rawLabel, ...bodyParts] = detail.split(':');
+                const body = bodyParts.join(':').trim();
+                const hasLabel = Boolean(body);
+                return (
+                  <div key={`${title}-${index}-${detailIndex}`} className="grid gap-0.5">
+                    {hasLabel ? (
+                      <>
+                        <span className="text-[10px] font-black" style={{ color: accent }}>{rawLabel.trim()}</span>
+                        <span className="text-[12px] md:text-[13px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.58)' }}>{body}</span>
+                      </>
+                    ) : (
+                      <span className="text-[12px] md:text-[13px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.58)' }}>{detail}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
     </article>
   );

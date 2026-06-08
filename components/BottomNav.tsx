@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import SajuModal from './SajuModal';
 import GungHapInputModal from './GungHapInputModal';
-import LoginModal from './LoginModal';
 
 type Tab = {
   id: string;
@@ -22,7 +21,6 @@ export default function BottomNav() {
   const pathname = usePathname();
   const [isSajuModalOpen, setIsSajuModalOpen] = useState(false);
   const [isGungHapModalOpen, setIsGungHapModalOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const tabs: Tab[] = [
     {
@@ -120,7 +118,6 @@ export default function BottomNav() {
 
       <SajuModal isOpen={isSajuModalOpen} onClose={() => setIsSajuModalOpen(false)} />
       <GungHapInputModal isOpen={isGungHapModalOpen} onClose={() => setIsGungHapModalOpen(false)} />
-      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </>
   );
 }

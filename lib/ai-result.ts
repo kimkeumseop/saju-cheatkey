@@ -36,6 +36,23 @@ const SAJU_MAJOR_SECTION_PATTERNS = [
   '스토리요약',
 ];
 
+const GUNGHAP_MAJOR_SECTION_PATTERNS = [
+  '관계핵심브리핑',
+  '핵심브리핑',
+  '끌림과시너지',
+  '시너지포인트',
+  '갈등포인트',
+  '진짜마음',
+  '향후10년관계타이밍',
+  '관계타이밍',
+  '실전행동',
+  '관계를지키는',
+  '피해야할선택',
+  '방치하면틀어지는',
+  '인스타',
+  '스토리요약',
+];
+
 function normalizeLineBreaks(text: string) {
   return text
     .replace(/\r\n/g, '\n')
@@ -75,6 +92,22 @@ function stripCodeFence(text: string) {
 
 function cleanTitle(title: string) {
   return title.replace(/^#+\s*/, '').trim();
+}
+
+function mergeSectionsByMajorPatterns(sections: AnalysisSection[], patterns: string[]) {
+  return sections.reduce<AnalysisSection[]>((mergedSections, section) => {
+    const compactTitle = normalizeCompact(section.title);
+    const isMajorSection = patterns.some((pattern) => compactTitle.includes(pattern));
+
+    if (mergedSections.length === 0 || isMajorSection) {
+      mergedSections.push({ ...section });
+      return mergedSections;
+    }
+
+    const previous = mergedSections[mergedSections.length - 1];
+    previous.content = normalizeLineBreaks(`${previous.content}\n\n**${section.title}**\n${section.content}`);
+    return mergedSections;
+  }, []);
 }
 
 function hasUsefulContent(content: string) {
@@ -178,19 +211,7 @@ export function parseAnalysisSections(value: unknown): ParsedSectionsResult {
 
 export function normalizeSajuAiResult(value: unknown): ParsedSectionsResult {
   const normalized = parseAnalysisSections(value);
-  const mergedSections = normalized.sections.reduce<AnalysisSection[]>((sections, section) => {
-    const compactTitle = normalizeCompact(section.title);
-    const isMajorSection = SAJU_MAJOR_SECTION_PATTERNS.some((pattern) => compactTitle.includes(pattern));
-
-    if (sections.length === 0 || isMajorSection) {
-      sections.push(section);
-      return sections;
-    }
-
-    const previous = sections[sections.length - 1];
-    previous.content = normalizeLineBreaks(`${previous.content}\n\n**${section.title}**\n${section.content}`);
-    return sections;
-  }, []);
+  const mergedSections = mergeSectionsByMajorPatterns(normalized.sections, SAJU_MAJOR_SECTION_PATTERNS);
 
   return {
     rawText: normalized.rawText,
@@ -200,6 +221,7 @@ export function normalizeSajuAiResult(value: unknown): ParsedSectionsResult {
 
 export function normalizeGunghapAiResult(value: unknown): ParsedGunghapResult {
   const normalized = parseAnalysisSections(value);
+  const mergedSections = mergeSectionsByMajorPatterns(normalized.sections, GUNGHAP_MAJOR_SECTION_PATTERNS);
   const legacyRecord = value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
   const lines = normalized.rawText
     .split('\n')
@@ -212,6 +234,7 @@ export function normalizeGunghapAiResult(value: unknown): ParsedGunghapResult {
 
   return {
     ...normalized,
+    sections: mergedSections.length > 0 ? mergedSections : normalized.sections,
     compatibilityScore:
       typeof legacyRecord?.compatibilityScore === 'number'
         ? Math.min(100, legacyRecord.compatibilityScore)

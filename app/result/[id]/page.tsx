@@ -11,9 +11,7 @@ import ShareButtons from '@/components/ShareButtons';
 import InstaStoryButton from '@/components/InstaStoryButton';
 import GungHapPreview from '@/components/GungHapPreview';
 import GungHapInputModal from '@/components/GungHapInputModal';
-import LoginModal from '@/components/LoginModal';
 import { Loader2, BarChart3, Star, History, Moon, Heart, CircleDollarSign, AlertTriangle, CheckCircle2, CalendarDays, TrendingUp } from 'lucide-react';
-import { useAuth } from '@/lib/auth';
 import { ELEMENT_STYLE } from '@/lib/saju';
 import { normalizeSajuAiResult } from '@/lib/ai-result';
 import { clsx, type ClassValue } from 'clsx';
@@ -569,12 +567,10 @@ function BriefingCard({ icon, label, title, lines, accent }: { icon: ReactNode; 
 export default function SajuResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { user } = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDaeunIdx, setSelectedDaeunIdx] = useState<number | null>(null);
   const [isGungHapModalOpen, setIsGungHapModalOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   useEffect(() => {
     const handlePopState = () => { window.location.href = '/'; };
@@ -661,8 +657,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   const currentYear = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', year: 'numeric' }).format(new Date()));
 
   const handleGungHapClick = () => {
-    if (user) setIsGungHapModalOpen(true);
-    else setIsLoginModalOpen(true);
+    setIsGungHapModalOpen(true);
   };
 
   return (
@@ -956,7 +951,6 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
       </div>
 
       <GungHapInputModal isOpen={isGungHapModalOpen} onClose={() => setIsGungHapModalOpen(false)} />
-      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </div>
   );
 }

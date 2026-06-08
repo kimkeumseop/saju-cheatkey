@@ -113,7 +113,7 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
     params.append('u2_gen', user2.gender);
 
     onClose();
-    router.replace(`/saju?${params.toString()}`);
+    router.replace(`/gunghap?${params.toString()}`);
   };
 
   const inputClasses = "w-full bg-white/[0.04] text-[#f5eef2] border border-white/10 rounded-2xl py-4 px-4 focus:ring-4 focus:ring-[#d4688a]/20 focus:border-[#d4688a]/50 outline-none transition-all placeholder:text-white/30 font-medium text-sm [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer";
