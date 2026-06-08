@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart, Moon, Copy, Check, MessageSquare } from 'lucide-react';
+import { Heart, Moon, Copy, Check, MessageSquare, AlertTriangle, CheckCircle2, CalendarDays, Sparkles } from 'lucide-react';
 import AnalysisAccordion from './AnalysisAccordion';
 import ShareButtons from './ShareButtons';
 import InstaStoryButton from './InstaStoryButton';
@@ -20,6 +20,158 @@ function cn(...inputs: ClassValue[]) {
 const getSafeColor = (elementKey: string) => {
   return ELEMENT_STYLE[elementKey] || { bg: 'bg-gray-50', text: 'text-gray-400', border: 'border-gray-100', color: '#999999' };
 };
+
+type RelationSection = {
+  title: string;
+  content: string;
+};
+
+function normalizeLines(content = '') {
+  return content
+    .replace(/\\n\\n/g, '\n\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function cleanLine(line: string) {
+  return line
+    .replace(/^#+\s*/, '')
+    .replace(/\*\*/g, '')
+    .replace(/^[✅📌💡💖💕⚠️✨🌙⭐️⭐\-*•\d.)\s]+/u, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function findRelationSection(sections: RelationSection[], titleWords: string[], contentWords: string[] = []) {
+  return sections.find((section) => {
+    const title = section.title.replace(/\s/g, '');
+    const content = section.content.replace(/\s/g, '');
+    return titleWords.some((word) => title.includes(word.replace(/\s/g, ''))) ||
+      contentWords.some((word) => content.includes(word.replace(/\s/g, '')));
+  });
+}
+
+function getRelationLines(section: RelationSection | undefined, max = 3) {
+  if (!section) return [];
+  return normalizeLines(section.content)
+    .map(cleanLine)
+    .filter((line) => line.length >= 8 && !line.endsWith(':') && !line.includes('가지'))
+    .slice(0, max);
+}
+
+function getRelationBlockLines(section: RelationSection | undefined, startWords: string[], stopWords: string[], max = 3) {
+  if (!section) return [];
+  const lines = normalizeLines(section.content);
+  const startIndex = lines.findIndex((line) => startWords.some((word) => line.includes(word)));
+  const scanLines = startIndex >= 0 ? lines.slice(startIndex + 1) : lines;
+  const picked: string[] = [];
+
+  for (const rawLine of scanLines) {
+    const isNextBlock = picked.length > 0 && stopWords.some((word) => rawLine.includes(word));
+    if (isNextBlock) break;
+    const line = cleanLine(rawLine);
+    if (!line || line.length < 8 || startWords.some((word) => line.includes(word)) || line.endsWith(':')) continue;
+    picked.push(line);
+    if (picked.length >= max) break;
+  }
+
+  return picked;
+}
+
+function RelationBriefingPanel({ sections, theme }: { sections: RelationSection[]; theme: RelationTheme }) {
+  const coreSection = findRelationSection(sections, ['관계핵심브리핑', '진짜결론', '총평']);
+  const synergySection = findRelationSection(sections, ['끌림과시너지', '시너지포인트']);
+  const conflictSection = findRelationSection(sections, ['갈등포인트', '진짜마음', '반복되는오해']);
+  const timingSection = findRelationSection(sections, ['향후10년관계타이밍', '관계타이밍'], ['가까워지는 구간', '멀어지기 쉬운 구간']);
+  const actionSection = findRelationSection(sections, ['실전행동', '지켜줄다정한조언', '관계를지키는']);
+  const avoidSection = findRelationSection(sections, ['피해야할선택', '방치하면틀어지는']);
+
+  const closerLines = getRelationBlockLines(
+    timingSection,
+    ['가까워지는 구간'],
+    ['멀어지기 쉬운 구간', '관계를 결정해야', '그 시기에 하면 좋은 행동'],
+    2
+  );
+  const distanceLines = getRelationBlockLines(
+    timingSection,
+    ['멀어지기 쉬운 구간'],
+    ['관계를 결정해야', '그 시기에 하면 좋은 행동', '가까워지는 구간'],
+    2
+  );
+  const decisionLines = getRelationBlockLines(
+    timingSection,
+    ['관계를 결정해야 하는 포인트', '결정해야'],
+    ['그 시기에 하면 좋은 행동', '가까워지는 구간', '멀어지기 쉬운 구간'],
+    3
+  );
+
+  const coreLines = getRelationLines(coreSection, 3);
+  const synergyLines = getRelationLines(synergySection, 3);
+  const conflictLines = getRelationLines(conflictSection, 3);
+  const actionLines = getRelationLines(actionSection, 3);
+  const avoidLines = getRelationLines(avoidSection, 3);
+
+  return (
+    <section className="space-y-5">
+      <div className="space-y-2 px-1">
+        <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: theme.color }}>
+          <Sparkles className="w-4 h-4" />
+          First Check
+        </div>
+        <h3 className="text-2xl md:text-3xl font-bold tracking-tight break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
+          먼저 보는 관계 브리핑
+        </h3>
+        <p className="text-sm md:text-base font-medium leading-relaxed break-keep max-w-2xl" style={{ color: 'rgba(240,232,238,0.58)' }}>
+          {coreLines[0] || '두 사람은 좋은 지점과 조심할 지점이 함께 보이는 관계예요.'}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <RelationBriefingCard icon={<Heart className="w-5 h-5" />} label="시너지" title="잘 맞는 지점" lines={synergyLines.length ? synergyLines : coreLines} accent={theme.color} />
+        <RelationBriefingCard icon={<AlertTriangle className="w-5 h-5" />} label="주의" title="반복 갈등 포인트" lines={conflictLines.length ? conflictLines : avoidLines} accent="#ffb86b" />
+        <RelationBriefingCard icon={<CheckCircle2 className="w-5 h-5" />} label="행동" title="관계를 지키는 방법" lines={actionLines.length ? actionLines : decisionLines} accent="#9d8fff" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <RelationBriefingCard icon={<CalendarDays className="w-5 h-5" />} label="타이밍" title="가까워지는 구간" lines={closerLines.length ? closerLines : synergyLines} accent="#00d18f" />
+        <RelationBriefingCard icon={<AlertTriangle className="w-5 h-5" />} label="거리감" title="멀어지기 쉬운 구간" lines={distanceLines.length ? distanceLines : conflictLines} accent="#ffb86b" />
+        <RelationBriefingCard icon={<CheckCircle2 className="w-5 h-5" />} label="결정" title="관계 결정 포인트" lines={decisionLines.length ? decisionLines : actionLines} accent="#e8829a" />
+      </div>
+    </section>
+  );
+}
+
+function RelationBriefingCard({ icon, label, title, lines, accent }: { icon: ReactNode; label: string; title: string; lines: string[]; accent: string }) {
+  return (
+    <article
+      className="rounded-[2rem] p-5 md:p-6 min-h-[12rem] flex flex-col gap-4"
+      style={{
+        background: 'rgba(255,255,255,0.025)',
+        border: `1px solid ${accent}33`,
+        boxShadow: `0 8px 32px ${accent}12, 0 1px 0 rgba(255,255,255,0.04) inset`,
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <div className="h-9 w-9 rounded-2xl flex items-center justify-center" style={{ background: `${accent}18`, color: accent }}>
+          {icon}
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-[0.22em]" style={{ color: accent }}>{label}</span>
+      </div>
+      <h4 className="text-lg font-bold leading-snug break-keep" style={{ color: '#f5eef2' }}>{title}</h4>
+      <div className="space-y-2.5">
+        {(lines.length ? lines : ['아직 리포트 내용을 정리하는 중이에요.']).slice(0, 3).map((line, index) => (
+          <p key={`${title}-${index}`} className="text-[13px] md:text-sm font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.64)' }}>
+            <span className="font-black" style={{ color: accent }}>{index + 1}. </span>
+            {line}
+          </p>
+        ))}
+      </div>
+    </article>
+  );
+}
 
 // getPercentile / getScoreLevel → 테마 시스템으로 대체됨 (lib/relation-theme.ts)
 
@@ -433,6 +585,7 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
             const accordionSections = aiResult.sections.filter((s) => s !== storySection);
             return (
               <>
+                <RelationBriefingPanel sections={accordionSections} theme={theme} />
                 <AnalysisAccordion data={accordionSections} />
                 {storySection && (
                   <InstaStoryButton

@@ -5,6 +5,8 @@ import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import { useRouter } from 'next/navigation'
 import ShareButtons from '@/components/ShareButtons'
+import { AlertTriangle, CheckCircle2, Compass, Sparkles } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 interface DrawnCard extends TarotCard { isReversed: boolean; position: string }
 
@@ -14,6 +16,107 @@ interface Props {
   loading: boolean
   question: string
   onReset: () => void
+}
+
+type TarotSection = {
+  title: string
+  content: string
+}
+
+function parseTarotSections(markdown: string): TarotSection[] {
+  return markdown
+    .replace(/\r\n/g, '\n')
+    .split(/(?=^##\s+)/m)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) => {
+      const [titleLine = '', ...contentLines] = block.split('\n')
+      return {
+        title: titleLine.replace(/^##\s*/, '').trim(),
+        content: contentLines.join('\n').trim(),
+      }
+    })
+}
+
+function cleanTarotLine(line: string) {
+  return line
+    .replace(/^#+\s*/, '')
+    .replace(/\*\*/g, '')
+    .replace(/^[✅📌💡🔮🃏⚠️🌟✨\-*•\d.)\s]+/u, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
+function getSectionLines(section: TarotSection | undefined, max = 3) {
+  if (!section) return []
+  return section.content
+    .replace(/\\n/g, '\n')
+    .split('\n')
+    .map((line) => cleanTarotLine(line.trim()))
+    .filter((line) => line.length >= 7 && !line.endsWith(':'))
+    .slice(0, max)
+}
+
+function findTarotSection(sections: TarotSection[], words: string[]) {
+  return sections.find((section) => {
+    const title = section.title.replace(/\s/g, '')
+    return words.some((word) => title.includes(word.replace(/\s/g, '')))
+  })
+}
+
+function TarotBriefingPanel({ aiResult }: { aiResult: string }) {
+  const sections = parseTarotSections(aiResult)
+  const core = findTarotSection(sections, ['핵심결론', '먼저보는'])
+  const caution = findTarotSection(sections, ['조심해야할흐름', '주의'])
+  const action = findTarotSection(sections, ['지금바로할일', '필요한것'])
+  const final = findTarotSection(sections, ['최종조언', '나아가는방향'])
+
+  const coreLines = getSectionLines(core, 3)
+  const cautionLines = getSectionLines(caution, 3)
+  const actionLines = getSectionLines(action, 3)
+  const finalLines = getSectionLines(final, 3)
+
+  if (!aiResult.trim()) return null
+
+  return (
+    <section className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <TarotBriefingCard icon={<Sparkles className="w-5 h-5" />} label="결론" title="카드가 먼저 말하는 답" lines={coreLines.length ? coreLines : finalLines} accent="#9d8fff" />
+        <TarotBriefingCard icon={<AlertTriangle className="w-5 h-5" />} label="주의" title="지금 조심할 흐름" lines={cautionLines} accent="#ffb86b" />
+        <TarotBriefingCard icon={<CheckCircle2 className="w-5 h-5" />} label="행동" title="오늘 바로 할 일" lines={actionLines} accent="#00d18f" />
+        <TarotBriefingCard icon={<Compass className="w-5 h-5" />} label="방향" title="최종 조언" lines={finalLines.length ? finalLines : coreLines} accent="#e8829a" />
+      </div>
+    </section>
+  )
+}
+
+function TarotBriefingCard({ icon, label, title, lines, accent }: { icon: ReactNode; label: string; title: string; lines: string[]; accent: string }) {
+  return (
+    <article
+      className="rounded-2xl p-4 min-h-[11rem] flex flex-col gap-3"
+      style={{
+        background: 'rgba(255,255,255,0.025)',
+        border: `1px solid ${accent}33`,
+        boxShadow: `0 8px 28px ${accent}10, 0 1px 0 rgba(255,255,255,0.04) inset`,
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <div className="h-9 w-9 rounded-2xl flex items-center justify-center" style={{ background: `${accent}18`, color: accent }}>
+          {icon}
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-[0.22em]" style={{ color: accent }}>{label}</span>
+      </div>
+      <h4 className="text-base font-bold leading-snug break-keep" style={{ color: '#f5eef2' }}>{title}</h4>
+      <div className="space-y-2">
+        {(lines.length ? lines : ['카드 해석을 정리하는 중이에요.']).slice(0, 3).map((line, index) => (
+          <p key={`${title}-${index}`} className="text-xs leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.62)' }}>
+            <span className="font-black" style={{ color: accent }}>{index + 1}. </span>
+            {line}
+          </p>
+        ))}
+      </div>
+    </article>
+  )
 }
 
 export default function TarotResultView({ cards, aiResult, loading, question, onReset }: Props) {
@@ -78,6 +181,8 @@ export default function TarotResultView({ cards, aiResult, loading, question, on
           </div>
         ) : (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <TarotBriefingPanel aiResult={aiResult} />
+            <div className="my-5 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(157,143,255,0.24), transparent)' }} />
             <ReactMarkdown
               components={{
                 h2: ({ children }) => (
