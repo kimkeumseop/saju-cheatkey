@@ -199,11 +199,39 @@ function extractMonths(lines: string[]) {
   return months;
 }
 
+function isLowPrioritySajuSection(section: BriefingSection) {
+  const title = section.title.replace(/\s/g, '');
+  return title.includes('연애운') ||
+    title.includes('인간관계') ||
+    title.includes('인연이머무는곳') ||
+    title.includes('관계의비결');
+}
+
 function SajuBriefingPanel({ sections, userName, currentYear }: { sections: BriefingSection[]; userName: string; currentYear: number }) {
-  const moneyTimingSection = findReportSection(sections, ['돈이움직이는시기표', '돈들어오는시기'], ['돈이 들어오기 쉬운 구간', '지출과 손실']);
+  const daeyunSection = findReportSection(sections, ['향후대운10년돈타이밍', '대운10년돈타이밍'], ['대박 가능 구간', '손실 주의 구간']);
+  const moneyTimingSection = findReportSection(sections, [`${currentYear}년돈이움직이는시기표`, '돈이움직이는시기표', '돈들어오는시기'], ['돈이 들어오기 쉬운 구간', '지출과 손실']);
   const wealthSection = findReportSection(sections, ['재물운', '지갑', '돈'], ['재물 포인트', '수입']);
   const yearSection = findReportSection(sections, [`${currentYear}년`, '운세흐름', '럭키포인트']);
   const natureSection = findReportSection(sections, ['기질', '본성', '진짜모습']);
+
+  const daeyunJackpotLines = getBlockLines(
+    daeyunSection,
+    ['대박 가능 구간', '승부'],
+    ['돈이 쌓이는 구간', '손실 주의 구간', '인생 의사결정'],
+    2
+  );
+  const daeyunCautionLines = getBlockLines(
+    daeyunSection,
+    ['손실 주의 구간', '주의'],
+    ['인생 의사결정', '대박 가능 구간', '돈이 쌓이는 구간'],
+    2
+  );
+  const daeyunDecisionLines = getBlockLines(
+    daeyunSection,
+    ['인생 의사결정 포인트', '의사결정'],
+    ['대박 가능 구간', '돈이 쌓이는 구간', '손실 주의 구간'],
+    3
+  );
 
   const opportunityLines = getBlockLines(
     moneyTimingSection,
@@ -245,6 +273,9 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
     '한 번에 크게 베팅하기보다 이미 가진 강점을 수입 루트로 바꾸는 방식이 좋아요.',
     '협상, 성과 정리, 부업 테스트처럼 결과가 숫자로 남는 움직임에 힘을 주세요.',
   ];
+  const daeyunWins = daeyunJackpotLines.length > 0 ? daeyunJackpotLines : wins;
+  const daeyunRisks = daeyunCautionLines.length > 0 ? daeyunCautionLines : cautions.slice(0, 2);
+  const daeyunDecisions = daeyunDecisionLines.length > 0 ? daeyunDecisionLines : actions;
 
   const opportunityMonths = extractMonths(opportunities);
   const cautionMonths = extractMonths(cautions);
@@ -279,9 +310,33 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <BriefingCard
+          icon={<TrendingUp className="w-5 h-5" />}
+          label="대운"
+          title="향후 10년 승부 구간"
+          lines={daeyunWins}
+          accent="#9d8fff"
+        />
+        <BriefingCard
+          icon={<AlertTriangle className="w-5 h-5" />}
+          label="대운 주의"
+          title="크게 새기 쉬운 구간"
+          lines={daeyunRisks}
+          accent="#ffb86b"
+        />
+        <BriefingCard
+          icon={<CheckCircle2 className="w-5 h-5" />}
+          label="결정"
+          title="인생 의사결정 포인트"
+          lines={daeyunDecisions}
+          accent="#e8829a"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <BriefingCard
           icon={<CircleDollarSign className="w-5 h-5" />}
           label="돈"
-          title="들어오기 쉬운 구간"
+          title={`${currentYear}년 들어오기 쉬운 구간`}
           lines={opportunities}
           accent="#00d18f"
         />
@@ -675,7 +730,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                   const storySection = result.sections.find(
                     (s) => s.title.includes('인스타 스토리') || s.title.includes('스토리 요약')
                   );
-                  const accordionSections = result.sections.filter((s) => s !== storySection);
+                  const accordionSections = result.sections.filter((s) => s !== storySection && !isLowPrioritySajuSection(s));
                   return (
                     <>
                       <SajuBriefingPanel

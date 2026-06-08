@@ -79,6 +79,24 @@ function buildDaYunText(daYun: any[]) {
     .join(' / ');
 }
 
+function calcAge(birthDate: string, currentYear: number) {
+  const birthYear = Number(birthDate?.split('-')?.[0]);
+  if (!birthYear || Number.isNaN(birthYear)) return 25;
+  return Math.max(0, currentYear - birthYear);
+}
+
+function buildDaYunRangeText(daYun: any[], currentYear: number, currentAge: number) {
+  if (!Array.isArray(daYun) || daYun.length === 0) return '대운 구간 정보 없음';
+  return daYun
+    .map((dy, index) => {
+      const nextAge = daYun[index + 1]?.age ?? dy.age + 10;
+      const startYear = currentYear + (dy.age - currentAge);
+      const endYear = startYear + Math.max(1, nextAge - dy.age) - 1;
+      return `${dy.age}세~${nextAge - 1}세(약 ${startYear}~${endYear}년): ${dy.ganKo}${dy.zhiKo} / ${ELEMENT_NATURE[dy.ganElement]} + ${ELEMENT_NATURE[dy.zhiElement]}`;
+    })
+    .join(' / ');
+}
+
 async function generateWithRetry(model: any, prompt: string, maxRetries = 2) {
   for (let i = 0; i < maxRetries; i++) {
     try {
@@ -109,9 +127,11 @@ export async function POST(req: Request) {
       .join(' ');
     const elementDist = `목:${sajuData.elementsCount['목']}, 화:${sajuData.elementsCount['화']}, 토:${sajuData.elementsCount['토']}, 금:${sajuData.elementsCount['금']}, 수:${sajuData.elementsCount['수']}`;
     const { todayText, currentYear } = getKoreanDateParts();
+    const currentAge = calcAge(birthDate, currentYear);
     const yearlyFlowText = buildYearlyFlowText(currentYear);
     const monthlyFlowText = buildMonthlyFlowText(currentYear);
     const daYunText = buildDaYunText(sajuData.daYun);
+    const daYunRangeText = buildDaYunRangeText(sajuData.daYun, currentYear, currentAge);
 
     if (!apiKey) {
       return NextResponse.json(
@@ -150,10 +170,12 @@ export async function POST(req: Request) {
       [유저 정보]
       - 성함: ${name} (${gender})
       - 분석 기준일: ${todayText}
+      - 현재 나이 참고값: 약 ${currentAge}세
       - 사주 데이터: ${pillarsText}
       - 타고난 일간: ${sajuData.dayGanKo}
       - 오행 분포: ${elementDist}
       - 10년 주기 흐름: ${daYunText}
+      - 10년 주기 상세 구간: ${daYunRangeText}
       - ${currentYear}년 월별 흐름 참고값: ${monthlyFlowText}
       - 향후 3년 흐름 참고값: ${yearlyFlowText}
 
@@ -163,6 +185,8 @@ export async function POST(req: Request) {
       3. 같은 표현을 반복하지 마라. 특히 "빛나요", "같아요", "흐름", "기회"를 과하게 반복하지 말고 섹션마다 다른 어휘를 써라.
       4. 돈, 대박, 주의 시점은 단정적 예언처럼 말하지 말고 "기회가 커지는 구간", "지출이 새기 쉬운 구간", "준비하면 터질 수 있는 구간"처럼 현실적 행동과 함께 말해라.
       5. 근거는 화면에 전문 용어로 노출하지 말고, 자연물과 생활 언어로 번역해서 설명해라.
+      6. 모든 시기를 좋게 쓰지 마라. 좋은 시기, 보통의 준비 시기, 조심할 시기를 반드시 나누어라.
+      7. 올해 운세만 과하게 강조하지 마라. 올해는 월별 실전 계획으로만 다루고, 큰 돈의 흐름은 10년 주기 대운에서 판단해라.
 
       [💎 유료 리포트 깊이 규칙 - 돈 주고 보는 느낌]
       1. 각 섹션은 얕은 칭찬으로 끝내지 말고 반드시 아래 4단계를 포함해라.
@@ -174,25 +198,40 @@ export async function POST(req: Request) {
       3. 뭉뚱그린 조언을 금지한다. "열심히 하세요", "긍정적으로 생각하세요", "기회를 잡으세요"처럼 누구에게나 맞는 말은 쓰지 마라.
       4. 사용자가 "나를 실제로 보고 쓴 것 같다"고 느끼도록 관찰 문장을 넣어라. 예: "돈을 벌 때보다 돈이 새는 이유를 뒤늦게 발견하는 패턴이 있어요."
       5. 재물/직업/올해운 섹션은 반드시 **좋은 시기**, **주의 시기**, **추천 행동**, **피해야 할 행동**을 모두 담아라.
-      6. 연애/관계 섹션은 반드시 **끌리는 사람**, **반복 갈등**, **좋은 궁합의 태도**, **관계에서 돈/일과 충돌하는 지점**을 담아라.
-      7. 위로 섹션은 감성만 쓰지 말고, 유저가 지치는 이유와 회복 루틴을 3가지로 제시해라.
-      8. 전체 톤은 고급 상담 리포트처럼 확신 있게 말하되, 미래를 100% 단정하지 말고 선택 가능성을 열어둬라.
+      6. 대운 섹션은 반드시 **대박 가능 구간 2개**, **돈이 쌓이는 구간 2개**, **손실 주의 구간 2개**, **인생 의사결정 포인트 3개**를 담아라.
+      7. 대운 섹션에서는 모든 10년 구간을 좋다고 하지 말고, 구간마다 등급을 나누어라. 등급은 "승부", "축적", "정비", "주의" 중 하나만 사용해라.
+      8. 위로 섹션은 감성만 쓰지 말고, 유저가 지치는 이유와 회복 루틴을 3가지로 제시해라.
+      9. 전체 톤은 고급 상담 리포트처럼 확신 있게 말하되, 미래를 100% 단정하지 말고 선택 가능성을 열어둬라.
 
       [필수 지시사항 - 구조와 형식]
       1. 반드시 아래 8개의 주제를 모두 포함하여 8개의 독립된 분석 섹션을 빠짐없이 작성해. AI가 임의로 섹션을 생략하거나 합치거나 중간에 답변을 끊는 것은 절대 금지.
          ① 타고난 기질과 본성 (나도 몰랐던 나의 진짜 모습)
          ② 재물운 (나에게 맞는 돈의 그릇과 수입 방식)
-         ③ 돈 들어오는 시기 & 조심할 시기 (월/분기/나이대 기반 타이밍)
+         ③ 향후 대운 10년 돈 타이밍 (언제 크게 치고 언제 조심해야 하는지)
          ④ 직업운 (내가 가장 빛날 수 있는 커리어 무대와 성공 전략)
-         ⑤ 연애운 & 인간관계 (나의 인연이 머무는 곳과 관계의 비결)
-         ⑥ 숨겨진 아픔과 다정한 위로 (지친 영혼을 위한 따뜻한 응원)
-         ⑦ ${currentYear}년 운세 흐름 & 럭키 포인트 (올해 꼭 잡아야 할 기회)
+         ⑤ 돈 들어오는 시기 & 조심할 시기 (${currentYear}년 월별 실전 계획)
+         ⑥ 조심해야 할 돈 새는 패턴 (손실, 계약, 사람, 과로)
+         ⑦ 숨겨진 아픔과 다정한 위로 (지친 영혼을 위한 따뜻한 응원)
          ⑧ 인스타 스토리 요약 (SNS 공유용 초핵심 요약)
       2. **각 주제(섹션)로 넘어갈 때마다 우리가 프론트엔드에서 카드를 쪼개는 기준점인 "## [이모지] [주제에 맞는 다정한 소제목]" 포맷을 절대 빼먹지 말고 매번 반복해서 작성해! (총 8번 등장해야 함)**
          - 소제목(##) 후킹 최적화: 단순히 '재물운'이 아니라, "내 지갑은 언제쯤 두둑해질까? 💰" 처럼 유저의 호기심을 자극하고 공감할 수 있는 대화형 문장으로 작성해라.
 
-      [🔥 3번 섹션: 돈 들어오는 시기 & 조심할 시기 작성 규칙 - 절대 준수]
-      - 섹션 제목은 반드시 "## 💸 돈이 움직이는 시기표" 로 작성해.
+      [🔥 3번 섹션: 향후 대운 10년 돈 타이밍 작성 규칙 - 절대 준수]
+      - 섹션 제목은 반드시 "## 🚀 향후 대운 10년 돈 타이밍" 으로 작성해.
+      - ${daYunRangeText}를 기준으로 미래 10년 주기들을 비교해라.
+      - 반드시 아래 4개 블록 라벨을 글자 그대로 포함해라.
+        1) **대박 가능 구간 2개**
+        2) **돈이 쌓이는 구간 2개**
+        3) **손실 주의 구간 2개**
+        4) **인생 의사결정 포인트 3개**
+      - 각 구간에는 나이대와 예상 연도 범위를 함께 써라.
+      - 각 구간은 "왜 그 구간인지", "무엇을 하면 돈으로 연결되는지", "무엇을 조심해야 하는지"를 포함해라.
+      - 대박 가능 구간은 2개를 넘기지 마라.
+      - 손실 주의 구간도 반드시 2개를 골라라.
+      - 투자 종목, 로또, 코인 대박처럼 위험한 확정 표현은 금지한다.
+
+      [🔥 5번 섹션: ${currentYear}년 돈 들어오는 시기 & 조심할 시기 작성 규칙 - 절대 준수]
+      - 섹션 제목은 반드시 "## 💸 ${currentYear}년 돈이 움직이는 시기표" 로 작성해.
       - 반드시 아래 4개 블록 라벨을 글자 그대로 포함해라. 이 라벨은 프론트엔드 요약 카드의 추출 기준이므로 바꾸지 마라.
         1) **돈이 들어오기 쉬운 구간 3개**
         2) **대박을 노려볼 만한 방식 2개**
@@ -210,7 +249,7 @@ export async function POST(req: Request) {
       - 섹션 제목은 반드시 "## 📸 인스타 스토리 요약" 으로 작성해.
       - 후킹 제목: 유저의 타고난 기질을 다정하고 직관적인 '한 문장 비유'로 표현해. (예: "${name}님은 웅장한 산봉우리 같은 든든한 존재예요.")
       - 핵심 특징 3가지: 전체 분석에서 가장 듣기 좋은 특징 3가지만 글머리 기호(💡, ✅ 등)를 사용해 초단문으로 요약해.
-      - 바이럴 포인트: "${currentYear}년 재물운 대폭발 💸"처럼 유저가 자랑하고 싶은 '특별한 혜택' 문구 한 줄을 반드시 마지막에 포함해.
+      - 바이럴 포인트: "내 돈 타이밍, 언제 승부 보고 언제 조심할까 💸"처럼 좋고 나쁨이 함께 보이는 문구 한 줄을 반드시 마지막에 포함해.
 
       [필수 지시사항 - AI 글쓰기 절대 규칙 (가독성 최우선, 스낵 컬처 스타일)]
       1. AI가 줄글(수필) 형태로 길게 쓰는 것을 엄격히 금지한다. 대신 짧은 문장 여러 개로 깊이를 만들어라.
