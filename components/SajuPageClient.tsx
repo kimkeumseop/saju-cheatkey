@@ -9,6 +9,25 @@ import { useAuth } from '@/lib/auth';
 import { db } from '@/lib/firebase';
 import { calculateSaju } from '@/lib/saju';
 
+async function readApiResponse(response: Response) {
+  const text = await response.text();
+  if (!text) return {};
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    const timeoutMessage = response.status === 504
+      ? '분석 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.'
+      : '서버 응답을 읽지 못했습니다. 잠시 후 다시 시도해 주세요.';
+
+    return {
+      success: false,
+      error: timeoutMessage,
+      raw: text.slice(0, 160),
+    };
+  }
+}
+
 function SajuProcessingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -72,7 +91,7 @@ function SajuProcessingContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, birthDate, birthTime, calendarType, gender, isTimeUnknown }),
       });
-      const responseBody = await response.json();
+      const responseBody = await readApiResponse(response);
       if (!response.ok || !responseBody.success) throw new Error(responseBody.error || '사주 분석 요청에 실패했습니다.');
       const finalResult = {
         type: 'saju', userId: user?.uid || 'anonymous', userName: name,
@@ -95,8 +114,8 @@ function SajuProcessingContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user1, user2, relationship: relation }),
       });
-      if (!response.ok) throw new Error('궁합 분석 서버 응답 실패');
-      const resData = await response.json();
+      const resData = await readApiResponse(response);
+      if (!response.ok || resData.success === false) throw new Error(resData.error || '궁합 분석 서버 응답 실패');
       const finalResult = {
         type: 'compatibility', userId: user?.uid || 'anonymous',
         user1, user2, saju1, saju2, relation, aiResult: resData.analysis,

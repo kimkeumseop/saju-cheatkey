@@ -241,10 +241,10 @@ export async function POST(req: Request) {
     ];
 
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.5-flash-lite',
       generationConfig: {
-        temperature: 0.72,
-        maxOutputTokens: 14000,
+        temperature: 0.68,
+        maxOutputTokens: 8500,
         topP: 0.95,
       },
       safetySettings,
@@ -395,22 +395,12 @@ export async function POST(req: Request) {
       \\n\\n
     `;
 
-    const firstResult = await generateWithRetry(model, prompt);
+    const firstResult = await generateWithRetry(model, prompt, 1);
     responseText = firstResult.text;
 
     const firstIssues = getSajuReportIssues(responseText, firstResult.finishReason);
     if (firstIssues.length > 0) {
-      console.warn('[Gemini/Saju] Incomplete report detected, requesting repair:', firstIssues);
-      const repairedResult = await generateWithRetry(model, buildRepairPrompt(prompt, firstIssues), 1);
-      const repairedIssues = getSajuReportIssues(repairedResult.text, repairedResult.finishReason);
-
-      if (repairedIssues.length <= firstIssues.length) {
-        responseText = repairedResult.text;
-      }
-
-      if (repairedIssues.length > 0) {
-        console.warn('[Gemini/Saju] Repaired report still has issues:', repairedIssues);
-      }
+      console.warn('[Gemini/Saju] Report completed with validation warnings:', firstIssues);
     }
 
     return NextResponse.json({ success: true, saju: sajuData, analysis: responseText.trim() });
