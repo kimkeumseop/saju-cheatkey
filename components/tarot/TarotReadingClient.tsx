@@ -1,12 +1,11 @@
 'use client'
 // src/components/tarot/TarotReadingClient.tsx
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TAROT_CARDS, SPREAD_LABELS, TarotCard } from '@/data/tarotCards'
+import { getTarotImageUrl } from '@/data/tarotImages'
 import TarotResultView from './TarotResultView'
 import CosmicBackground from '@/components/CosmicBackground'
-import { db } from '@/lib/firebase'
-import { collection, getDocs } from 'firebase/firestore'
 import TarotCardImage from './TarotCardImage'
 
 interface DrawnCard extends TarotCard { isReversed: boolean; position: string }
@@ -48,21 +47,6 @@ const T = {
 export default function TarotReadingClient() {
   const [step, setStep] = useState<Step>('spread')
   const [spreadType, setSpreadType] = useState<1 | 3 | 5>(1)
-  const [cardImages, setCardImages] = useState<Record<number, string>>({})
-
-  useEffect(() => {
-    if (!db) return
-    getDocs(collection(db, 'tarotCards')).then((snap) => {
-      const map: Record<number, string> = {}
-      snap.forEach((doc) => {
-        const d = doc.data()
-        const id = Number(d.id ?? doc.id)
-        const imageUrl = typeof d.imageUrl === 'string' ? d.imageUrl.trim() : ''
-        if (Number.isFinite(id) && imageUrl) map[id] = imageUrl
-      })
-      setCardImages(map)
-    }).catch(() => {})
-  }, [])
   const [question, setQuestion] = useState('')
   const [shuffling, setShuffling] = useState(false)
   const [drawnCards, setDrawnCards] = useState<DrawnCard[]>([])
@@ -84,7 +68,7 @@ export default function TarotReadingClient() {
     for (let i = 0; i < spreadType; i++) {
       const idx = Math.floor(Math.random() * pool.length)
       const card = pool.splice(idx, 1)[0]
-      picked.push({ ...card, imageUrl: cardImages[card.id], isReversed: Math.random() < 0.3, position: labels[i] })
+      picked.push({ ...card, imageUrl: getTarotImageUrl(card.id) || undefined, isReversed: Math.random() < 0.3, position: labels[i] })
     }
     setDrawnCards(picked)
     setFlipped(Array(spreadType).fill(false))

@@ -1,11 +1,10 @@
 'use client'
 // src/components/tarot/TarotDictionaryClient.tsx
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { TAROT_CARDS, ARCANA_LABELS, TarotCard, Arcana } from '@/data/tarotCards'
+import { getTarotImageUrl } from '@/data/tarotImages'
 import { AnimatePresence, motion } from 'framer-motion'
 import CosmicBackground from '@/components/CosmicBackground'
-import { db } from '@/lib/firebase'
-import { collection, getDocs } from 'firebase/firestore'
 import TarotCardImage from './TarotCardImage'
 
 // 아르카나별 색상 (퍼플 베이스 + 아르카나 고유색)
@@ -21,21 +20,6 @@ export default function TarotDictionaryClient() {
   const [filter, setFilter] = useState<'all' | Arcana>('all')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<TarotCard | null>(null)
-  const [cardImages, setCardImages] = useState<Record<number, string>>({})
-
-  useEffect(() => {
-    if (!db) return
-    getDocs(collection(db, 'tarotCards')).then((snap) => {
-      const map: Record<number, string> = {}
-      snap.forEach((doc) => {
-        const d = doc.data()
-        const id = Number(d.id ?? doc.id)
-        const imageUrl = typeof d.imageUrl === 'string' ? d.imageUrl.trim() : ''
-        if (Number.isFinite(id) && imageUrl) map[id] = imageUrl
-      })
-      setCardImages(map)
-    }).catch(() => {})
-  }, [])
 
   const filtered = useMemo(() => {
     return TAROT_CARDS.filter((c) => {
@@ -107,7 +91,7 @@ export default function TarotDictionaryClient() {
                 style={{ borderColor: 'rgba(127,119,221,0.15)' }}
               >
                 <div className="mb-1.5 w-full aspect-[2/3] rounded-xl overflow-hidden flex items-center justify-center" style={{ background: 'var(--tarot-50)' }}>
-                  <TarotCardImage imageUrl={cardImages[card.id]} name={card.name} emoji={card.emoji} fallbackClassName="text-3xl" />
+                  <TarotCardImage imageUrl={getTarotImageUrl(card.id)} name={card.name} emoji={card.emoji} fallbackClassName="text-3xl" />
                 </div>
                 <div className="text-[10px] mb-0.5" style={{ color: 'rgba(240,232,238,0.4)' }}>{card.num}</div>
                 <div className="text-xs font-bold leading-tight mb-2" style={{ color: '#f5eef2' }}>{card.name}</div>
@@ -150,7 +134,7 @@ export default function TarotDictionaryClient() {
               <div className="flex gap-4 mb-5">
                 <div className="w-20 h-32 rounded-2xl overflow-hidden flex items-center justify-center text-4xl flex-shrink-0"
                   style={{ background: 'linear-gradient(135deg, var(--tarot-50), #f3f2ff)', border: '1px solid var(--tarot-100)' }}>
-                  <TarotCardImage imageUrl={cardImages[selected.id]} name={selected.name} emoji={selected.emoji} fallbackClassName="text-4xl" showName />
+                  <TarotCardImage imageUrl={getTarotImageUrl(selected.id)} name={selected.name} emoji={selected.emoji} fallbackClassName="text-4xl" showName />
                 </div>
                 <div className="flex-1">
                   <div className="text-[10px] tracking-widest mb-1" style={{ color: '#9d8fff' }}>{selected.num}</div>

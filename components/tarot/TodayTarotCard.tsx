@@ -1,9 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { TAROT_CARDS, TarotCard } from '@/data/tarotCards'
+import { getTarotImageUrl } from '@/data/tarotImages'
 import { motion, AnimatePresence } from 'framer-motion'
-import { db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
 import TarotCardImage from './TarotCardImage'
 
 type Period = 'morning' | 'afternoon' | 'evening'
@@ -44,17 +43,7 @@ export default function TodayTarotCard() {
   const [card, setCard] = useState<TarotCard | null>(null)
   const [revealed, setRevealed] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [period, setPeriod] = useState<Period>('morning')
-
-  async function fetchImageUrl(id: number) {
-    if (!db) return
-    const snap = await getDoc(doc(db, 'tarotCards', String(id))).catch(() => null)
-    if (snap?.exists()) {
-      const url = snap.data().imageUrl
-      setImageUrl(typeof url === 'string' && url.trim() ? url.trim() : null)
-    }
-  }
 
   useEffect(() => {
     const current = getPeriod()
@@ -62,7 +51,7 @@ export default function TodayTarotCard() {
     const saved = localStorage.getItem(getStorageKey(current))
     if (saved) {
       const found = TAROT_CARDS.find((c) => c.id === parseInt(saved))
-      if (found) { setCard(found); setRevealed(true); fetchImageUrl(found.id) }
+      if (found) { setCard(found); setRevealed(true) }
     }
 
     const msUntilNextPeriod = () => {
@@ -75,7 +64,7 @@ export default function TodayTarotCard() {
       return target.getTime() - now.getTime()
     }
     const timer = setTimeout(() => {
-      setCard(null); setRevealed(false); setImageUrl(null); setPeriod(getPeriod())
+      setCard(null); setRevealed(false); setPeriod(getPeriod())
     }, msUntilNextPeriod())
     return () => clearTimeout(timer)
   }, [])
@@ -89,7 +78,6 @@ export default function TodayTarotCard() {
       setCard(picked)
       setRevealed(true)
       setLoading(false)
-      fetchImageUrl(picked.id)
     }, 600)
   }
 
@@ -97,7 +85,6 @@ export default function TodayTarotCard() {
     localStorage.removeItem(getStorageKey(period))
     setCard(null)
     setRevealed(false)
-    setImageUrl(null)
   }
 
   const { label, icon } = PERIOD_CONFIG[period]
@@ -160,7 +147,7 @@ export default function TodayTarotCard() {
             >
               {card && (
                 <TarotCardImage
-                  imageUrl={imageUrl}
+                  imageUrl={getTarotImageUrl(card.id)}
                   name={card.name}
                   emoji={card.emoji}
                   className="w-full h-full object-contain rounded-2xl"
