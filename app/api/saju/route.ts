@@ -21,6 +21,33 @@ const ELEMENT_NATURE: Record<string, string> = {
   '水': '지혜',
 };
 
+const REQUIRED_REPORT_LABELS = [
+  '확장 구간 2개',
+  '정비 구간 2개',
+  '주의 구간 2개',
+  '중요 결정 포인트 3개',
+  '연도별 체크포인트',
+  '재물운 좋은 해 3개',
+  '수입 확장에 좋은 해 2개',
+  '지출 주의 해 3개',
+  '돈을 쌓는 방법 3개',
+  '일과 성장에 좋은 구간 3개',
+  '돈 관리에 유리한 구간 2개',
+  '컨디션과 감정 관리가 필요한 구간 3개',
+  '바로 할 일 3개',
+];
+
+const REQUIRED_REPORT_SECTIONS = [
+  '핵심 운세',
+  '기질',
+  '대운 10년',
+  '직업운',
+  '재물운',
+  '월별 운세',
+  '컨디션',
+  '인스타 스토리',
+];
+
 function getElement(char: string) {
   if ('甲乙寅卯'.includes(char)) return '木';
   if ('丙丁巳午'.includes(char)) return '火';
@@ -97,7 +124,68 @@ function buildDaYunRangeText(daYun: any[], currentYear: number, currentAge: numb
     .join(' / ');
 }
 
-async function generateWithRetry(model: any, prompt: string, maxRetries = 2) {
+function normalizeReportText(text: string) {
+  return text
+    .replace(/\r\n/g, '\n')
+    .replace(/\\n\\n/g, '\n\n')
+    .replace(/\\n/g, '\n')
+    .trim();
+}
+
+function getSajuReportIssues(text: string, finishReason?: string) {
+  const normalized = normalizeReportText(text);
+  const sectionTitles = normalized
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => /^##\s+/.test(line));
+  const compactText = normalized.replace(/\s/g, '');
+  const issues: string[] = [];
+
+  if (finishReason && !['STOP', 'FINISH_REASON_UNSPECIFIED'].includes(finishReason)) {
+    issues.push(`Gemini finishReason=${finishReason}`);
+  }
+
+  if (sectionTitles.length < 8) {
+    issues.push(`8개 섹션 중 ${sectionTitles.length}개만 생성됨`);
+  }
+
+  REQUIRED_REPORT_SECTIONS.forEach((keyword) => {
+    if (!sectionTitles.some((title) => title.replace(/\s/g, '').includes(keyword.replace(/\s/g, '')))) {
+      issues.push(`섹션 누락: ${keyword}`);
+    }
+  });
+
+  REQUIRED_REPORT_LABELS.forEach((label) => {
+    if (!compactText.includes(label.replace(/\s/g, ''))) {
+      issues.push(`필수 라벨 누락: ${label}`);
+    }
+  });
+
+  return issues;
+}
+
+function buildRepairPrompt(basePrompt: string, issues: string[]) {
+  return `${basePrompt}
+
+      [🚨 재작성 요청 - 이전 응답이 미완성으로 판정됨]
+      이전 응답 문제: ${issues.slice(0, 8).join(' / ')}
+      지금 답변은 전체 리포트를 처음부터 다시 작성해라.
+      절대 이어 쓰지 말고, 반드시 8개 섹션을 모두 완성해라.
+      각 섹션 제목은 반드시 ## 로 시작해야 하며 총 8개여야 한다.
+      대운/재물운/월별운세의 필수 라벨은 한 글자도 바꾸지 말고 포함해라.
+      길이가 부족하면 문장을 줄여라. 섹션을 생략하는 것은 실패다.
+
+      [🚨 연도별 근거 형식 - 절대 준수]
+      좋은 해와 주의 해는 반드시 아래 형식으로 써라.
+      - 2028년: 수입 확장 | 근거: 결실+성장의 해라서 성과가 돈으로 연결되기 쉽다 | 행동: 계약, 성과급, 부업 정산을 확인한다.
+      - 2029년: 지출 주의 | 근거: 안정+정비가 강해 새는 돈이 보이기 쉽다 | 행동: 큰 결제와 장기 약정은 조건을 다시 본다.
+
+      [최종 출력]
+      설명이나 사과 없이 리포트 본문만 출력해라.
+    `;
+}
+
+async function generateWithRetry(model: any, prompt: string, maxRetries = 2): Promise<{ text: string; finishReason?: string }> {
   for (let i = 0; i < maxRetries; i++) {
     try {
       console.log(`[Gemini/Saju] Attempting to generate (Attempt ${i + 1}/${maxRetries})...`);
@@ -105,13 +193,17 @@ async function generateWithRetry(model: any, prompt: string, maxRetries = 2) {
       const response = await result.response;
       const text = response.text();
       if (!text) throw new Error('AI 응답이 비어있습니다.');
-      return text;
+      return {
+        text,
+        finishReason: response.candidates?.[0]?.finishReason,
+      };
     } catch (error: any) {
       console.error(`[Gemini/Saju] Error (Attempt ${i + 1}):`, error.message);
       if (i === maxRetries - 1) throw error;
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }
+  throw new Error('AI 응답 생성에 실패했습니다.');
 }
 
 export async function POST(req: Request) {
@@ -151,8 +243,8 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-2.5-flash',
       generationConfig: {
-        temperature: 0.85,
-        maxOutputTokens: 10000,
+        temperature: 0.72,
+        maxOutputTokens: 14000,
         topP: 0.95,
       },
       safetySettings,
@@ -206,6 +298,8 @@ export async function POST(req: Request) {
       8. 건강/컨디션 섹션은 질병을 단정하지 말고, 에너지 소모 패턴, 수면/루틴/과로 주의, 회복 루틴을 현실적으로 제시해라.
       9. 전체 톤은 고급 상담 리포트처럼 확신 있게 말하되, 미래를 100% 단정하지 말고 선택 가능성을 열어둬라.
       10. 답변이 길어져서 중간에 끊기는 것은 최악이다. 길이를 줄이더라도 8개 섹션을 모두 끝까지 완성해라.
+      11. 좋은 해/좋은 달/확장 구간에는 반드시 "왜 좋은지"를 붙여라. 근거는 오행 키워드, 현재 10년 주기, 월별/연도별 참고값 중 최소 1개에서 가져와라.
+      12. 주의 해/주의 달에도 반드시 "왜 조심해야 하는지"를 붙여라. 막연한 불안 조장이 아니라 지출, 과로, 계약, 결정 피로 같은 현실 이유로 설명해라.
 
       [🧭 글맛과 가독성 규칙 - 화면에서 잘 들어오게 쓰기]
       1. "시처럼 예쁜 문장"보다 "상담사가 짚어주는 정확한 문장"을 우선해라.
@@ -240,6 +334,7 @@ export async function POST(req: Request) {
       - 각 구간에는 나이대와 예상 연도 범위를 함께 써라.
       - 구간 설명 뒤에는 반드시 **연도별 체크포인트**를 넣어라.
       - **연도별 체크포인트**에는 향후 10년 중 최소 6개 연도를 골라 "2028년: 확장", "2029년: 정비"처럼 개별 연도로 써라.
+      - **연도별 체크포인트**는 반드시 "2028년: 확장 | 근거: ... | 행동: ..." 형식으로 써라.
       - 각 구간은 "왜 그 구간인지", "일/돈/건강 중 무엇이 커지는지", "무엇을 조심해야 하는지"를 포함해라.
       - 확장 구간은 2개를 넘기지 마라.
       - 주의 구간도 반드시 2개를 골라라.
@@ -254,6 +349,7 @@ export async function POST(req: Request) {
         4) **돈을 쌓는 방법 3개**
       - 각 해는 반드시 "2028년", "2029년"처럼 개별 연도로 써라.
       - "2028~2030년 좋음"처럼 범위만 쓰는 방식은 금지한다.
+      - 각 해는 반드시 "2028년: 수입 확장 | 근거: ... | 행동: ..." 형식으로 써라.
       - 각 해마다 왜 좋은지/주의인지, 어떤 행동이 돈으로 연결되는지 한 줄로 붙여라.
       - 돈 이야기는 현실적으로 써라. 계약, 이직, 성과급, 부업, 지출 정리, 세금/정산, 건강으로 인한 지출 같은 생활 단어를 써라.
 
@@ -266,6 +362,7 @@ export async function POST(req: Request) {
         4) **바로 할 일 3개**
       - 올해 운세도 돈만 말하지 말고 일, 돈, 몸 컨디션, 결정, 휴식을 함께 섞어라.
       - 각 구간은 "왜 그 시기인지", "무엇을 하면 좋아지는지", "무엇을 피해야 하는지"를 한 줄씩 붙여라.
+      - 각 월/구간은 반드시 "3월: 성장 | 근거: ... | 행동: ..." 형식으로 써라.
       - 모든 달을 좋게 쓰지 마라. 좋음/보통/주의가 섞여야 한다.
 
       [🔥 인스타 스토리 요약 (8번 섹션) 작성 특별 규칙 - 절대 준수]
@@ -298,7 +395,24 @@ export async function POST(req: Request) {
       \\n\\n
     `;
 
-    responseText = await generateWithRetry(model, prompt);
+    const firstResult = await generateWithRetry(model, prompt);
+    responseText = firstResult.text;
+
+    const firstIssues = getSajuReportIssues(responseText, firstResult.finishReason);
+    if (firstIssues.length > 0) {
+      console.warn('[Gemini/Saju] Incomplete report detected, requesting repair:', firstIssues);
+      const repairedResult = await generateWithRetry(model, buildRepairPrompt(prompt, firstIssues), 1);
+      const repairedIssues = getSajuReportIssues(repairedResult.text, repairedResult.finishReason);
+
+      if (repairedIssues.length <= firstIssues.length) {
+        responseText = repairedResult.text;
+      }
+
+      if (repairedIssues.length > 0) {
+        console.warn('[Gemini/Saju] Repaired report still has issues:', repairedIssues);
+      }
+    }
+
     return NextResponse.json({ success: true, saju: sajuData, analysis: responseText.trim() });
 
   } catch (error: any) {
