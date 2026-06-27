@@ -246,7 +246,7 @@ export async function POST(req: Request) {
 
     const gunghapResult = await generateText({
       prompt,
-      openai: { model: 'gpt-5-mini', maxTokens: 16000, reasoningEffort: 'minimal' },
+      openai: { model: 'gpt-5-nano', maxTokens: 16000, reasoningEffort: 'minimal' },
       geminiModels: [model, fallbackModel],
       label: 'Gunghap',
     });
