@@ -29,6 +29,8 @@ export default function Footer({ dark = false }: FooterProps) {
               <h4 className="text-sm font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>안내</h4>
               <ul className="space-y-2 text-sm font-bold" style={{ color: 'rgba(255,255,255,0.25)' }}>
                 <li><Link href={footerLinks.service.href} className="transition-colors hover:text-white/60">{footerLinks.service.label}</Link></li>
+                <li><Link href={footerLinks.guide.href} className="transition-colors hover:text-white/60">{footerLinks.guide.label}</Link></li>
+                <li><Link href={footerLinks.column.href} className="transition-colors hover:text-white/60">{footerLinks.column.label}</Link></li>
                 <li><Link href={footerLinks.faq.href} className="transition-colors hover:text-white/60">{footerLinks.faq.label}</Link></li>
                 <li><Link href={footerLinks.contact.href} className="transition-colors hover:text-white/60">{footerLinks.contact.label}</Link></li>
               </ul>
@@ -85,6 +87,8 @@ export default function Footer({ dark = false }: FooterProps) {
             <h4 className="text-sm font-black text-primary-800 uppercase tracking-widest">안내</h4>
             <ul className="space-y-2 text-sm text-primary-200 font-bold">
               <li><Link href={footerLinks.service.href} className="hover:text-primary-600 transition-colors">{footerLinks.service.label}</Link></li>
+              <li><Link href={footerLinks.guide.href} className="hover:text-primary-600 transition-colors">{footerLinks.guide.label}</Link></li>
+              <li><Link href={footerLinks.column.href} className="hover:text-primary-600 transition-colors">{footerLinks.column.label}</Link></li>
               <li><Link href={footerLinks.faq.href} className="hover:text-primary-600 transition-colors">{footerLinks.faq.label}</Link></li>
               <li><Link href={footerLinks.contact.href} className="hover:text-primary-600 transition-colors">{footerLinks.contact.label}</Link></li>
             </ul>

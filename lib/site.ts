@@ -1010,6 +1010,67 @@ export const guides: GuideEntry[] = [
 
 export const guideMap = Object.fromEntries(guides.map((guide) => [guide.slug, guide]));
 
+export type ColumnEntry = {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  readMinutes: number;
+};
+
+export const columns: ColumnEntry[] = [
+  {
+    id: "3",
+    title: "2026년 병오년(丙午年), 뜨거운 불의 기운을 내 것으로 만드는 개운법 가이드",
+    description:
+      "위아래가 모두 불의 기운인 병오년의 의미와, 토·수 기운을 활용해 2026년의 강한 화기를 내 편으로 만드는 개운법을 정리했습니다.",
+    date: "2026-01-05",
+    readMinutes: 8,
+  },
+  {
+    id: "1",
+    title: "명리학과 현대 심리학의 연결성: 데이터 기반의 자아 탐구",
+    description:
+      "명리학을 미신이 아닌 통계와 기질의 학문으로 바라보고, MBTI·빅파이브 등 현대 심리학과 맞닿는 지점을 짚어봅니다.",
+    date: "2026-02-10",
+    readMinutes: 8,
+  },
+  {
+    id: "2",
+    title: "2030 세대가 운세와 사주에 열광하는 진짜 이유: 심리적 위안과 자기 객관화",
+    description:
+      "불확실성의 시대에 2030 세대가 사주와 운세를 찾는 심리적 배경과 자기 객관화의 욕구를 분석합니다.",
+    date: "2026-02-24",
+    readMinutes: 8,
+  },
+  {
+    id: "4",
+    title: "나쁜 사주는 없다 — 단점도 강점이 되는 명리학의 시각",
+    description:
+      "칠살·상관·편중된 오행도 쓰임에 따라 강점이 되는 이유를 통해 '나쁜 사주'라는 통념을 다시 바라봅니다.",
+    date: "2026-03-09",
+    readMinutes: 8,
+  },
+  {
+    id: "5",
+    title: "대운이 바뀌는 해, 무엇을 준비해야 하는가",
+    description:
+      "10년 단위로 흐르는 대운의 의미와 전환기에 나타나는 신호, 새 대운에 맞춰 삶을 재설계하는 법을 안내합니다.",
+    date: "2026-03-23",
+    readMinutes: 8,
+  },
+  {
+    id: "6",
+    title: "사주를 처음 봤는데 맞지 않는다고 느낄 때 — 해석의 층위에 대하여",
+    description:
+      "사주 해석이 나와 다르게 느껴지는 이유를 일간·일지·대운 등 해석의 여러 층위로 풀어 설명합니다.",
+    date: "2026-04-06",
+    readMinutes: 8,
+  },
+];
+
+export const columnMap = Object.fromEntries(columns.map((column) => [column.id, column]));
+
 export const faqEntries = [
   {
     question: "사주 치트키는 어떤 정보를 바탕으로 사주를 계산하나요?",
@@ -1050,6 +1111,8 @@ export const faqEntries = [
 
 export const footerLinks = {
   service: { href: "/about", label: "서비스 소개" },
+  guide: { href: "/guide", label: "사주 기초 가이드" },
+  column: { href: "/column", label: "명리 칼럼" },
   faq: { href: "/faq", label: "FAQ" },
   contact: { href: "/contact", label: "문의하기" },
   privacy: { href: "/privacy", label: "개인정보처리방침" },

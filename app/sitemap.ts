@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { SITE_URL } from '@/lib/site'
+import { SITE_URL, columns } from '@/lib/site'
 
 const MBTI_TYPES = [
   'INTJ', 'INTP', 'ENTJ', 'ENTP',
@@ -28,6 +28,8 @@ const SITEMAP_ROUTES = [
   { path: '/guide/common-misunderstandings', changeFrequency: 'monthly' as const, priority: 0.8 },
   { path: '/guide/birth-time-unknown', changeFrequency: 'monthly' as const, priority: 0.8 },
 
+  { path: '/column', changeFrequency: 'monthly' as const, priority: 0.8 },
+
   { path: '/faq', changeFrequency: 'monthly' as const, priority: 0.7 },
   { path: '/privacy', changeFrequency: 'yearly' as const, priority: 0.5 },
   { path: '/terms', changeFrequency: 'yearly' as const, priority: 0.5 },
@@ -52,5 +54,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.75,
   }))
 
-  return [...staticRoutes, ...mbtiResultRoutes]
+  const columnRoutes = columns.map((column) => ({
+    url: new URL(`/column/${column.id}`, SITE_URL).toString(),
+    lastModified: new Date(column.date),
+    changeFrequency: 'monthly' as const,
+    priority: 0.75,
+  }))
+
+  return [...staticRoutes, ...mbtiResultRoutes, ...columnRoutes]
 }
