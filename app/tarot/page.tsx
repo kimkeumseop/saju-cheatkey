@@ -3,6 +3,8 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import TodayTarotCard from '@/components/tarot/TodayTarotCard'
 import CosmicBackground from '@/components/CosmicBackground'
+import Footer from '@/components/Footer'
+import RelatedReads from '@/components/RelatedReads'
 
 export const metadata: Metadata = {
   title: '무료 타로 카드 리딩 AI 해석 | 사주 치트키',
@@ -126,6 +128,15 @@ export default function TarotPage() {
         </div>
       </section>
 
+      <section className="relative z-10 px-4 max-w-3xl mx-auto pb-24">
+        <RelatedReads
+          title="명리 칼럼으로 더 깊이"
+          description="타로가 오늘의 흐름을 비춰준다면, 명리 칼럼은 나를 이해하는 더 큰 틀을 보여줍니다. 함께 읽어보세요."
+          featuredColumnIds={['1', '2', '6']}
+        />
+      </section>
+
+      <Footer dark />
     </main>
     </>
   )

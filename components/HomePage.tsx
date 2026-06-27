@@ -621,6 +621,18 @@ export default function HomePage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
+                  href="/column"
+                  className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black transition hover:scale-[1.02]"
+                  style={{
+                    background: 'rgba(157,143,255,0.10)',
+                    border: '1px solid rgba(157,143,255,0.20)',
+                    color: '#9d8fff',
+                  }}
+                >
+                  명리 칼럼 보기
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
                   href="/faq"
                   className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black transition hover:scale-[1.02]"
                   style={{

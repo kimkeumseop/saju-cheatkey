@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CosmicBackground from '@/components/CosmicBackground';
 import SajuPageClient from '@/components/SajuPageClient';
+import RelatedReads from '@/components/RelatedReads';
 import { createMetadata } from '@/lib/site';
 
 export const metadata = createMetadata({
@@ -200,6 +201,11 @@ export default function SajuPage() {
             ))}
           </div>
         </section>
+
+        <RelatedReads
+          title="명리 칼럼으로 한 걸음 더"
+          description="사주 결과를 더 깊이 음미하고 싶다면, 명리학을 삶의 언어로 풀어낸 칼럼을 함께 읽어보세요."
+        />
 
       </div>
 

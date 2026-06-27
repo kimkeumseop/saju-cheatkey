@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import CosmicBackground from '@/components/CosmicBackground';
 import GunghapCTA from '@/components/GunghapCTA';
 import GungHapProcessingClient from '@/components/GungHapProcessingClient';
+import RelatedReads from '@/components/RelatedReads';
 import { createMetadata } from '@/lib/site';
 
 export const metadata: Metadata = createMetadata({
@@ -197,6 +198,12 @@ export default function GunghapPage() {
             ))}
           </div>
         </section>
+
+        <RelatedReads
+          title="궁합을 더 깊이 이해하는 칼럼"
+          description="두 사람의 기운이 어떻게 만나는지, 관계와 해석의 층위를 다룬 명리 칼럼을 함께 읽어보세요."
+          featuredColumnIds={['2', '4', '6']}
+        />
 
       </div>
 

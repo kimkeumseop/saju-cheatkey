@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Brain, ChevronRight, SlidersHorizontal, Timer } from 'lucide-react';
 import CosmicBackground from '@/components/CosmicBackground';
+import Footer from '@/components/Footer';
+import RelatedReads from '@/components/RelatedReads';
 import { createMetadata } from '@/lib/site';
 
 export const metadata: Metadata = createMetadata({
@@ -114,6 +116,18 @@ export default function MbtiHomePage() {
           })}
         </div>
       </section>
+
+      <section className="relative z-10 mt-12 px-6">
+        <div className="mx-auto max-w-5xl">
+          <RelatedReads
+            title="성격을 더 깊이 읽는 명리 칼럼"
+            description="MBTI가 성격의 한 단면이라면, 명리학은 타고난 기질을 또 다른 언어로 풀어냅니다. 두 관점을 함께 비교해보세요."
+            featuredColumnIds={['1', '2', '6']}
+          />
+        </div>
+      </section>
+
+      <Footer dark />
     </main>
     </>
   );
