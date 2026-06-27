@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { Solar } from 'lunar-javascript';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { generateContentWithRetry } from '@/lib/gemini';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -248,27 +249,6 @@ function buildRepairPrompt(basePrompt: string, issues: string[]) {
     `;
 }
 
-async function generateWithRetry(model: any, prompt: string, maxRetries = 2): Promise<{ text: string; finishReason?: string }> {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      console.log(`[Gemini/Saju] Attempting to generate (Attempt ${i + 1}/${maxRetries})...`);
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      if (!text) throw new Error('AI 응답이 비어있습니다.');
-      return {
-        text,
-        finishReason: response.candidates?.[0]?.finishReason,
-      };
-    } catch (error: any) {
-      console.error(`[Gemini/Saju] Error (Attempt ${i + 1}):`, error.message);
-      if (i === maxRetries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-  }
-  throw new Error('AI 응답 생성에 실패했습니다.');
-}
-
 export async function POST(req: Request) {
   let responseText = '';
   try {
@@ -303,13 +283,20 @@ export async function POST(req: Request) {
       { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
     ];
 
-    const model = genAI.getGenerativeModel({ 
+    const generationConfig = {
+      temperature: 0.68,
+      maxOutputTokens: 8500,
+      topP: 0.95,
+    };
+    const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-lite',
-      generationConfig: {
-        temperature: 0.68,
-        maxOutputTokens: 8500,
-        topP: 0.95,
-      },
+      generationConfig,
+      safetySettings,
+    });
+    // lite 모델이 과부하(503)일 때를 대비한 폴백 모델
+    const fallbackModel = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      generationConfig,
       safetySettings,
     });
 
@@ -473,7 +460,7 @@ export async function POST(req: Request) {
       \\n\\n
     `;
 
-    const firstResult = await generateWithRetry(model, prompt, 1);
+    const firstResult = await generateContentWithRetry([model, fallbackModel], prompt, { label: 'Gemini/Saju' });
     responseText = firstResult.text;
 
     const firstIssues = getSajuReportIssues(responseText, firstResult.finishReason);

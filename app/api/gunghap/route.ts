@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { generateContentWithRetry } from '@/lib/gemini';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -122,19 +123,6 @@ function sanitizeYearRangeText(text: string) {
     .replace(/\s*\+\s*/g, ', ');
 }
 
-async function generateWithRetry(model: any, prompt: string, maxRetries = 1) {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
-    } catch (error: any) {
-      if (i === maxRetries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-  }
-}
-
 export async function POST(req: Request) {
   let responseText = '';
   try {
@@ -171,13 +159,20 @@ export async function POST(req: Request) {
       { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
     ];
 
-    const model = genAI.getGenerativeModel({ 
+    const generationConfig = {
+      temperature: 0.68,
+      maxOutputTokens: 8500,
+      topP: 0.95,
+    };
+    const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-lite',
-      generationConfig: {
-        temperature: 0.68,
-        maxOutputTokens: 8500,
-        topP: 0.95,
-      },
+      generationConfig,
+      safetySettings,
+    });
+    // lite 모델이 과부하(503)일 때를 대비한 폴백 모델
+    const fallbackModel = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      generationConfig,
       safetySettings,
     });
 
@@ -249,7 +244,8 @@ export async function POST(req: Request) {
       설명이나 사과 없이 리포트 본문만 출력해라.
     `;
 
-    responseText = sanitizeYearRangeText(await generateWithRetry(model, prompt));
+    const gunghapResult = await generateContentWithRetry([model, fallbackModel], prompt, { label: 'Gemini/Gunghap' });
+    responseText = sanitizeYearRangeText(gunghapResult.text);
     return NextResponse.json({
       success: true,
       analysis: responseText.trim(),

@@ -1,6 +1,7 @@
 // src/app/api/tarot/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
+import { generateContentWithRetry } from '@/lib/gemini'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -78,8 +79,7 @@ ${question ? `\n## 질문\n${question}` : ''}
       safetySettings,
     })
 
-    const result = await model.generateContent(prompt)
-    const text = result.response.text()
+    const { text } = await generateContentWithRetry([model], prompt, { label: 'Gemini/Tarot' })
 
     return NextResponse.json({ result: text })
   } catch (err) {
