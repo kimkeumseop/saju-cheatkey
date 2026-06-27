@@ -89,3 +89,26 @@ export async function openaiGenerateMessages(
 export function openaiGenerate(prompt: string, options: OpenAIGenerateOptions): Promise<OpenAIGenerateResult> {
   return openaiGenerateMessages([{ role: 'user', content: prompt }], options);
 }
+
+// 스트리밍 생성: 토큰 델타를 순차적으로 yield 한다.
+export async function* openaiStreamMessages(
+  messages: ChatMessage[],
+  { model, maxTokens = 4096, json = false, reasoningEffort }: OpenAIGenerateOptions
+): AsyncGenerator<string> {
+  const openai = getOpenAI();
+
+  const params: any = {
+    model,
+    messages,
+    max_completion_tokens: maxTokens,
+    stream: true,
+  };
+  if (json) params.response_format = { type: 'json_object' };
+  if (reasoningEffort) params.reasoning_effort = reasoningEffort;
+
+  const stream: any = await openai.chat.completions.create(params);
+  for await (const chunk of stream) {
+    const delta = chunk?.choices?.[0]?.delta?.content;
+    if (delta) yield delta as string;
+  }
+}

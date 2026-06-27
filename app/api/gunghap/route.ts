@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
-import { generateText } from '@/lib/ai';
+import { streamReport } from '@/lib/ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -130,9 +130,9 @@ export async function POST(req: Request) {
     const relationLabel = relationLabels[relationship] || '인연';
     const currentYear = getCurrentYear();
     
-    if (!apiKey) {
+    if (!apiKey && !process.env.OPENAI_API_KEY) {
       return NextResponse.json(
-        { success: false, error: 'GEMINI_API_KEY 환경변수가 설정되지 않았습니다.' },
+        { success: false, error: 'AI API 키(OPENAI/GEMINI)가 설정되지 않았습니다.' },
         { status: 500 }
       );
     }
@@ -151,7 +151,7 @@ export async function POST(req: Request) {
       .map(p => `${p.ganKo}${p.zhiKo}(${p.tenGodGan}/${p.tenGodZhi})`)
       .join(' ');
 
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const genAI = new GoogleGenerativeAI(apiKey || '');
     const safetySettings = [
       { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
       { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
@@ -244,18 +244,20 @@ export async function POST(req: Request) {
       설명이나 사과 없이 리포트 본문만 출력해라.
     `;
 
-    const gunghapResult = await generateText({
+    const stream = streamReport({
       prompt,
       openai: { model: 'gpt-5-nano', maxTokens: 16000, reasoningEffort: 'minimal' },
       geminiModels: [model, fallbackModel],
+      postProcess: (text) => sanitizeYearRangeText(text).trim(),
       label: 'Gunghap',
     });
-    responseText = sanitizeYearRangeText(gunghapResult.text);
-    return NextResponse.json({
-      success: true,
-      analysis: responseText.trim(),
-      saju1,
-      saju2
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'application/x-ndjson; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        'X-Accel-Buffering': 'no',
+      },
     });
 
   } catch (error: any) {

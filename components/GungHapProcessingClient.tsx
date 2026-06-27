@@ -7,23 +7,7 @@ import { Heart, Loader2, Sparkles } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { db } from '@/lib/firebase';
 import { calculateSaju } from '@/lib/saju';
-
-async function readApiResponse(response: Response) {
-  const text = await response.text();
-  if (!text) return {};
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return {
-      success: false,
-      error: response.status === 504
-        ? '분석 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.'
-        : '서버 응답을 읽지 못했습니다. 잠시 후 다시 시도해 주세요.',
-      raw: text.slice(0, 160),
-    };
-  }
-}
+import { streamAnalysis, cleanPreview } from '@/lib/streamAnalysis';
 
 function normalizeCalendarType(value: string | null): 'solar' | 'lunar' {
   return value === 'lunar' ? 'lunar' : 'solar';
@@ -35,6 +19,14 @@ function GungHapProcessingContent() {
   const { user } = useAuth();
   const hasStartedRef = useRef(false);
   const [loadingStep, setLoadingStep] = useState('두 사람의 인연 결을 맞춰보고 있어요...');
+  const [streamedText, setStreamedText] = useState('');
+  const streamBoxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (streamBoxRef.current) {
+      streamBoxRef.current.scrollTop = streamBoxRef.current.scrollHeight;
+    }
+  }, [streamedText]);
 
   const shouldProcess = Boolean(searchParams.get('u1_date') && searchParams.get('u2_date'));
   const searchSignature = searchParams.toString();
@@ -92,15 +84,14 @@ function GungHapProcessingContent() {
         const saju1 = calculateSaju(user1.birthDate, user1.birthTime, user1.calendarType, user1.gender);
         const saju2 = calculateSaju(user2.birthDate, user2.birthTime, user2.calendarType, user2.gender);
 
-        setLoadingStep('서로에게 어떤 지점이 닿는지 읽고 있어요...');
-        const response = await fetch('/api/gunghap', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user1, user2, relationship: relation }),
-        });
-        const resData = await readApiResponse(response);
-        if (!response.ok || resData.success === false) {
-          throw new Error(resData.error || '궁합 분석 서버 응답 실패');
+        setLoadingStep('궁합 리포트를 실시간으로 작성하고 있어요...');
+        const analysis = await streamAnalysis(
+          '/api/gunghap',
+          { user1, user2, relationship: relation },
+          setStreamedText,
+        );
+        if (!analysis?.trim()) {
+          throw new Error('궁합 분석 결과가 비어 있습니다. 잠시 후 다시 시도해 주세요.');
         }
 
         await saveAndRedirect({
@@ -111,7 +102,7 @@ function GungHapProcessingContent() {
           saju1,
           saju2,
           relation,
-          aiResult: resData.analysis,
+          aiResult: analysis,
           isPaid: true,
           createdAt: serverTimestamp(),
         });
@@ -158,6 +149,25 @@ function GungHapProcessingContent() {
             두 사람의 인연을{'\n'}하나씩 맞춰보고 있어요
           </h2>
           <p className="text-lg font-bold" style={{ color: 'rgba(240,232,238,0.42)' }}>{loadingStep}</p>
+
+          {streamedText && (
+            <div
+              ref={streamBoxRef}
+              className="mx-auto mt-2 max-h-52 w-full max-w-md overflow-y-auto rounded-2xl px-5 py-4 text-left"
+              style={{
+                background: 'rgba(255,255,255,0.035)',
+                border: '1px solid rgba(232,130,154,0.16)',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.25) inset',
+                maskImage: 'linear-gradient(to bottom, transparent, #000 18%)',
+                WebkitMaskImage: 'linear-gradient(to bottom, transparent, #000 18%)',
+              }}
+            >
+              <p className="whitespace-pre-wrap break-keep text-sm leading-7" style={{ color: 'rgba(240,232,238,0.62)' }}>
+                {cleanPreview(streamedText)}
+                <span className="ml-0.5 inline-block h-4 w-1.5 translate-y-0.5 animate-pulse" style={{ background: '#e8829a' }} />
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

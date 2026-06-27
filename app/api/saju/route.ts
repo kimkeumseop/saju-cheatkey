@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { Solar } from 'lunar-javascript';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
-import { generateText } from '@/lib/ai';
+import { streamReport } from '@/lib/ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -268,14 +268,14 @@ export async function POST(req: Request) {
     const daYunText = buildDaYunText(sajuData.daYun);
     const daYunRangeText = buildDaYunRangeText(sajuData.daYun, currentYear, currentAge);
 
-    if (!apiKey) {
+    if (!apiKey && !process.env.OPENAI_API_KEY) {
       return NextResponse.json(
-        { success: false, error: 'GEMINI_API_KEY 환경변수가 설정되지 않았습니다.' },
+        { success: false, error: 'AI API 키(OPENAI/GEMINI)가 설정되지 않았습니다.' },
         { status: 500 }
       );
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const genAI = new GoogleGenerativeAI(apiKey || '');
     const safetySettings = [
       { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
       { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
@@ -460,20 +460,21 @@ export async function POST(req: Request) {
       \\n\\n
     `;
 
-    const firstResult = await generateText({
+    const stream = streamReport({
       prompt,
       openai: { model: 'gpt-5-nano', maxTokens: 16000, reasoningEffort: 'minimal' },
       geminiModels: [model, fallbackModel],
+      postProcess: sanitizeYearRangeText,
       label: 'Saju',
     });
-    responseText = firstResult.text;
 
-    const firstIssues = getSajuReportIssues(responseText, firstResult.finishReason);
-    if (firstIssues.length > 0) {
-      console.warn('[Gemini/Saju] Report completed with validation warnings:', firstIssues);
-    }
-
-    return NextResponse.json({ success: true, saju: sajuData, analysis: sanitizeYearRangeText(responseText) });
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'application/x-ndjson; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        'X-Accel-Buffering': 'no',
+      },
+    });
 
   } catch (error: any) {
     console.error('Saju API Error:', {
