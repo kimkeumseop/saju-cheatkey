@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { Solar } from 'lunar-javascript';
-import { generateContentWithRetry } from '@/lib/gemini';
+import { generateText } from '@/lib/ai';
 
 export const runtime = 'edge';
 export const maxDuration = 60;
@@ -74,7 +74,12 @@ export async function POST(req: Request) {
           "message": "메시지 내용 (2~3문장)"
         }
       `;
-      const { text: rawText } = await generateContentWithRetry([model], prompt, { label: 'Gemini/Unse' });
+      const { text: rawText } = await generateText({
+        prompt,
+        openai: { model: 'gpt-5-nano', maxTokens: 2048, json: true, reasoningEffort: 'minimal' },
+        geminiModels: [model],
+        label: 'Unse',
+      });
       const cleanText = rawText.replace(/```json/gi, '').replace(/```/gi, '').trim();
       let analysisData;
       try {
@@ -113,7 +118,12 @@ export async function POST(req: Request) {
       }
     `;
 
-    const { text: rawText } = await generateContentWithRetry([model], prompt, { label: 'Gemini/Unse' });
+    const { text: rawText } = await generateText({
+      prompt,
+      openai: { model: 'gpt-5-nano', maxTokens: 2048, json: true, reasoningEffort: 'minimal' },
+      geminiModels: [model],
+      label: 'Unse',
+    });
     const cleanText = rawText.replace(/```json/gi, '').replace(/```/gi, '').trim();
     let analysisData;
     try {

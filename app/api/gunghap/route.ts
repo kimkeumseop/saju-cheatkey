@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
-import { generateContentWithRetry } from '@/lib/gemini';
+import { generateText } from '@/lib/ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -244,7 +244,12 @@ export async function POST(req: Request) {
       설명이나 사과 없이 리포트 본문만 출력해라.
     `;
 
-    const gunghapResult = await generateContentWithRetry([model, fallbackModel], prompt, { label: 'Gemini/Gunghap' });
+    const gunghapResult = await generateText({
+      prompt,
+      openai: { model: 'gpt-5-mini', maxTokens: 16000, reasoningEffort: 'minimal' },
+      geminiModels: [model, fallbackModel],
+      label: 'Gunghap',
+    });
     responseText = sanitizeYearRangeText(gunghapResult.text);
     return NextResponse.json({
       success: true,

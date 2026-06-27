@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { openaiGenerateMessages, type ChatMessage } from '@/lib/openai';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, arrayUnion, setDoc } from 'firebase/firestore';
 
@@ -30,8 +31,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
 
-    if (!apiKey) {
-      return NextResponse.json({ error: 'GEMINI_API_KEY가 설정되지 않았습니다.' }, { status: 500 });
+    if (!apiKey && !process.env.OPENAI_API_KEY) {
+      return NextResponse.json({ error: 'AI API 키(OPENAI/GEMINI)가 설정되지 않았습니다.' }, { status: 500 });
     }
 
     // 1. Firestore에서 기존 대화 내역 불러오기
@@ -46,21 +47,38 @@ export async function POST(req: Request) {
       await setDoc(chatRef, { history: [], createdAt: new Date().toISOString() });
     }
 
-    // 2. 제미나이 startChat 세션 초기화
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const chat = model.startChat({
-      history: history.map((item: any) => ({
-        role: item.role,
-        parts: [{ text: item.parts }]
+    // 2. OpenAI(ChatGPT) 메시지 구성 — 과거 대화 + 이번 질문
+    const chatMessages: ChatMessage[] = [
+      ...history.map((item: any) => ({
+        role: item.role === 'model' ? ('assistant' as const) : ('user' as const),
+        content: String(item.parts ?? ''),
       })),
-      generationConfig: {
-        maxOutputTokens: 1000,
-      },
-    });
+      { role: 'user' as const, content: message },
+    ];
 
-    // 3. 메시지 전송 및 답변 수신
-    const result = await chatWithRetry(chat, message);
-    const responseText = result.response.text();
+    // 3. OpenAI 주력 호출, 실패 시 Gemini로 폴백
+    let responseText = '';
+    try {
+      const result = await openaiGenerateMessages(chatMessages, {
+        model: 'gpt-5-nano',
+        maxTokens: 1500,
+        reasoningEffort: 'minimal',
+        label: 'Chat',
+      });
+      responseText = result.text;
+    } catch (openaiError: any) {
+      console.warn('[Chat] OpenAI 실패 → Gemini 폴백:', openaiError?.message ?? openaiError);
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const chat = model.startChat({
+        history: history.map((item: any) => ({
+          role: item.role,
+          parts: [{ text: item.parts }],
+        })),
+        generationConfig: { maxOutputTokens: 1000 },
+      });
+      const result = await chatWithRetry(chat, message);
+      responseText = result.response.text();
+    }
 
     // 4. Firestore에 질문과 답변 동시 업데이트 (arrayUnion 사용)
     const userMessage = { role: 'user', parts: message, timestamp: new Date().toISOString() };

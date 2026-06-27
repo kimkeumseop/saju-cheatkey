@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { Solar } from 'lunar-javascript';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
-import { generateContentWithRetry } from '@/lib/gemini';
+import { generateText } from '@/lib/ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -460,7 +460,12 @@ export async function POST(req: Request) {
       \\n\\n
     `;
 
-    const firstResult = await generateContentWithRetry([model, fallbackModel], prompt, { label: 'Gemini/Saju' });
+    const firstResult = await generateText({
+      prompt,
+      openai: { model: 'gpt-5-mini', maxTokens: 16000, reasoningEffort: 'minimal' },
+      geminiModels: [model, fallbackModel],
+      label: 'Saju',
+    });
     responseText = firstResult.text;
 
     const firstIssues = getSajuReportIssues(responseText, firstResult.finishReason);

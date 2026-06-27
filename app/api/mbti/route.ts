@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
+import { generateText } from '@/lib/ai';
 import { buildMbtiFallbackProfile, getDefaultScoresForType, type MbtiAiProfile } from '@/lib/mbti';
 import { MBTI_TYPES, type MbtiTypeCode } from '@/src/data/mbtiTypes';
 
@@ -107,10 +108,12 @@ export async function POST(req: Request) {
 
     try {
       text = await Promise.race([
-        model.generateContent(prompt).then(async (result) => {
-          const response = await result.response;
-          return response.text().trim();
-        }),
+        generateText({
+          prompt,
+          openai: { model: 'gpt-5-nano', maxTokens: 3072, json: true, reasoningEffort: 'minimal', maxRetries: 1 },
+          geminiModels: [model],
+          label: 'Mbti',
+        }).then((result) => result.text.trim()),
         new Promise<string>((_, reject) => {
           timeoutId = setTimeout(() => reject(new Error('MBTI AI timeout')), AI_TIMEOUT_MS);
         }),
