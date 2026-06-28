@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { SITE_URL, columns } from '@/lib/site'
+import { SITE_URL, columns, guides } from '@/lib/site'
 
 const MBTI_TYPES = [
   'INTJ', 'INTP', 'ENTJ', 'ENTP',
@@ -21,12 +21,7 @@ const SITEMAP_ROUTES = [
   { path: '/mbti', changeFrequency: 'weekly' as const, priority: 0.9 },
   { path: '/mbti/test', changeFrequency: 'weekly' as const, priority: 0.85 },
 
-  { path: '/guide/what-is-saju', changeFrequency: 'monthly' as const, priority: 0.8 },
-  { path: '/guide/heavenly-stems-earthly-branches', changeFrequency: 'monthly' as const, priority: 0.8 },
-  { path: '/guide/five-elements', changeFrequency: 'monthly' as const, priority: 0.8 },
-  { path: '/guide/how-to-read-yearly-fortune', changeFrequency: 'monthly' as const, priority: 0.8 },
-  { path: '/guide/common-misunderstandings', changeFrequency: 'monthly' as const, priority: 0.8 },
-  { path: '/guide/birth-time-unknown', changeFrequency: 'monthly' as const, priority: 0.8 },
+  { path: '/guide', changeFrequency: 'weekly' as const, priority: 0.8 },
 
   { path: '/column', changeFrequency: 'monthly' as const, priority: 0.8 },
 
@@ -54,6 +49,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.75,
   }))
 
+  const guideRoutes = guides.map((guide) => ({
+    url: new URL(`/guide/${guide.slug}`, SITE_URL).toString(),
+    lastModified,
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }))
+
   const columnRoutes = columns.map((column) => ({
     url: new URL(`/column/${column.id}`, SITE_URL).toString(),
     lastModified: new Date(column.date),
@@ -61,5 +63,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.75,
   }))
 
-  return [...staticRoutes, ...mbtiResultRoutes, ...columnRoutes]
+  return [...staticRoutes, ...mbtiResultRoutes, ...guideRoutes, ...columnRoutes]
 }

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CosmicBackground from '@/components/CosmicBackground';
-import { createMetadata, columns, columnMap } from '@/lib/site';
+import { createMetadata, columns, columnMap, SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE } from '@/lib/site';
 import { columnContent } from './columnContent';
 
 export function generateStaticParams() {
@@ -42,8 +42,42 @@ export default async function ColumnPage({ params }: { params: Promise<{ id: str
 
   const relatedColumns = columns.filter((entry) => entry.id !== id).slice(0, 3);
 
+  const columnUrl = `${SITE_URL}/column/${column.id}`;
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Article',
+        '@id': `${columnUrl}#article`,
+        headline: column.title,
+        description: column.description,
+        image: DEFAULT_OG_IMAGE,
+        datePublished: column.date,
+        dateModified: column.date,
+        inLanguage: 'ko-KR',
+        mainEntityOfPage: columnUrl,
+        author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+        publisher: {
+          '@type': 'Organization',
+          name: SITE_NAME,
+          url: SITE_URL,
+          logo: { '@type': 'ImageObject', url: DEFAULT_OG_IMAGE },
+        },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: '홈', item: SITE_URL },
+          { '@type': 'ListItem', position: 2, name: '명리 칼럼', item: `${SITE_URL}/column` },
+          { '@type': 'ListItem', position: 3, name: column.title, item: columnUrl },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="relative min-h-screen overflow-x-hidden pt-24 pb-20 px-4 md:px-6" style={{ background: '#0d0710' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <CosmicBackground />
       <Navbar dark />
       <article className="relative z-10 max-w-4xl mx-auto">

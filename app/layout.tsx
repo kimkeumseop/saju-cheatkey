@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import BottomNav from "@/components/BottomNav";
 import { AuthProvider } from "@/lib/auth";
 import type { Metadata } from "next";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
 import Script from "next/script";
 
 const pretendard = localFont({
@@ -27,6 +27,9 @@ export const metadata: Metadata = {
   description:
     "생년월일로 무료 사주, AI 타로 카드, MBTI 성격유형 테스트, 궁합까지 한 번에 확인하세요. 2026년 운세를 쉽고 빠르게 알아보는 사주 치트키.",
   keywords: ["무료 사주", "무료 타로", "MBTI 테스트", "무료 궁합", "사주 치트키", "2026년 운세", "사주팔자", "타로 카드", "MBTI 성격유형", "무료 운세"],
+  alternates: {
+    canonical: SITE_URL,
+  },
   openGraph: {
     title: "무료 사주 · 타로 · MBTI · 궁합 | 사주 치트키",
     description: "생년월일로 무료 사주, AI 타로 카드, MBTI 성격유형 테스트, 궁합까지 한 번에 확인하세요. 2026년 운세를 쉽고 빠르게 알아보는 사주 치트키.",
@@ -34,6 +37,30 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: "ko_KR",
     type: "website",
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} 대표 이미지`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "무료 사주 · 타로 · MBTI · 궁합 | 사주 치트키",
+    description: "생년월일로 무료 사주, AI 타로 카드, MBTI 성격유형 테스트, 궁합까지 한 번에 확인하세요. 2026년 운세를 쉽고 빠르게 알아보는 사주 치트키.",
+    images: [DEFAULT_OG_IMAGE],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   other: {
     "google-adsense-account": "ca-pub-1059415497859090",

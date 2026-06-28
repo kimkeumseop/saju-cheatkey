@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CosmicBackground from '@/components/CosmicBackground';
-import { createMetadata, guideMap, guides } from '@/lib/site';
+import { createMetadata, guideMap, guides, SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE } from '@/lib/site';
 
 export async function generateStaticParams() {
   return guides.map((guide) => ({ slug: guide.slug }));
@@ -36,8 +36,41 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
 
   const relatedGuides = guide.relatedSlugs.map((relatedSlug) => guideMap[relatedSlug]).filter(Boolean);
 
+  const guideUrl = `${SITE_URL}/guide/${guide.slug}`;
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Article',
+        '@id': `${guideUrl}#article`,
+        headline: guide.title,
+        description: guide.description,
+        articleBody: guide.intro,
+        image: DEFAULT_OG_IMAGE,
+        inLanguage: 'ko-KR',
+        mainEntityOfPage: guideUrl,
+        author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+        publisher: {
+          '@type': 'Organization',
+          name: SITE_NAME,
+          url: SITE_URL,
+          logo: { '@type': 'ImageObject', url: DEFAULT_OG_IMAGE },
+        },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: '홈', item: SITE_URL },
+          { '@type': 'ListItem', position: 2, name: '사주 가이드', item: `${SITE_URL}/guide` },
+          { '@type': 'ListItem', position: 3, name: guide.title, item: guideUrl },
+        ],
+      },
+    ],
+  };
+
   return (
     <main className="relative min-h-screen overflow-x-hidden pt-24 pb-32" style={{ background: '#0d0710' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <CosmicBackground />
       <Navbar dark />
 
