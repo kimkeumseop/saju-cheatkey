@@ -18,13 +18,13 @@ export const metadata: Metadata = {
     siteName: '사주 치트키',
     locale: 'ko_KR',
     type: 'website',
-    images: [{ url: 'https://saju-cheatkey.kr/og-default.svg', width: 1200, height: 630, alt: '사주 치트키 타로 카드' }],
+    images: [{ url: 'https://saju-cheatkey.kr/og', width: 1200, height: 630, alt: '사주 치트키 타로 카드' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: '무료 타로 카드 리딩 AI 해석 | 사주 치트키',
     description: 'AI 타로 리더 성월이 오늘의 카드를 해석해드려요.',
-    images: ['https://saju-cheatkey.kr/og-default.svg'],
+    images: ['https://saju-cheatkey.kr/og'],
   },
 }
 

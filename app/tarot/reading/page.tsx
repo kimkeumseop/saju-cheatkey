@@ -14,9 +14,9 @@ export const metadata: Metadata = {
     siteName: '사주 치트키',
     locale: 'ko_KR',
     type: 'website',
-    images: [{ url: 'https://saju-cheatkey.kr/og-default.svg', width: 1200, height: 630, alt: '타로 카드 뽑기' }],
+    images: [{ url: 'https://saju-cheatkey.kr/og', width: 1200, height: 630, alt: '타로 카드 뽑기' }],
   },
-  twitter: { card: 'summary_large_image', title: '타로 카드 뽑기 AI 해석 | 사주 치트키', images: ['https://saju-cheatkey.kr/og-default.svg'] },
+  twitter: { card: 'summary_large_image', title: '타로 카드 뽑기 AI 해석 | 사주 치트키', images: ['https://saju-cheatkey.kr/og'] },
 }
 
 export default function TarotReadingPage() {
