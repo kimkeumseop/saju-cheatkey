@@ -246,7 +246,7 @@ export async function POST(req: Request) {
 
     const stream = streamReport({
       prompt,
-      openai: { model: 'gpt-5-nano', maxTokens: 16000, reasoningEffort: 'minimal' },
+      openai: { model: 'gpt-5-mini', maxTokens: 16000, reasoningEffort: 'low' },
       geminiModels: [model, fallbackModel],
       postProcess: (text) => sanitizeYearRangeText(text).trim(),
       label: 'Gunghap',
