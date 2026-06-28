@@ -14,6 +14,7 @@ import GungHapInputModal from '@/components/GungHapInputModal';
 import { Loader2, BarChart3, Star, History, Moon, Heart, CircleDollarSign, AlertTriangle, CheckCircle2, CalendarDays, TrendingUp } from 'lucide-react';
 import { ELEMENT_STYLE } from '@/lib/saju';
 import { normalizeSajuAiResult } from '@/lib/ai-result';
+import { SCORE_KEYS, type SajuStructured } from '@/lib/saju-schema';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -563,6 +564,110 @@ function BriefingCard({ icon, label, title, lines, accent }: { icon: ReactNode; 
   );
 }
 
+// ── 구조화 시그니처 패널 (신버전 JSON 결과 전용) ──────────────────
+function SajuSignaturePanel({ structured }: { structured: SajuStructured }) {
+  const { headline, keywords, scores, lucky, caution } = structured;
+  const hasScores = !!scores;
+  const hasLucky = !!lucky && (lucky.numbers.length > 0 || !!lucky.color || !!lucky.direction || !!lucky.advice);
+
+  if (!headline && !keywords.length && !hasScores && !hasLucky && !caution) return null;
+
+  return (
+    <section className="space-y-5">
+      {(headline || keywords.length > 0) && (
+        <div className="rounded-[2rem] p-6 md:p-8 space-y-4" style={{ background: 'rgba(232,130,154,0.06)', border: '1px solid rgba(232,130,154,0.16)', boxShadow: '0 8px 40px rgba(232,130,154,0.08)' }}>
+          <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: '#e8829a' }}>
+            <Star className="w-4 h-4" style={{ fill: '#e8829a' }} />
+            한 줄 정의
+          </div>
+          {headline && (
+            <p className="text-xl md:text-2xl font-bold leading-snug break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
+              {headline}
+            </p>
+          )}
+          {keywords.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {keywords.map((kw) => (
+                <span key={kw} className="px-3 py-1.5 rounded-full text-[12px] font-black" style={{ background: 'rgba(232,130,154,0.12)', color: '#e8829a', border: '1px solid rgba(232,130,154,0.22)' }}>
+                  #{kw}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {hasScores && (
+        <div className="rounded-[2rem] p-6 md:p-8 space-y-5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(157,143,255,0.14)' }}>
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-5 h-5" style={{ color: '#9d8fff' }} />
+            <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>운세 점수</h4>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+            {SCORE_KEYS.map((key) => {
+              const value = scores![key] ?? 0;
+              const percent = (value / 5) * 100;
+              return (
+                <div key={key} className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold" style={{ color: 'rgba(240,232,238,0.78)' }}>{key}</span>
+                    <span className="text-sm font-black" style={{ color: '#9d8fff' }}>{value.toFixed(1)}</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${percent}%`, background: 'linear-gradient(90deg, #9d8fff, #e8829a)' }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {hasLucky && (
+        <div className="rounded-[2rem] p-6 md:p-8 space-y-4" style={{ background: 'rgba(0,209,143,0.05)', border: '1px solid rgba(0,209,143,0.18)' }}>
+          <div className="flex items-center gap-2">
+            <Star className="w-5 h-5" style={{ color: '#00d18f', fill: '#00d18f' }} />
+            <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>행운 포인트</h4>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {lucky!.numbers.length > 0 && (
+              <div className="px-4 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(0,209,143,0.2)' }}>
+                <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: 'rgba(0,209,143,0.7)' }}>숫자</span>
+                <span className="text-sm font-black" style={{ color: '#f5eef2' }}>{lucky!.numbers.join(', ')}</span>
+              </div>
+            )}
+            {lucky!.color && (
+              <div className="px-4 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(0,209,143,0.2)' }}>
+                <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: 'rgba(0,209,143,0.7)' }}>색</span>
+                <span className="text-sm font-black" style={{ color: '#f5eef2' }}>{lucky!.color}</span>
+              </div>
+            )}
+            {lucky!.direction && (
+              <div className="px-4 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(0,209,143,0.2)' }}>
+                <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: 'rgba(0,209,143,0.7)' }}>방향</span>
+                <span className="text-sm font-black" style={{ color: '#f5eef2' }}>{lucky!.direction}</span>
+              </div>
+            )}
+          </div>
+          {lucky!.advice && (
+            <p className="text-sm font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.66)' }}>{lucky!.advice}</p>
+          )}
+        </div>
+      )}
+
+      {caution && (
+        <div className="rounded-[2rem] p-6 md:p-8 space-y-2" style={{ background: 'rgba(255,184,107,0.05)', border: '1px solid rgba(255,184,107,0.2)' }}>
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5" style={{ color: '#ffb86b' }} />
+            <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>냉정하게 짚는 약점</h4>
+          </div>
+          <p className="text-sm md:text-[15px] font-medium leading-relaxed break-keep whitespace-pre-wrap" style={{ color: 'rgba(240,232,238,0.7)' }}>{caution}</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
 // ── 결과 페이지 ──────────────────────────────────────────────────
 export default function SajuResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -865,6 +970,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                   const accordionSections = result.sections.filter((s) => s !== storySection && !isLowPrioritySajuSection(s) && !isSajuOverviewSection(s));
                   return (
                     <>
+                      {result.structured && <SajuSignaturePanel structured={result.structured} />}
                       <SajuBriefingPanel
                         sections={accordionSections}
                         userName={data.userName}

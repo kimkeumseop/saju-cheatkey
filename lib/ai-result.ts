@@ -1,5 +1,7 @@
 'use client';
 
+import { coerceSajuStructured, type SajuStructured } from './saju-schema';
+
 const SOFT_ERROR_MESSAGE = '운명의 흐름을 정리하는 중입니다. 다시 시도해주세요.';
 
 export type AnalysisSection = {
@@ -10,6 +12,8 @@ export type AnalysisSection = {
 type ParsedSectionsResult = {
   rawText: string;
   sections: AnalysisSection[];
+  /** 구조화 JSON(신버전)일 때만 채워짐. 레거시 마크다운 결과는 undefined */
+  structured?: SajuStructured;
 };
 
 type ParsedGunghapResult = ParsedSectionsResult & {
@@ -230,6 +234,21 @@ export function parseAnalysisSections(value: unknown): ParsedSectionsResult {
 }
 
 export function normalizeSajuAiResult(value: unknown): ParsedSectionsResult {
+  // 신버전: 구조화 JSON이면 섹션을 그대로 신뢰하고 structured 부가정보를 함께 반환한다.
+  const structured = coerceSajuStructured(value);
+  if (structured) {
+    const sections = structured.sections.map((section) => ({
+      title: cleanTitle(section.title),
+      content: normalizeLineBreaks(section.content),
+    }));
+    return {
+      rawText: sections.map((s) => `## ${s.title}\n${s.content}`).join('\n\n'),
+      sections,
+      structured,
+    };
+  }
+
+  // 레거시: 마크다운 텍스트 파싱 경로
   const normalized = parseAnalysisSections(value);
   const contentSections = normalized.sections.filter((section) => !isSajuCoverSection(section));
   const mergedSections = mergeSectionsByMajorPatterns(contentSections, SAJU_MAJOR_SECTION_PATTERNS);
