@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { calculateSaju } from '@/lib/saju';
+import { calculateSaju, GROUP_TRAIT } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { streamReport, streamPrebuilt } from '@/lib/ai';
 import { buildReportCacheKey, getCachedReport, saveCachedReport } from '@/lib/saju-cache';
@@ -12,7 +12,8 @@ const apiKey = process.env.GEMINI_API_KEY;
 
 // 프롬프트/스키마가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
 // v2: JSON 구조화 출력 도입. v3: few-shot 톤 예시 + 한자/전문용어 후필터.
-const GUNGHAP_CACHE_VERSION = 'v3';
+// v4: 두 사람 십성·신강약 grounding 비교 주입.
+const GUNGHAP_CACHE_VERSION = 'v4';
 const GUNGHAP_CACHE_COLLECTION = 'gunghapCache';
 
 const STREAM_HEADERS = {
@@ -87,6 +88,16 @@ function calcAge(birthDate: string, currentYear: number) {
 
 function buildElementDistText(elementsCount: Record<string, number> = {}) {
   return `목:${elementsCount['목'] ?? 0}, 화:${elementsCount['화'] ?? 0}, 토:${elementsCount['토'] ?? 0}, 금:${elementsCount['금'] ?? 0}, 수:${elementsCount['수'] ?? 0}`;
+}
+
+/** 한 사람의 기질 구조(십성 분포·최강 축·신강약)를 프롬프트용 한 줄로 만든다. */
+function buildStructureText(saju: any) {
+  const g = saju.tenGodGroups || { 비겁: 0, 식상: 0, 재성: 0, 관성: 0, 인성: 0 };
+  const dom = saju.dominantTenGod
+    ? `${saju.dominantTenGod}(${GROUP_TRAIT[saju.dominantTenGod] || ''})`
+    : '뚜렷한 편중 없음';
+  const strength = saju.bodyStrength?.label || '중화';
+  return `십성 비겁:${g.비겁}/식상:${g.식상}/재성:${g.재성}/관성:${g.관성}/인성:${g.인성} · 가장 강한 축: ${dom} · 기운: ${strength} 경향`;
 }
 
 function buildDaYunText(daYun: any[], currentYear: number, currentAge: number) {
@@ -237,7 +248,9 @@ export async function POST(req: Request) {
 
       [유저 정보]
       - 본인: ${user1.name} / 관계: ${relationLabel} / 사주 참고값: ${pillars1} / 일간: ${saju1.dayGanKo} / 오행 분포: ${buildElementDistText(saju1.elementsCount)}
+        · 기질 구조: ${buildStructureText(saju1)}
       - 상대방: ${user2.name} / 사주 참고값: ${pillars2} / 일간: ${saju2.dayGanKo} / 오행 분포: ${buildElementDistText(saju2.elementsCount)}
+        · 기질 구조: ${buildStructureText(saju2)}
       - 분석 기준 연도: ${currentYear}년
       - 본인의 향후 10년 참고 흐름: ${buildDaYunText(saju1.daYun, currentYear, currentAge1)}
       - 상대방의 향후 10년 참고 흐름: ${buildDaYunText(saju2.daYun, currentYear, currentAge2)}
@@ -255,6 +268,11 @@ export async function POST(req: Request) {
       [말투·형식 예시 - 형식만 참고하고 내용은 절대 베끼지 마라]
       - headline 예: "둘은 속도가 다른 두 시계다. 맞추면 오래 가고, 방치하면 어긋난다."
       - timing 한 줄 예: "2028년: 가까워지기 좋은 해 | 근거: 둘 다 관계를 밖으로 드러내려는 흐름 | 행동: 만남 횟수와 약속의 이름을 분명히 정한다"
+
+      [두 사람 기질 구조 비교 - 개인화의 핵심]
+      1. 두 사람의 십성 최강 축을 맞대서 관계 역학을 단정해라. 예: 한쪽이 표현(식상)이 세고 한쪽이 책임(관성)이 세면 "한쪽은 분위기를 띄우고, 한쪽은 선을 긋는다. 그래서 신날 땐 잘 맞다가 결정 앞에서 부딪힌다."
+      2. 신강약 조합도 읽어라. 둘 다 신강이면 주도권 다툼, 둘 다 신약이면 서로 기대다 둘 다 지침, 신강·신약이면 한쪽이 끌고 한쪽이 받쳐주는 그림으로 풀어라.
+      3. 단, '십성·신강·신약' 같은 전문용어와 한자는 화면에 쓰지 말고 생활 언어로 번역해라.
 
       [글쓰기 깊이]
       1. 각 섹션은 결론부터 시작해라.
