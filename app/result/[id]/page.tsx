@@ -14,7 +14,7 @@ import GungHapInputModal from '@/components/GungHapInputModal';
 import { Loader2, BarChart3, Star, History, Moon, Heart, CircleDollarSign, AlertTriangle, CheckCircle2, CalendarDays, TrendingUp } from 'lucide-react';
 import { ELEMENT_STYLE } from '@/lib/saju';
 import { normalizeSajuAiResult } from '@/lib/ai-result';
-import { SCORE_KEYS, type SajuStructured } from '@/lib/saju-schema';
+import { SCORE_KEYS, type SajuStructured, type SajuTiming } from '@/lib/saju-schema';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -252,7 +252,11 @@ function isSajuOverviewSection(section: BriefingSection) {
     title.includes('가장먼저알아야할결론');
 }
 
-function SajuBriefingPanel({ sections, userName, currentYear }: { sections: BriefingSection[]; userName: string; currentYear: number }) {
+function SajuBriefingPanel({ sections, userName, currentYear, timing }: { sections: BriefingSection[]; userName: string; currentYear: number; timing?: SajuTiming | null }) {
+  // timing(신버전 구조화 배열)이 있으면 그 값을 최우선으로 쓰고, 없으면 아래 정규식 스크래핑으로 폴백한다.
+  const t = timing && timing.daeunExpansion ? timing : null;
+  const pick = (timingArr: string[] | undefined, fallback: string[]) =>
+    timingArr && timingArr.length > 0 ? timingArr : fallback;
   const daeyunSection = findReportSection(sections, ['향후대운10년인생타이밍', '대운10년인생타이밍', '향후대운10년돈타이밍'], ['확장 구간', '정비 구간', '주의 구간']);
   const yearlyCalendarSection = findReportSection(sections, [`${currentYear}년월별운세캘린더`, '월별운세캘린더'], ['일과 성장에 좋은 구간', '컨디션과 감정 관리']);
   const moneyTimingSection = yearlyCalendarSection || findReportSection(sections, [`${currentYear}년돈이움직이는시기표`, '돈이움직이는시기표', '돈들어오는시기'], ['돈이 들어오기 쉬운 구간', '지출과 손실']);
@@ -342,26 +346,27 @@ function SajuBriefingPanel({ sections, userName, currentYear }: { sections: Brie
   const yearFallback = getUsefulLines(yearSection, 3);
   const natureFallback = getUsefulLines(natureSection, 2);
 
-  const opportunities = wealthGoodYearLines.length > 0 ? wealthGoodYearLines : (opportunityLines.length > 0 ? opportunityLines : (moneyFallback.length > 0 ? moneyFallback : yearFallback));
-  const cautions = wealthCautionYearLines.length > 0 ? wealthCautionYearLines : (cautionLines.length > 0 ? cautionLines : yearFallback.slice(0, 3));
-  const actions = actionLines.length > 0 ? actionLines : [
+  const opportunities = pick(t?.wealthGoodYears, wealthGoodYearLines.length > 0 ? wealthGoodYearLines : (opportunityLines.length > 0 ? opportunityLines : (moneyFallback.length > 0 ? moneyFallback : yearFallback)));
+  const cautions = pick(t?.wealthCautionYears, wealthCautionYearLines.length > 0 ? wealthCautionYearLines : (cautionLines.length > 0 ? cautionLines : yearFallback.slice(0, 3)));
+  const actions = pick(t?.monthlyActions, actionLines.length > 0 ? actionLines : [
     `${currentYear}년 일정표에 수입 목표와 큰 지출 예정일을 먼저 적어두세요.`,
     '중요한 제안이나 계약은 조건, 일정, 내 컨디션을 함께 확인하세요.',
     '조심 구간에는 충동 지출보다 정산과 기록을 우선해보세요.',
-  ];
+  ]);
   const wins = winLines.length > 0 ? winLines : [
     '무리하게 판을 키우기보다 잘하는 일을 반복 가능한 구조로 바꾸는 쪽이 좋아요.',
     '성과 정리, 역할 조정, 루틴 재설계처럼 결과가 남는 움직임에 힘을 주세요.',
   ];
-  const daeyunWins = daeyunExpandLines.length > 0 ? daeyunExpandLines : wins;
-  const daeyunMaintenance = daeyunMaintenanceLines.length > 0 ? daeyunMaintenanceLines : (careerFallback.length > 0 ? careerFallback.slice(0, 2) : wins);
-  const daeyunRisks = daeyunCautionLines.length > 0 ? daeyunCautionLines : cautions.slice(0, 2);
-  const daeyunDecisions = daeyunYearLines.length > 0 ? daeyunYearLines : (daeyunDecisionLines.length > 0 ? daeyunDecisionLines : actions);
-  const careerBrief = careerLines.length > 0 ? careerLines : (careerFallback.length > 0 ? careerFallback : yearFallback);
-  const recoveryBrief = recoveryFallback.length > 0 ? recoveryFallback : cautions;
+  const daeyunWins = pick(t?.daeunExpansion, daeyunExpandLines.length > 0 ? daeyunExpandLines : wins);
+  const daeyunMaintenance = pick(t?.daeunMaintenance, daeyunMaintenanceLines.length > 0 ? daeyunMaintenanceLines : (careerFallback.length > 0 ? careerFallback.slice(0, 2) : wins));
+  const daeyunRisks = pick(t?.daeunCaution, daeyunCautionLines.length > 0 ? daeyunCautionLines : cautions.slice(0, 2));
+  const daeyunDecisions = pick(t?.daeunDecisions, daeyunYearLines.length > 0 ? daeyunYearLines : (daeyunDecisionLines.length > 0 ? daeyunDecisionLines : actions));
+  const careerBrief = pick(t?.monthlyGrowth, careerLines.length > 0 ? careerLines : (careerFallback.length > 0 ? careerFallback : yearFallback));
+  const recoveryBrief = pick(t?.monthlyCaution, recoveryFallback.length > 0 ? recoveryFallback : cautions);
 
-  const opportunityMonths = extractMonths(opportunities);
-  const cautionMonths = extractMonths(cautions);
+  // 캘린더 월 신호: timing이 있으면 월 단위 배열에서 추출(연도형 opportunities에는 월이 없음).
+  const opportunityMonths = extractMonths(t ? [...t.monthlyGrowth, ...t.monthlyMoney] : opportunities);
+  const cautionMonths = extractMonths(t ? t.monthlyCaution : cautions);
   const hasMonthSignals = opportunityMonths.size > 0 || cautionMonths.size > 0;
   const quickHeadline = natureFallback[0] || `${userName}님의 운세는 밀어붙일 때와 쉬어야 할 때를 나누는 것이 핵심이에요.`;
 
@@ -975,6 +980,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                         sections={accordionSections}
                         userName={data.userName}
                         currentYear={currentYear}
+                        timing={result.structured?.timing}
                       />
                       <div className="space-y-8 pt-2">
                         <div className="flex items-center gap-3 ml-2">

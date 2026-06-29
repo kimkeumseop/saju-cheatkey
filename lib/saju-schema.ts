@@ -23,11 +23,36 @@ export interface SajuSectionRaw {
   content: string;
 }
 
+/**
+ * 대운/재물/월별 타이밍을 AI가 직접 구조화 배열로 반환한 것.
+ * 각 문자열은 "2028년: 확장하기 좋은 해 | 근거: ... | 행동: ..." 형식(파이프 구분, 결과 페이지가 그대로 렌더).
+ * 이게 있으면 결과 페이지의 정규식 스크래핑을 건너뛴다. 레거시 결과는 null.
+ */
+export interface SajuTiming {
+  daeunExpansion: string[];
+  daeunMaintenance: string[];
+  daeunCaution: string[];
+  daeunDecisions: string[];
+  wealthGoodYears: string[];
+  wealthCautionYears: string[];
+  monthlyGrowth: string[];
+  monthlyMoney: string[];
+  monthlyCaution: string[];
+  monthlyActions: string[];
+}
+
+export const TIMING_KEYS: (keyof SajuTiming)[] = [
+  'daeunExpansion', 'daeunMaintenance', 'daeunCaution', 'daeunDecisions',
+  'wealthGoodYears', 'wealthCautionYears',
+  'monthlyGrowth', 'monthlyMoney', 'monthlyCaution', 'monthlyActions',
+];
+
 export interface SajuStructured {
   headline: string;
   keywords: string[];
   scores: SajuScores | null;
   sections: SajuSectionRaw[];
+  timing: SajuTiming | null;
   lucky: SajuLucky | null;
   caution: string;
 }
@@ -114,6 +139,19 @@ function coerceLucky(value: unknown): SajuLucky | null {
   return lucky;
 }
 
+function coerceTiming(value: unknown): SajuTiming | null {
+  if (!value || typeof value !== 'object') return null;
+  const v = value as Record<string, unknown>;
+  const result = {} as SajuTiming;
+  let hasAny = false;
+  for (const key of TIMING_KEYS) {
+    const arr = toStrArray(v[key], 6);
+    result[key] = arr;
+    if (arr.length) hasAny = true;
+  }
+  return hasAny ? result : null;
+}
+
 function coerceSections(value: unknown): SajuSectionRaw[] {
   if (!Array.isArray(value)) return [];
   return value
@@ -142,6 +180,7 @@ export function coerceSajuStructured(input: unknown): SajuStructured | null {
     keywords: toStrArray(obj.keywords),
     scores: coerceScores(obj.scores),
     sections,
+    timing: coerceTiming(obj.timing),
     lucky: coerceLucky(obj.lucky),
     caution: toStr(obj.caution).trim(),
   };

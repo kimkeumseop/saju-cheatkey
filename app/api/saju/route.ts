@@ -3,7 +3,7 @@ import { calculateSaju } from '@/lib/saju';
 import { Solar } from 'lunar-javascript';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { streamReport, streamPrebuilt } from '@/lib/ai';
-import { coerceSajuStructured } from '@/lib/saju-schema';
+import { coerceSajuStructured, TIMING_KEYS } from '@/lib/saju-schema';
 import { buildReportCacheKey, getCachedReport, saveCachedReport } from '@/lib/saju-cache';
 
 export const runtime = 'nodejs';
@@ -12,7 +12,8 @@ export const maxDuration = 60;
 const apiKey = process.env.GEMINI_API_KEY;
 
 // 프롬프트/스키마가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
-const SAJU_CACHE_VERSION = 'v1';
+// v2: timing 구조화 배열 도입.
+const SAJU_CACHE_VERSION = 'v2';
 const SAJU_CACHE_COLLECTION = 'sajuCache';
 
 const STREAM_HEADERS = {
@@ -193,6 +194,11 @@ function finalizeSajuJson(full: string) {
     content: sanitizeYearRangeText(section.content),
   }));
   if (structured.caution) structured.caution = sanitizeYearRangeText(structured.caution);
+  if (structured.timing) {
+    for (const key of TIMING_KEYS) {
+      structured.timing[key] = structured.timing[key].map((line) => sanitizeYearRangeText(line));
+    }
+  }
 
   return JSON.stringify(structured);
 }
@@ -296,11 +302,31 @@ export async function POST(req: Request) {
         "keywords": ["기질 키워드 3~5개. 예: 추진력, 직관, 뒷심부족"],
         "scores": { "총운": 4, "직업운": 4.5, "재물운": 3.5, "애정운": 4, "건강운": 3, "대인관계": 4 },
         "sections": [ 아래 8개 섹션 객체 ],
+        "timing": {
+          "daeunExpansion": ["대운 확장 구간 2개"],
+          "daeunMaintenance": ["대운 정비·축적 구간 2개"],
+          "daeunCaution": ["대운 주의 구간 2개"],
+          "daeunDecisions": ["인생 중요 결정 포인트 3개"],
+          "wealthGoodYears": ["재물운 좋은 해 3개"],
+          "wealthCautionYears": ["지출 주의 해 3개"],
+          "monthlyGrowth": ["${currentYear}년 일·성장에 좋은 달 3개"],
+          "monthlyMoney": ["${currentYear}년 돈 관리에 유리한 달 2개"],
+          "monthlyCaution": ["${currentYear}년 컨디션·감정 관리가 필요한 달 3개"],
+          "monthlyActions": ["이번 시기에 바로 할 일 3개"]
+        },
         "lucky": { "numbers": [3, 7], "color": "남색", "direction": "동쪽", "advice": "부족한 기운을 채우는 개운 한 줄(해라체)" },
         "caution": "강점이 과해질 때 손해 보는 패턴을 냉정하게 짚는 한 단락(해라체)"
       }
 
       [scores 규칙] 0~5 사이, 0.5 단위. 모두 높게 주지 마라. 사주 균형에 따라 낮은 항목도 있어야 한다.
+
+      [timing 규칙 - 화면 카드로 바로 쓰임, 매우 중요]
+      - 각 배열의 원소는 한 줄 문자열이며 형식은 "라벨: 핵심 | 근거: ... | 행동: ..." 다.
+      - 연도형(daeun*, wealth*): "2028년: 수입을 넓히기 좋은 해 | 근거: ... | 행동: ..." 처럼 개별 연도로 시작해라. 연도를 범위(~, -)로 묶지 마라.
+      - 월형(monthly*): "3월: 새 일을 키우기 좋은 달 | 근거: ... | 행동: ..." 처럼 개별 월로 시작해라.
+      - monthlyActions는 라벨 없이 "지금 바로 할 일" 한 줄씩 짧게 써도 된다.
+      - 근거는 사주 데이터(오행·대운·흐름)에 붙여라. 모든 구간을 좋다고 하지 말고 좋음/주의를 섞어라.
+      - 위 sections 본문과 내용이 겹쳐도 되지만, timing 배열은 반드시 채워라. 화면 핵심 카드가 이 배열로 그려진다.
 
       [sections 규칙 - 정확히 아래 8개를, 이 title 그대로, 이 순서로]
       각 섹션 객체는 { "title": "...", "content": "..." } 형태다.
@@ -313,24 +339,19 @@ export async function POST(req: Request) {
       2) "title": "🪞 타고난 기질과 생활 패턴"
          - 나도 몰랐던 진짜 성향. "시작은 빠른데 마무리 전에 마음이 먼저 지친다" 같은 관찰 문장을 넣어라.
       3) "title": "🚀 향후 대운 10년 인생 타이밍"
-         - ${daYunRangeText} 를 기준으로 미래 10년을 비교한다.
-         - content 안에 아래 라벨을 글자 그대로 포함해라(프론트 추출 기준):
-           **확장 구간 2개**, **정비 구간 2개**, **주의 구간 2개**, **중요 결정 포인트 3개**, **연도별 체크포인트**
+         - ${daYunRangeText} 를 기준으로 미래 10년을 비교해 풀어라.
          - 모든 구간을 좋다고 하지 마라. 등급(확장/축적/정비/주의)을 나눠라.
          - 연도는 범위(~, -)로 묶지 말고 "2028년, 2029년"처럼 개별 연도로 써라.
-         - 좋은 해/주의 해는 "2028년: 확장하기 좋은 해 | 근거: ... | 행동: ..." 형식으로 한 줄씩 써라.
-         - 투자종목/로또/코인 대박 같은 확정 표현 금지.
+         - 투자종목/로또/코인 대박 같은 확정 표현 금지. (구간별 한 줄 요약은 위 timing 배열에 따로 채운다.)
       4) "title": "💼 직업운과 성장운"
          - 내가 빛나는 일의 방식과 커리어 전략. 좋은 해/주의 해/추천 행동/피해야 할 행동을 담아라.
       5) "title": "💰 재물운과 현실적인 돈 관리"
-         - content 안에 아래 라벨을 글자 그대로 포함해라:
-           **재물운 좋은 해 3개**, **수입 확장에 좋은 해 2개**, **지출 주의 해 3개**, **돈을 쌓는 방법 3개**
-         - 각 해는 개별 연도로, "2028년: 수입을 넓히기 좋은 해 | 근거: ... | 행동: ..." 형식.
+         - 돈이 들어오는 흐름과 새는 흐름을 사주 근거로 짚어라.
          - 계약, 이직, 성과급, 부업, 지출 정리 같은 생활 단어로 현실적으로 써라.
+         - 돈을 쌓는 방법 3가지를 글머리기호로 정리해라. (연도별 좋은 해/주의 해는 위 timing 배열에 채운다.)
       6) "title": "📅 ${currentYear}년 월별 운세 캘린더"
-         - content 안에 아래 라벨을 글자 그대로 포함해라:
-           **일과 성장에 좋은 구간 3개**, **돈 관리에 유리한 구간 2개**, **컨디션과 감정 관리가 필요한 구간 3개**, **바로 할 일 3개**
-         - 각 월/구간은 "3월: 새 일을 키우기 좋은 달 | 근거: ... | 행동: ..." 형식. 좋음/보통/주의를 섞어라.
+         - 올해 흐름을 월 단위로 풀되 좋음/보통/주의를 섞어라.
+         - 개별 월("3월")로 짚고 범위로 묶지 마라. (월별 좋은 달/주의 달/바로 할 일은 위 timing 배열에 채운다.)
       7) "title": "🌙 컨디션과 회복 루틴"
          - 질병 단정 금지. 에너지 소모 패턴, 수면/루틴/과로 주의, 회복 루틴을 현실적으로.
       8) "title": "📸 인스타 스토리 요약"
