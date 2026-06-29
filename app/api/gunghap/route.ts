@@ -12,8 +12,8 @@ const apiKey = process.env.GEMINI_API_KEY;
 
 // 프롬프트/스키마가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
 // v2: JSON 구조화 출력 도입. v3: few-shot 톤 예시 + 한자/전문용어 후필터.
-// v4: 두 사람 십성·신강약 grounding 비교 주입.
-const GUNGHAP_CACHE_VERSION = 'v4';
+// v4: 두 사람 십성·신강약 grounding 비교 주입. v5: compatibilityScore를 구조에 근거.
+const GUNGHAP_CACHE_VERSION = 'v5';
 const GUNGHAP_CACHE_COLLECTION = 'gunghapCache';
 
 const STREAM_HEADERS = {
@@ -298,7 +298,10 @@ export async function POST(req: Request) {
         }
       }
 
-      [compatibilityScore 규칙] 0~100 정수. 실제 조합처럼 줘라. 애매하면 60점대/70점대도 가능하다.
+      [compatibilityScore 규칙] 0~100 정수. 두 사람의 기질 구조에 근거해 줘라.
+      - 오행이 서로 부족한 부분을 채워주면(생) 높게, 같은 기질끼리 부딪히거나(극) 둘 다 한쪽으로 쏠리면 낮게.
+      - 신강·신약 조합이 끌고-받쳐주는 그림이면 높게, 둘 다 신강이라 주도권이 부딪히면 낮게.
+      - 무조건 80점대 주지 마라. 애매하면 60점대, 어긋나면 50점대도 솔직히 줘라.
 
       [sections 규칙 - 정확히 아래 7개를, 이 title 그대로, 이 순서로]
       각 섹션 객체는 { "title": "...", "content": "..." } 형태다. content는 줄바꿈(\\n\\n)으로 문단을 나눈 문자열.
