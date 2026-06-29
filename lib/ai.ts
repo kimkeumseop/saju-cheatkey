@@ -39,6 +39,8 @@ export interface StreamReportOptions {
   geminiModels?: GenerativeModel[];
   /** 전체 텍스트 완성 후 적용할 후처리(예: 연도 범위 정리). done 이벤트의 analysis에 반영됨 */
   postProcess?: (full: string) => string;
+  /** 후처리까지 끝난 최종 analysis로 호출되는 훅(예: 캐시 저장). done 전송 후 awaited, 실패는 무시됨 */
+  onComplete?: (analysis: string) => Promise<void> | void;
   label?: string;
 }
 
@@ -50,7 +52,7 @@ export interface StreamReportOptions {
  *   { t: 'done', analysis: '<최종본>' }  — 후처리까지 끝난 저장용 최종 텍스트
  *   { t: 'error', error: '...' }         — 생성 실패
  */
-export function streamReport({ prompt, openai, geminiModels, postProcess, label = 'AI' }: StreamReportOptions): ReadableStream<Uint8Array> {
+export function streamReport({ prompt, openai, geminiModels, postProcess, onComplete, label = 'AI' }: StreamReportOptions): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
 
   return new ReadableStream<Uint8Array>({
@@ -91,6 +93,27 @@ export function streamReport({ prompt, openai, geminiModels, postProcess, label 
 
       const analysis = postProcess ? postProcess(full) : full;
       send({ t: 'done', analysis });
+      if (onComplete) {
+        try {
+          await onComplete(analysis);
+        } catch (err: any) {
+          console.warn(`[${label}] onComplete 실패(무시):`, err?.message ?? err);
+        }
+      }
+      controller.close();
+    },
+  });
+}
+
+/**
+ * 이미 완성된 리포트(캐시 히트 등)를 done 이벤트 하나로 흘려보내는 스트림.
+ * 클라이언트 streamAnalysis는 done의 analysis 문자열을 그대로 최종본으로 받는다.
+ */
+export function streamPrebuilt(analysis: string): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(encoder.encode(JSON.stringify({ t: 'done', analysis }) + '\n'));
       controller.close();
     },
   });

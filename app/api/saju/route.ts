@@ -2,13 +2,24 @@ import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { Solar } from 'lunar-javascript';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
-import { streamReport } from '@/lib/ai';
+import { streamReport, streamPrebuilt } from '@/lib/ai';
 import { coerceSajuStructured } from '@/lib/saju-schema';
+import { buildReportCacheKey, getCachedReport, saveCachedReport } from '@/lib/saju-cache';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
+
+// 프롬프트/스키마가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
+const SAJU_CACHE_VERSION = 'v1';
+const SAJU_CACHE_COLLECTION = 'sajuCache';
+
+const STREAM_HEADERS = {
+  'Content-Type': 'application/x-ndjson; charset=utf-8',
+  'Cache-Control': 'no-cache, no-transform',
+  'X-Accel-Buffering': 'no',
+};
 
 const HANJA_TO_KO: Record<string, string> = {
   '甲': '갑', '乙': '을', '丙': '병', '丁': '정', '戊': '무', '己': '기', '庚': '경', '辛': '신', '壬': '임', '癸': '계',
@@ -200,6 +211,17 @@ export async function POST(req: Request) {
     const elementDist = `목:${sajuData.elementsCount['목']}, 화:${sajuData.elementsCount['화']}, 토:${sajuData.elementsCount['토']}, 금:${sajuData.elementsCount['금']}, 수:${sajuData.elementsCount['수']}`;
     const shinsalText = sajuData.keyShinsal?.length ? sajuData.keyShinsal.join(', ') : '특별한 신살 없음';
     const { todayText, currentYear } = getKoreanDateParts();
+
+    // 결정론적 캐싱: 동일 (생년월일·시간·달력·성별·기준연도)이면 이전 결과를 그대로 재사용.
+    // 이름은 키에서 제외(해석 본문은 출생 데이터에 의존, 화면 이름은 결과 문서에서 따로 표시).
+    const cacheKey = buildReportCacheKey(SAJU_CACHE_VERSION, [
+      birthDate, birthTime, calendarType, gender, currentYear,
+    ]);
+    const cachedAnalysis = await getCachedReport(SAJU_CACHE_COLLECTION, cacheKey);
+    if (cachedAnalysis) {
+      return new Response(streamPrebuilt(cachedAnalysis), { headers: STREAM_HEADERS });
+    }
+
     const currentAge = calcAge(birthDate, currentYear);
     const yearlyFlowText = buildYearlyFlowText(currentYear, currentAge);
     const monthlyFlowText = buildMonthlyFlowText(currentYear);
@@ -322,16 +344,19 @@ export async function POST(req: Request) {
       openai: { model: 'gpt-5-mini', maxTokens: 16000, reasoningEffort: 'low', json: true },
       geminiModels: [model, fallbackModel],
       postProcess: finalizeSajuJson,
+      // 구조화 JSON으로 정상 생성된 경우에만 캐시에 저장(폴백 마크다운은 캐싱하지 않음).
+      onComplete: async (analysis) => {
+        if (coerceSajuStructured(analysis)) {
+          await saveCachedReport(SAJU_CACHE_COLLECTION, cacheKey, analysis, {
+            version: SAJU_CACHE_VERSION,
+            year: currentYear,
+          });
+        }
+      },
       label: 'Saju',
     });
 
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'application/x-ndjson; charset=utf-8',
-        'Cache-Control': 'no-cache, no-transform',
-        'X-Accel-Buffering': 'no',
-      },
-    });
+    return new Response(stream, { headers: STREAM_HEADERS });
 
   } catch (error: any) {
     console.error('Saju API Error:', {
