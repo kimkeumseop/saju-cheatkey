@@ -1,6 +1,6 @@
 'use client';
 
-import { coerceSajuStructured, type SajuStructured } from './saju-schema';
+import { coerceSajuStructured, coerceGunghapStructured, type SajuStructured, type GunghapStructured } from './saju-schema';
 
 const SOFT_ERROR_MESSAGE = '운명의 흐름을 정리하는 중입니다. 다시 시도해주세요.';
 
@@ -19,6 +19,8 @@ type ParsedSectionsResult = {
 type ParsedGunghapResult = ParsedSectionsResult & {
   compatibilityScore?: number;
   headline?: string;
+  /** 구조화 JSON(신버전)일 때만 채워짐 */
+  gunghap?: GunghapStructured;
 };
 
 const SAJU_MAJOR_SECTION_PATTERNS = [
@@ -260,6 +262,23 @@ export function normalizeSajuAiResult(value: unknown): ParsedSectionsResult {
 }
 
 export function normalizeGunghapAiResult(value: unknown): ParsedGunghapResult {
+  // 신버전: 구조화 JSON이면 섹션을 신뢰하고 구조화 부가정보(점수·헤드라인·timing)를 함께 반환.
+  const structured = coerceGunghapStructured(value);
+  if (structured) {
+    const sections = structured.sections.map((section) => ({
+      title: cleanTitle(section.title),
+      content: normalizeLineBreaks(section.content),
+    }));
+    return {
+      rawText: sections.map((s) => `## ${s.title}\n${s.content}`).join('\n\n'),
+      sections,
+      gunghap: structured,
+      compatibilityScore: structured.compatibilityScore > 0 ? Math.min(100, structured.compatibilityScore) : 80,
+      headline: structured.headline || sections[0]?.content || SOFT_ERROR_MESSAGE,
+    };
+  }
+
+  // 레거시: 마크다운 텍스트 파싱 경로
   const normalized = parseAnalysisSections(value);
   const mergedSections = mergeSectionsByMajorPatterns(normalized.sections, GUNGHAP_MAJOR_SECTION_PATTERNS);
   const legacyRecord = value && typeof value === 'object' ? (value as Record<string, unknown>) : null;

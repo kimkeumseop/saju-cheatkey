@@ -11,6 +11,7 @@ import { twMerge } from 'tailwind-merge';
 import { ELEMENT_STYLE } from '@/lib/saju';
 import { normalizeGunghapAiResult } from '@/lib/ai-result';
 import { getRelationTheme, type RelationTheme } from '@/lib/relation-theme';
+import type { GunghapStructured } from '@/lib/saju-schema';
 import { motion } from 'framer-motion';
 
 function cn(...inputs: ClassValue[]) {
@@ -108,7 +109,12 @@ function getRelationBlockLines(section: RelationSection | undefined, startWords:
   return picked;
 }
 
-function RelationBriefingPanel({ sections, theme }: { sections: RelationSection[]; theme: RelationTheme }) {
+function RelationBriefingPanel({ sections, theme, gunghap }: { sections: RelationSection[]; theme: RelationTheme; gunghap?: GunghapStructured | null }) {
+  // gunghap(신버전 구조화 배열)이 있으면 우선, 없으면 아래 정규식 스크래핑으로 폴백.
+  const g = gunghap ?? null;
+  const pick = (structuredArr: string[] | undefined, fallback: string[]) =>
+    structuredArr && structuredArr.length > 0 ? structuredArr : fallback;
+
   const coreSection = findRelationSection(sections, ['관계핵심브리핑', '진짜결론', '총평']);
   const synergySection = findRelationSection(sections, ['끌림과시너지', '시너지포인트']);
   const conflictSection = findRelationSection(sections, ['갈등포인트', '진짜마음', '반복되는오해']);
@@ -157,15 +163,15 @@ function RelationBriefingPanel({ sections, theme }: { sections: RelationSection[
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <RelationBriefingCard icon={<Heart className="w-5 h-5" />} label="시너지" title="잘 맞는 지점" lines={synergyLines.length ? synergyLines : coreLines} accent={theme.color} />
-        <RelationBriefingCard icon={<AlertTriangle className="w-5 h-5" />} label="주의" title="반복 갈등 포인트" lines={conflictLines.length ? conflictLines : avoidLines} accent="#ffb86b" />
-        <RelationBriefingCard icon={<CheckCircle2 className="w-5 h-5" />} label="행동" title="관계를 지키는 방법" lines={actionLines.length ? actionLines : decisionLines} accent="#9d8fff" />
+        <RelationBriefingCard icon={<Heart className="w-5 h-5" />} label="시너지" title="잘 맞는 지점" lines={pick(g?.synergy, synergyLines.length ? synergyLines : coreLines)} accent={theme.color} />
+        <RelationBriefingCard icon={<AlertTriangle className="w-5 h-5" />} label="주의" title="반복 갈등 포인트" lines={pick(g?.conflict, conflictLines.length ? conflictLines : avoidLines)} accent="#ffb86b" />
+        <RelationBriefingCard icon={<CheckCircle2 className="w-5 h-5" />} label="행동" title="관계를 지키는 방법" lines={pick(g?.action, actionLines.length ? actionLines : decisionLines)} accent="#9d8fff" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <RelationBriefingCard icon={<CalendarDays className="w-5 h-5" />} label="타이밍" title="가까워지는 구간" lines={closerLines.length ? closerLines : synergyLines} accent="#00d18f" />
-        <RelationBriefingCard icon={<AlertTriangle className="w-5 h-5" />} label="거리감" title="멀어지기 쉬운 구간" lines={distanceLines.length ? distanceLines : conflictLines} accent="#ffb86b" />
-        <RelationBriefingCard icon={<CheckCircle2 className="w-5 h-5" />} label="결정" title="관계 결정 포인트" lines={decisionLines.length ? decisionLines : actionLines} accent="#e8829a" />
+        <RelationBriefingCard icon={<CalendarDays className="w-5 h-5" />} label="타이밍" title="가까워지는 구간" lines={pick(g?.timing?.closer, closerLines.length ? closerLines : synergyLines)} accent="#00d18f" />
+        <RelationBriefingCard icon={<AlertTriangle className="w-5 h-5" />} label="거리감" title="멀어지기 쉬운 구간" lines={pick(g?.timing?.distance, distanceLines.length ? distanceLines : conflictLines)} accent="#ffb86b" />
+        <RelationBriefingCard icon={<CheckCircle2 className="w-5 h-5" />} label="결정" title="관계 결정 포인트" lines={pick(g?.timing?.decision, decisionLines.length ? decisionLines : actionLines)} accent="#e8829a" />
       </div>
     </section>
   );
@@ -634,7 +640,7 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
             const accordionSections = aiResult.sections.filter((s) => s !== storySection);
             return (
               <>
-                <RelationBriefingPanel sections={accordionSections} theme={theme} />
+                <RelationBriefingPanel sections={accordionSections} theme={theme} gunghap={aiResult.gunghap} />
                 <AnalysisAccordion data={accordionSections} />
                 {storySection && (
                   <InstaStoryButton

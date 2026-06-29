@@ -3,14 +3,16 @@ import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { streamReport, streamPrebuilt } from '@/lib/ai';
 import { buildReportCacheKey, getCachedReport, saveCachedReport } from '@/lib/saju-cache';
+import { coerceGunghapStructured, GUNGHAP_TIMING_KEYS } from '@/lib/saju-schema';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
 
-// 프롬프트가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
-const GUNGHAP_CACHE_VERSION = 'v1';
+// 프롬프트/스키마가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
+// v2: JSON 구조화 출력 도입.
+const GUNGHAP_CACHE_VERSION = 'v2';
 const GUNGHAP_CACHE_COLLECTION = 'gunghapCache';
 
 const STREAM_HEADERS = {
@@ -134,6 +136,31 @@ function sanitizeYearRangeText(text: string) {
     .replace(/\s*\+\s*/g, ', ');
 }
 
+/**
+ * 모델 JSON 문자열을 파싱·검증하고 섹션 본문/timing의 연도 범위 표기를 정리한 뒤
+ * 정규화된 JSON 문자열로 돌려준다. 파싱 실패 시 원문을 sanitize해 레거시 마크다운 경로로 보낸다.
+ */
+function finalizeGunghapJson(full: string) {
+  const structured = coerceGunghapStructured(full);
+  if (!structured) return sanitizeYearRangeText(full).trim();
+
+  structured.sections = structured.sections.map((section) => ({
+    title: section.title,
+    content: sanitizeYearRangeText(section.content),
+  }));
+  if (structured.timing) {
+    for (const key of GUNGHAP_TIMING_KEYS) {
+      structured.timing[key] = structured.timing[key].map((line) => sanitizeYearRangeText(line));
+    }
+  }
+  structured.synergy = structured.synergy.map((line) => sanitizeYearRangeText(line));
+  structured.conflict = structured.conflict.map((line) => sanitizeYearRangeText(line));
+  structured.action = structured.action.map((line) => sanitizeYearRangeText(line));
+  structured.avoid = structured.avoid.map((line) => sanitizeYearRangeText(line));
+
+  return JSON.stringify(structured);
+}
+
 export async function POST(req: Request) {
   let responseText = '';
   try {
@@ -186,6 +213,7 @@ export async function POST(req: Request) {
       temperature: 0.68,
       maxOutputTokens: 8500,
       topP: 0.95,
+      responseMimeType: 'application/json',
     };
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-lite',
@@ -202,6 +230,7 @@ export async function POST(req: Request) {
     const prompt = `
       너는 두 사람의 사주를 쉽게 번역해서 관계의 장점, 약점, 타이밍을 현실적으로 짚어주는 프리미엄 궁합 상담가야.
       결과는 "돈 주고 본 궁합 리포트"처럼 구체적이어야 하지만, 화면에서는 한눈에 읽혀야 해.
+      결과는 JSON 하나로만 출력한다. JSON 밖의 어떤 텍스트도, 코드블록(\`\`\`)도, 설명도 쓰지 마라.
 
       [유저 정보]
       - 본인: ${user1.name} / 관계: ${relationLabel} / 사주 참고값: ${pillars1} / 일간: ${saju1.dayGanKo} / 오행 분포: ${buildElementDistText(saju1.elementsCount)}
@@ -227,54 +256,53 @@ export async function POST(req: Request) {
       4. 점수는 실제 조합처럼 줘라. 애매하면 60점대/70점대도 가능하다.
       5. 미래는 단정하지 말고, 선택에 따라 좋아지는 지점과 방치하면 틀어지는 지점을 함께 보여줘라.
 
-      [출력 구조]
-      첫 줄: 두 사람 관계를 한 문장으로 요약.
-      둘째 줄: 반드시 "궁합 점수: NN점" 형식.
-      이후 반드시 아래 7개 섹션을 모두 작성. 각 섹션 제목은 반드시 ## 로 시작.
+      [출력 JSON 스키마 - 이 형태만 출력]
+      {
+        "headline": "두 사람 관계를 한 문장으로 끊는 요약",
+        "compatibilityScore": 78,
+        "sections": [ 아래 7개 섹션 객체 ],
+        "synergy": ["잘 맞는 지점 3개(짧은 한 줄)"],
+        "conflict": ["반복되는 갈등 포인트 3개(짧은 한 줄)"],
+        "action": ["관계를 지키는 실전 행동 3개(짧은 한 줄)"],
+        "avoid": ["이 관계에서 피해야 할 선택 2~3개(짧은 한 줄)"],
+        "timing": {
+          "closer": ["가까워지는 해 2개"],
+          "distance": ["멀어지기 쉬운 해 2개"],
+          "decision": ["관계를 결정해야 하는 해 3개"],
+          "actions": ["그 시기에 하면 좋은 행동 3개(일정/돈/감정)"]
+        }
+      }
 
-      ## 💞 두 사람의 관계 핵심 브리핑
-      ## ✨ 끌림과 시너지 포인트
-      ## ⚠️ 갈등 포인트와 진짜 마음
-      ## 🕰️ 향후 10년 관계 타이밍
-      ## ✅ 관계를 지키는 실전 행동 5가지
-      ## 🚫 이 관계에서 피해야 할 선택
-      ## 📸 인스타 스토리 요약
+      [compatibilityScore 규칙] 0~100 정수. 실제 조합처럼 줘라. 애매하면 60점대/70점대도 가능하다.
 
-      [향후 10년 관계 타이밍 섹션 필수 형식]
-      아래 4개 블록 라벨을 글자 그대로 포함해라.
-      **가까워지는 해 2개**
-      - 2028년: 서로에게 다가가기 좋은 해 | 근거: 두 사람 모두 관계를 밖으로 드러내고 약속을 만들기 쉬운 흐름 | 행동: 만남 횟수, 일정, 관계의 이름을 분명히 정한다.
+      [sections 규칙 - 정확히 아래 7개를, 이 title 그대로, 이 순서로]
+      각 섹션 객체는 { "title": "...", "content": "..." } 형태다. content는 줄바꿈(\\n\\n)으로 문단을 나눈 문자열.
+      각 섹션은 결론부터 시작하고 5~8줄. "한 줄 결론 → 좋은 이유 → 현실 장면 → 추천 행동 → 조심할 점" 중 3개 이상을 담아라.
+      1) "title": "💞 두 사람의 관계 핵심 브리핑"
+      2) "title": "✨ 끌림과 시너지 포인트"
+      3) "title": "⚠️ 갈등 포인트와 진짜 마음"
+      4) "title": "🕰️ 향후 10년 관계 타이밍"  (구간별 한 줄 요약은 위 timing 배열에 따로 채운다.)
+      5) "title": "✅ 관계를 지키는 실전 행동 5가지"
+      6) "title": "🚫 이 관계에서 피해야 할 선택"
+      7) "title": "📸 인스타 스토리 요약"
 
-      **멀어지기 쉬운 해 2개**
-      - 2030년: 오해를 조심해야 하는 해 | 근거: 한쪽은 속도를 내고, 한쪽은 기준을 다시 확인하려는 흐름 | 행동: 서운함을 쌓기 전에 돈, 시간, 연락 기준을 먼저 맞춘다.
+      [timing 규칙 - 화면 카드로 바로 쓰임, 매우 중요]
+      - 각 배열의 원소는 "2028년: 핵심 결론 | 근거: ... | 행동: ..." 형식 한 줄 문자열이다(파이프로 분리).
+      - 연도는 반드시 개별 연도("2028년")로 시작하고, 범위(~, -)로 묶지 마라.
+      - actions는 라벨 없이 "일정: ...", "돈: ...", "감정: ..."처럼 짧게 써도 된다.
+      - 모든 시기를 좋게 쓰지 마라. 가까워지는/멀어지는/결정 시기를 분명히 나눠라.
 
-      **관계를 결정해야 하는 해 3개**
-      - 2032년: 관계의 방향을 정하기 좋은 해 | 근거: 미뤄둔 선택을 현실적인 약속으로 바꿔야 하는 흐름 | 행동: 함께할 계획과 각자의 선을 말로 정리한다.
-
-      **그 시기에 하면 좋은 행동**
-      - 일정: 만나는 횟수와 연락 기준을 미리 정한다.
-      - 돈: 선물, 지출, 공동 비용의 기준을 애매하게 두지 않는다.
-      - 감정: 서운함을 참았다가 터뜨리지 말고 짧게 확인한다.
-
-      [카드 가독성 규칙]
-      1. 연도별 줄은 반드시 "2028년: 결론 | 근거: ... | 행동: ..." 형식을 사용해라.
-      2. 근거와 행동은 같은 문장 안에 뭉치지 말고 파이프(|)로 분리해라.
-      3. 한 문단은 최대 2문장으로 짧게 써라.
-      4. 섹션마다 5~8줄을 넘기지 마라. 길이보다 완성도가 중요하다.
-      5. JSON, 코드블록, 중괄호를 쓰지 마라.
-
-      [최종 출력]
-      설명이나 사과 없이 리포트 본문만 출력해라.
+      [최종] 위 JSON 객체 하나만 출력해라. 첫 글자는 '{', 마지막 글자는 '}' 여야 한다.
     `;
 
     const stream = streamReport({
       prompt,
-      openai: { model: 'gpt-5-mini', maxTokens: 16000, reasoningEffort: 'low' },
+      openai: { model: 'gpt-5-mini', maxTokens: 16000, reasoningEffort: 'low', json: true },
       geminiModels: [model, fallbackModel],
-      postProcess: (text) => sanitizeYearRangeText(text).trim(),
-      // 정상 생성된 리포트(섹션 마커 포함)만 캐시에 저장.
+      postProcess: finalizeGunghapJson,
+      // 구조화 JSON으로 정상 생성된 경우에만 캐시에 저장.
       onComplete: async (analysis) => {
-        if (analysis.includes('##') && analysis.trim().length > 200) {
+        if (coerceGunghapStructured(analysis)) {
           await saveCachedReport(GUNGHAP_CACHE_COLLECTION, cacheKey, analysis, {
             version: GUNGHAP_CACHE_VERSION,
             year: currentYear,

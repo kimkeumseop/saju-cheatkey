@@ -78,7 +78,7 @@ export async function streamAnalysis(
 export function cleanPreview(text: string): string {
   return text
     // JSON 키("headline": 등)와 구조 토큰 제거
-    .replace(/"(headline|keywords|scores|sections|lucky|caution|title|content|color|direction|advice|numbers|총운|직업운|재물운|애정운|건강운|대인관계)"\s*:/g, '')
+    .replace(/"(headline|keywords|scores|sections|lucky|caution|title|content|color|direction|advice|numbers|timing|compatibilityScore|synergy|conflict|action|avoid|closer|distance|decision|actions|daeunExpansion|daeunMaintenance|daeunCaution|daeunDecisions|wealthGoodYears|wealthCautionYears|monthlyGrowth|monthlyMoney|monthlyCaution|monthlyActions|총운|직업운|재물운|애정운|건강운|대인관계)"\s*:/g, '')
     .replace(/\\n/g, ' ')
     .replace(/\\"/g, '"')
     .replace(/[{}\[\]"]/g, ' ')

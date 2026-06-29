@@ -190,3 +190,63 @@ export function coerceSajuStructured(input: unknown): SajuStructured | null {
 export function isSajuStructured(input: unknown): boolean {
   return coerceSajuStructured(input) !== null;
 }
+
+// ── 궁합 구조화 스키마 ────────────────────────────────────────────
+
+export interface GunghapTiming {
+  closer: string[];    // 가까워지는 해
+  distance: string[];  // 멀어지기 쉬운 해
+  decision: string[];  // 관계 결정 포인트
+  actions: string[];   // 그 시기에 하면 좋은 행동
+}
+
+export const GUNGHAP_TIMING_KEYS: (keyof GunghapTiming)[] = ['closer', 'distance', 'decision', 'actions'];
+
+export interface GunghapStructured {
+  headline: string;
+  compatibilityScore: number; // 0~100
+  sections: SajuSectionRaw[];
+  timing: GunghapTiming | null;
+  synergy: string[];
+  conflict: string[];
+  action: string[];
+  avoid: string[];
+}
+
+function clampScore100(value: unknown): number {
+  const n = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+function coerceGunghapTiming(value: unknown): GunghapTiming | null {
+  if (!value || typeof value !== 'object') return null;
+  const v = value as Record<string, unknown>;
+  const result = {} as GunghapTiming;
+  let hasAny = false;
+  for (const key of GUNGHAP_TIMING_KEYS) {
+    const arr = toStrArray(v[key], 6);
+    result[key] = arr;
+    if (arr.length) hasAny = true;
+  }
+  return hasAny ? result : null;
+}
+
+/** 임의 입력을 GunghapStructured로 정규화. sections가 없으면 null(레거시 마크다운 처리). */
+export function coerceGunghapStructured(input: unknown): GunghapStructured | null {
+  const obj = extractJsonObject(input);
+  if (!obj) return null;
+  const sections = coerceSections(obj.sections);
+  if (sections.length === 0) return null;
+
+  return {
+    headline: toStr(obj.headline).trim(),
+    compatibilityScore: clampScore100(obj.compatibilityScore ?? obj.score),
+    sections,
+    timing: coerceGunghapTiming(obj.timing),
+    synergy: toStrArray(obj.synergy),
+    conflict: toStrArray(obj.conflict),
+    action: toStrArray(obj.action),
+    avoid: toStrArray(obj.avoid),
+  };
+}
