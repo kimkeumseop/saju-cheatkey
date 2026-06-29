@@ -1,12 +1,23 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
-import { streamReport } from '@/lib/ai';
+import { streamReport, streamPrebuilt } from '@/lib/ai';
+import { buildReportCacheKey, getCachedReport, saveCachedReport } from '@/lib/saju-cache';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const apiKey = process.env.GEMINI_API_KEY;
+
+// 프롬프트가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
+const GUNGHAP_CACHE_VERSION = 'v1';
+const GUNGHAP_CACHE_COLLECTION = 'gunghapCache';
+
+const STREAM_HEADERS = {
+  'Content-Type': 'application/x-ndjson; charset=utf-8',
+  'Cache-Control': 'no-cache, no-transform',
+  'X-Accel-Buffering': 'no',
+};
 
 const relationLabels: Record<string, string> = {
   friend: '친구', some: '썸남 썸녀', couple: '연인', spouse: '배우자', 'ex-couple': '전여친 전남친', 'ex-spouse': '전아내 전남편',
@@ -129,7 +140,19 @@ export async function POST(req: Request) {
     const { user1, user2, relationship } = await req.json();
     const relationLabel = relationLabels[relationship] || '인연';
     const currentYear = getCurrentYear();
-    
+
+    // 결정론적 캐싱: 동일 (두 사람 출생 데이터 + 관계 + 기준연도)이면 이전 결과 재사용.
+    // 관계는 본인(user1) 관점이라 순서를 보존한다((A,B) ≠ (B,A)).
+    const cacheKey = buildReportCacheKey(GUNGHAP_CACHE_VERSION, [
+      user1?.birthDate, user1?.birthTime, user1?.calendarType, user1?.gender,
+      user2?.birthDate, user2?.birthTime, user2?.calendarType, user2?.gender,
+      relationship, currentYear,
+    ]);
+    const cachedAnalysis = await getCachedReport(GUNGHAP_CACHE_COLLECTION, cacheKey);
+    if (cachedAnalysis) {
+      return new Response(streamPrebuilt(cachedAnalysis), { headers: STREAM_HEADERS });
+    }
+
     if (!apiKey && !process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { success: false, error: 'AI API 키(OPENAI/GEMINI)가 설정되지 않았습니다.' },
@@ -249,16 +272,19 @@ export async function POST(req: Request) {
       openai: { model: 'gpt-5-mini', maxTokens: 16000, reasoningEffort: 'low' },
       geminiModels: [model, fallbackModel],
       postProcess: (text) => sanitizeYearRangeText(text).trim(),
+      // 정상 생성된 리포트(섹션 마커 포함)만 캐시에 저장.
+      onComplete: async (analysis) => {
+        if (analysis.includes('##') && analysis.trim().length > 200) {
+          await saveCachedReport(GUNGHAP_CACHE_COLLECTION, cacheKey, analysis, {
+            version: GUNGHAP_CACHE_VERSION,
+            year: currentYear,
+          });
+        }
+      },
       label: 'Gunghap',
     });
 
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'application/x-ndjson; charset=utf-8',
-        'Cache-Control': 'no-cache, no-transform',
-        'X-Accel-Buffering': 'no',
-      },
-    });
+    return new Response(stream, { headers: STREAM_HEADERS });
 
   } catch (error: any) {
     console.error('Gunghap API Error:', {
