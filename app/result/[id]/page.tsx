@@ -14,7 +14,7 @@ import GungHapInputModal from '@/components/GungHapInputModal';
 import { Loader2, BarChart3, Star, History, Moon, Heart, CircleDollarSign, AlertTriangle, CheckCircle2, CalendarDays, TrendingUp } from 'lucide-react';
 import { ELEMENT_STYLE } from '@/lib/saju';
 import { normalizeSajuAiResult } from '@/lib/ai-result';
-import { SCORE_KEYS, type SajuStructured, type SajuTiming } from '@/lib/saju-schema';
+import { SCORE_KEYS, type SajuStructured, type SajuTiming, type SajuScores } from '@/lib/saju-schema';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -569,6 +569,56 @@ function BriefingCard({ icon, label, title, lines, accent }: { icon: ReactNode; 
   );
 }
 
+// ── 운세 점수 육각 레이더 차트 ────────────────────────────────────
+function ScoreRadar({ scores }: { scores: SajuScores }) {
+  const keys = SCORE_KEYS; // 6축
+  const W = 340, H = 290, cx = 170, cy = 145, R = 92, labelR = R + 22;
+  const levels = [0.25, 0.5, 0.75, 1];
+  const clamp = (v: number) => Math.max(0, Math.min(5, v ?? 0));
+
+  const angleFor = (i: number) => (-90 + i * (360 / keys.length)) * (Math.PI / 180);
+  const pt = (i: number, r: number): [number, number] => {
+    const a = angleFor(i);
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  };
+  const ring = (ratio: number) => keys.map((_, i) => pt(i, R * ratio).join(',')).join(' ');
+  const valuePoly = keys.map((k, i) => pt(i, R * (clamp(scores[k]) / 5)).join(',')).join(' ');
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-[340px] mx-auto" role="img" aria-label="운세 점수 레이더 차트">
+      <defs>
+        <linearGradient id="radarFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#9d8fff" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#e8829a" stopOpacity="0.5" />
+        </linearGradient>
+      </defs>
+      {levels.map((lv) => (
+        <polygon key={lv} points={ring(lv)} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={1} />
+      ))}
+      {keys.map((_, i) => {
+        const [x, y] = pt(i, R);
+        return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgba(255,255,255,0.07)" strokeWidth={1} />;
+      })}
+      <polygon points={valuePoly} fill="url(#radarFill)" stroke="#c8bdff" strokeWidth={2} strokeLinejoin="round" />
+      {keys.map((k, i) => {
+        const [x, y] = pt(i, R * (clamp(scores[k]) / 5));
+        return <circle key={k} cx={x} cy={y} r={3.5} fill="#e8829a" />;
+      })}
+      {keys.map((k, i) => {
+        const [lx, ly] = pt(i, labelR);
+        const cos = Math.cos(angleFor(i));
+        const anchor = Math.abs(cos) < 0.35 ? 'middle' : cos > 0 ? 'start' : 'end';
+        return (
+          <g key={k}>
+            <text x={lx} y={ly - 3} textAnchor={anchor} fontSize={12} fontWeight={800} fill="rgba(240,232,238,0.6)">{k}</text>
+            <text x={lx} y={ly + 12} textAnchor={anchor} fontSize={13} fontWeight={900} fill="#f5eef2">{clamp(scores[k]).toFixed(1)}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 // ── 구조화 시그니처 패널 (신버전 JSON 결과 전용) ──────────────────
 function SajuSignaturePanel({ structured }: { structured: SajuStructured }) {
   const { headline, keywords, scores, lucky, caution } = structured;
@@ -608,23 +658,7 @@ function SajuSignaturePanel({ structured }: { structured: SajuStructured }) {
             <BarChart3 className="w-5 h-5" style={{ color: '#9d8fff' }} />
             <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>운세 점수</h4>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-            {SCORE_KEYS.map((key) => {
-              const value = scores![key] ?? 0;
-              const percent = (value / 5) * 100;
-              return (
-                <div key={key} className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold" style={{ color: 'rgba(240,232,238,0.78)' }}>{key}</span>
-                    <span className="text-sm font-black" style={{ color: '#9d8fff' }}>{value.toFixed(1)}</span>
-                  </div>
-                  <div className="h-2 w-full rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${percent}%`, background: 'linear-gradient(90deg, #9d8fff, #e8829a)' }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <ScoreRadar scores={scores!} />
         </div>
       )}
 
