@@ -14,7 +14,7 @@ import GungHapInputModal from '@/components/GungHapInputModal';
 import { Loader2, BarChart3, Star, History, Moon, Heart, CircleDollarSign, AlertTriangle, CheckCircle2, CalendarDays, TrendingUp } from 'lucide-react';
 import { ELEMENT_STYLE } from '@/lib/saju';
 import { normalizeSajuAiResult } from '@/lib/ai-result';
-import { SCORE_KEYS, type SajuStructured, type SajuTiming, type SajuScores } from '@/lib/saju-schema';
+import { SCORE_KEYS, type SajuStructured, type SajuTiming, type SajuScores, type SajuLifeStages } from '@/lib/saju-schema';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -619,6 +619,46 @@ function ScoreRadar({ scores }: { scores: SajuScores }) {
   );
 }
 
+// ── 생애 흐름 패널 (초년/중년/말년 + 전성기) ─────────────────────
+function LifeArcPanel({ stages }: { stages: SajuLifeStages }) {
+  const items = [
+    { label: '초년', sub: '~20대', text: stages.early, accent: '#9d8fff' },
+    { label: '중년', sub: '30~40대', text: stages.middle, accent: '#e8829a' },
+    { label: '말년', sub: '50대~', text: stages.late, accent: '#00d18f' },
+  ].filter((it) => it.text);
+
+  if (!stages.peak && items.length === 0) return null;
+
+  return (
+    <section className="space-y-5">
+      {stages.peak && (
+        <div className="rounded-[2rem] p-6 md:p-8 space-y-3" style={{ background: 'rgba(157,143,255,0.07)', border: '1px solid rgba(157,143,255,0.18)', boxShadow: '0 8px 40px rgba(157,143,255,0.08)' }}>
+          <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: '#9d8fff' }}>
+            <History className="w-4 h-4" />
+            생애 흐름 · 전성기
+          </div>
+          <p className="text-xl md:text-2xl font-bold leading-snug break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
+            {stages.peak}
+          </p>
+        </div>
+      )}
+      {items.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {items.map((it) => (
+            <article key={it.label} className="rounded-[2rem] p-5 md:p-6 space-y-3" style={{ background: 'rgba(255,255,255,0.025)', border: `1px solid ${it.accent}33`, boxShadow: `0 8px 32px ${it.accent}12, 0 1px 0 rgba(255,255,255,0.04) inset` }}>
+              <div className="flex items-baseline gap-2">
+                <span className="text-base font-black" style={{ color: it.accent }}>{it.label}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: 'rgba(240,232,238,0.4)' }}>{it.sub}</span>
+              </div>
+              <p className="text-[13px] md:text-sm font-medium leading-relaxed break-keep whitespace-pre-wrap" style={{ color: 'rgba(240,232,238,0.72)' }}>{it.text}</p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 // ── 구조화 시그니처 패널 (신버전 JSON 결과 전용) ──────────────────
 function SajuSignaturePanel({ structured }: { structured: SajuStructured }) {
   const { headline, keywords, scores, lucky, caution } = structured;
@@ -1010,6 +1050,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                   return (
                     <>
                       {result.structured && <SajuSignaturePanel structured={result.structured} />}
+                      {result.structured?.lifeStages && <LifeArcPanel stages={result.structured.lifeStages} />}
                       <SajuBriefingPanel
                         sections={accordionSections}
                         userName={data.userName}

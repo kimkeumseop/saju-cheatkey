@@ -253,6 +253,14 @@ export function normalizeSajuAiResult(value: unknown): ParsedSectionsResult {
     if (structured.timing) {
       for (const k of TIMING_KEYS) structured.timing[k] = structured.timing[k].map(scrubUserText);
     }
+    if (structured.lifeStages) {
+      structured.lifeStages = {
+        early: scrubUserText(structured.lifeStages.early),
+        middle: scrubUserText(structured.lifeStages.middle),
+        late: scrubUserText(structured.lifeStages.late),
+        peak: scrubUserText(structured.lifeStages.peak),
+      };
+    }
     const sections = structured.sections.map((section) => ({
       title: cleanTitle(section.title),
       content: normalizeLineBreaks(section.content),

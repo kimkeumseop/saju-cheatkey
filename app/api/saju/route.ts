@@ -14,7 +14,8 @@ const apiKey = process.env.GEMINI_API_KEY;
 // 프롬프트/스키마가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
 // v2: timing 구조화 배열 도입. v3: 십성 종합·신강약 grounding 주입.
 // v4: few-shot 톤 예시 + 한자/전문용어 후필터. v5: scores를 십성·신강약 구조에 근거.
-const SAJU_CACHE_VERSION = 'v5';
+// v6: lifeStages(생애 흐름) 추가.
+const SAJU_CACHE_VERSION = 'v6';
 const SAJU_CACHE_COLLECTION = 'sajuCache';
 
 const STREAM_HEADERS = {
@@ -199,6 +200,14 @@ function finalizeSajuJson(full: string) {
     content: clean(section.content),
   }));
   if (structured.caution) structured.caution = clean(structured.caution);
+  if (structured.lifeStages) {
+    structured.lifeStages = {
+      early: clean(structured.lifeStages.early),
+      middle: clean(structured.lifeStages.middle),
+      late: clean(structured.lifeStages.late),
+      peak: clean(structured.lifeStages.peak),
+    };
+  }
   if (structured.lucky?.advice) structured.lucky.advice = scrubUserText(structured.lucky.advice);
   if (structured.timing) {
     for (const key of TIMING_KEYS) {
@@ -336,6 +345,12 @@ export async function POST(req: Request) {
           "monthlyCaution": ["${currentYear}년 컨디션·감정 관리가 필요한 달 3개"],
           "monthlyActions": ["이번 시기에 바로 할 일 3개"]
         },
+        "lifeStages": {
+          "early": "초년(태어나 20대까지) 흐름 2~3문장(해라체)",
+          "middle": "중년(30~40대) 흐름 2~3문장(해라체)",
+          "late": "말년(50대 이후) 흐름 2~3문장(해라체)",
+          "peak": "인생이 가장 크게 피는 시기를 한 줄로 단정(해라체)"
+        },
         "lucky": { "numbers": [3, 7], "color": "남색", "direction": "동쪽", "advice": "부족한 기운을 채우는 개운 한 줄(해라체)" },
         "caution": "강점이 과해질 때 손해 보는 패턴을 냉정하게 짚는 한 단락(해라체)"
       }
@@ -346,6 +361,11 @@ export async function POST(req: Request) {
       - 대인관계: 식상(표현)·비겁(사교)이 받쳐주면 높게, 한쪽으로 치우치면 낮게.
       - 건강운: 오행이 고르면 높게, 한 오행이 0이거나 한쪽으로 심하게 쏠리면 낮게.
       - 애정운/총운: 위 항목과 신강약을 종합해 정하되, 약한 구조면 총운도 솔직히 낮춰라.
+
+      [lifeStages 규칙 - 점신식 생애 흐름 서사]
+      - 대운 흐름(${daYunRangeText})에 근거해 초년→중년→말년의 큰 흐름을 단정해라. 막연한 일반론 금지.
+      - peak는 "너의 전성기는 40대 중반부터 50대 초반이다." 처럼 가장 크게 피는 시기를 대운 근거로 한 줄 단정.
+      - 좋게만 쓰지 말고 단계마다 강점과 조심할 점을 함께 담아라. 전문용어·한자 금지.
 
       [timing 규칙 - 화면 카드로 바로 쓰임, 매우 중요]
       - 각 배열의 원소는 한 줄 문자열이며 형식은 "라벨: 핵심 | 근거: ... | 행동: ..." 다.

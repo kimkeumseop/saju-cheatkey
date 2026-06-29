@@ -47,12 +47,21 @@ export const TIMING_KEYS: (keyof SajuTiming)[] = [
   'monthlyGrowth', 'monthlyMoney', 'monthlyCaution', 'monthlyActions',
 ];
 
+/** 생애 흐름 서사(초년/중년/말년 + 전성기 한 줄). 대운에 근거. 점신식 생애단계 보강. */
+export interface SajuLifeStages {
+  early: string;
+  middle: string;
+  late: string;
+  peak: string;
+}
+
 export interface SajuStructured {
   headline: string;
   keywords: string[];
   scores: SajuScores | null;
   sections: SajuSectionRaw[];
   timing: SajuTiming | null;
+  lifeStages: SajuLifeStages | null;
   lucky: SajuLucky | null;
   caution: string;
 }
@@ -167,6 +176,19 @@ function coerceTiming(value: unknown): SajuTiming | null {
   return hasAny ? result : null;
 }
 
+function coerceLifeStages(value: unknown): SajuLifeStages | null {
+  if (!value || typeof value !== 'object') return null;
+  const v = value as Record<string, unknown>;
+  const stages: SajuLifeStages = {
+    early: toStr(v.early).trim(),
+    middle: toStr(v.middle).trim(),
+    late: toStr(v.late).trim(),
+    peak: toStr(v.peak).trim(),
+  };
+  if (!stages.early && !stages.middle && !stages.late && !stages.peak) return null;
+  return stages;
+}
+
 function coerceSections(value: unknown): SajuSectionRaw[] {
   if (!Array.isArray(value)) return [];
   return value
@@ -196,6 +218,7 @@ export function coerceSajuStructured(input: unknown): SajuStructured | null {
     scores: coerceScores(obj.scores),
     sections,
     timing: coerceTiming(obj.timing),
+    lifeStages: coerceLifeStages(obj.lifeStages),
     lucky: coerceLucky(obj.lucky),
     caution: toStr(obj.caution).trim(),
   };
