@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { calculateSaju } from '@/lib/saju';
+import { calculateSaju, GROUP_TRAIT } from '@/lib/saju';
 import { Solar } from 'lunar-javascript';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { streamReport, streamPrebuilt } from '@/lib/ai';
@@ -12,8 +12,8 @@ export const maxDuration = 60;
 const apiKey = process.env.GEMINI_API_KEY;
 
 // 프롬프트/스키마가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
-// v2: timing 구조화 배열 도입.
-const SAJU_CACHE_VERSION = 'v2';
+// v2: timing 구조화 배열 도입. v3: 십성 종합·신강약 grounding 주입.
+const SAJU_CACHE_VERSION = 'v3';
 const SAJU_CACHE_COLLECTION = 'sajuCache';
 
 const STREAM_HEADERS = {
@@ -216,6 +216,12 @@ export async function POST(req: Request) {
       .join(' ');
     const elementDist = `목:${sajuData.elementsCount['목']}, 화:${sajuData.elementsCount['화']}, 토:${sajuData.elementsCount['토']}, 금:${sajuData.elementsCount['금']}, 수:${sajuData.elementsCount['수']}`;
     const shinsalText = sajuData.keyShinsal?.length ? sajuData.keyShinsal.join(', ') : '특별한 신살 없음';
+    const g = sajuData.tenGodGroups;
+    const tenGodText = `비겁:${g.비겁}, 식상:${g.식상}, 재성:${g.재성}, 관성:${g.관성}, 인성:${g.인성}`;
+    const dominantText = sajuData.dominantTenGod
+      ? `${sajuData.dominantTenGod}(${GROUP_TRAIT[sajuData.dominantTenGod] || ''})`
+      : '뚜렷한 편중 없음';
+    const bodyStrengthText = `${sajuData.bodyStrength.label} 경향 (일간을 돕는 기운 비중 ${Math.round(sajuData.bodyStrength.ratio * 100)}%)`;
     const { todayText, currentYear } = getKoreanDateParts();
 
     // 결정론적 캐싱: 동일 (생년월일·시간·달력·성별·기준연도)이면 이전 결과를 그대로 재사용.
@@ -281,7 +287,9 @@ export async function POST(req: Request) {
       1. 아래 사주 데이터에 근거해서만 해석해라. 누구에게나 들어맞는 일반론은 실패다.
       2. 어려운 한자·전문용어(비견, 식상, 갑자, 무오 등 60갑자/십성 명칭/한자)는 화면에 단 한 글자도 쓰지 마라.
       3. 대신 오행을 자연물로 번역해 단정해라. 예: "너는 물 위에 자란 나무다. 흡수는 빠르지만 뿌리가 마르면 한순간에 처진다."
-      4. 각 섹션은 최소 2개 이상의 데이터(일간, 오행 분포, 신살, 10년 흐름, 월별·연도별 흐름)를 근거로 서로 다른 판단을 내려라.
+      4. 각 섹션은 최소 2개 이상의 데이터(일간, 오행 분포, 십성 분포, 신강약, 신살, 10년 흐름, 월별·연도별 흐름)를 근거로 서로 다른 판단을 내려라.
+      5. 십성 분포는 기질의 뼈대다. 가장 강한 축(예: 식상↑=표현·창의, 재성↑=실리·돈, 관성↑=책임·통제, 인성↑=학습·생각, 비겁↑=자아·경쟁)으로 성향을 단정하고, 약한 축은 보완점으로 짚어라.
+      6. 신강약은 에너지 운용법으로 번역해라. 신강이면 "스스로 밀어붙이는 힘이 강하니 내보내는 일(표현·도전·확장)에서 잘 풀린다", 신약이면 "기운이 분산되기 쉬우니 사람·환경·루틴의 도움을 받을 때 강해진다" 식으로. 전문용어 '신강/신약'은 화면에 쓰지 말고 풀어서 말해라.
 
       [유저 정보]
       - 성함: ${name} (${gender})
@@ -290,6 +298,9 @@ export async function POST(req: Request) {
       - 사주 데이터: ${pillarsText}
       - 타고난 일간: ${sajuData.dayGanKo}
       - 오행 분포: ${elementDist}
+      - 십성 분포(기질 구조): ${tenGodText}
+      - 가장 강한 기질 축: ${dominantText}
+      - 신강약 경향: ${bodyStrengthText}
       - 핵심 신살: ${shinsalText}
       - 10년 주기 흐름: ${daYunText}
       - 10년 주기 상세 구간: ${daYunRangeText}

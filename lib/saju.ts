@@ -49,6 +49,54 @@ const getElement = (char: string) => {
   return '土';
 };
 
+// 십성 → 5그룹(비겁/식상/재성/관성/인성)
+const TEN_GOD_GROUP: Record<string, string> = {
+  '비견': '비겁', '겁재': '비겁',
+  '식신': '식상', '상관': '식상',
+  '편재': '재성', '정재': '재성',
+  '편관': '관성', '정관': '관성',
+  '편인': '인성', '정인': '인성',
+};
+
+// 오행을 생(生)해주는 오행(인성). 예: 木은 水가 생한다.
+const ELEMENT_PRODUCER: Record<string, string> = { '木': '水', '火': '木', '土': '火', '金': '土', '水': '金' };
+const ELEMENT_HANJA_TO_KO: Record<string, string> = { '木': '목', '火': '화', '土': '토', '金': '금', '水': '수' };
+
+export const GROUP_TRAIT: Record<string, string> = {
+  '비겁': '자아와 경쟁심, 독립심',
+  '식상': '표현과 창의, 활동성',
+  '재성': '실리와 재물, 현실 감각',
+  '관성': '책임과 규율, 자기 통제',
+  '인성': '학습과 수용, 생각의 깊이',
+};
+
+/** 일간 제외한 모든 천간·지지의 십성을 5그룹으로 집계한다. */
+function summarizeTenGodGroups(pillars: Array<{ tenGodGan: string; tenGodZhi: string }>) {
+  const groups: Record<string, number> = { 비겁: 0, 식상: 0, 재성: 0, 관성: 0, 인성: 0 };
+  pillars.forEach((p) => {
+    [p.tenGodGan, p.tenGodZhi].forEach((tg) => {
+      if (!tg || tg === '일간') return;
+      const grp = TEN_GOD_GROUP[tg];
+      if (grp) groups[grp] += 1;
+    });
+  });
+  return groups;
+}
+
+/**
+ * 신강/신약 경향을 단순 추정한다(정밀 명리 아님, 프롬프트 grounding용 방향값).
+ * 일간과 같은 오행(비겁) + 일간을 생하는 오행(인성)의 개수 비율로 가른다.
+ */
+function estimateBodyStrength(dayElement: string, elementsCount: Record<string, number>) {
+  const dayKo = ELEMENT_HANJA_TO_KO[dayElement];
+  const producerKo = ELEMENT_HANJA_TO_KO[ELEMENT_PRODUCER[dayElement]];
+  const support = (elementsCount[dayKo] || 0) + (elementsCount[producerKo] || 0);
+  const total = Object.values(elementsCount).reduce((a, b) => a + b, 0) || 1;
+  const ratio = support / total;
+  const label = ratio >= 0.45 ? '신강' : ratio <= 0.3 ? '신약' : '중화';
+  return { label, support, total, ratio: Math.round(ratio * 100) / 100 };
+}
+
 // 신살 수동 계산 함수
 function calculateKeyShinsal(dayGan: string, pillars: any[]) {
   const shinsal = new Set<string>();
@@ -192,6 +240,12 @@ export function calculateSaju(
 
   const keyShinsal = calculateKeyShinsal(dayGan, pillarsData);
 
+  const tenGodGroups = summarizeTenGodGroups(pillars);
+  const dominantTenGod = Object.entries(tenGodGroups)
+    .filter(([, v]) => v > 0)
+    .sort(([, a], [, b]) => b - a)[0]?.[0] || '';
+  const bodyStrength = estimateBodyStrength(getElement(dayGan), elementsCount);
+
   const daYunList: any[] = [];
   try {
     const yun = eightChar.getYun(gender === 'male' ? 1 : 0);
@@ -221,6 +275,9 @@ export function calculateSaju(
     mbti: MBTI_MAP[dayGan] || 'INTJ',
     pillars,
     elementsCount,
+    tenGodGroups,
+    dominantTenGod,
+    bodyStrength,
     keyShinsal: keyShinsal.slice(0, 4),
     daYun: daYunList,
     lunarDate: lunar.toString(),
