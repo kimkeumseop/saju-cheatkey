@@ -1,6 +1,10 @@
 'use client';
 
-import { coerceSajuStructured, coerceGunghapStructured, type SajuStructured, type GunghapStructured } from './saju-schema';
+import {
+  coerceSajuStructured, coerceGunghapStructured, scrubUserText,
+  TIMING_KEYS, GUNGHAP_TIMING_KEYS,
+  type SajuStructured, type GunghapStructured,
+} from './saju-schema';
 
 const SOFT_ERROR_MESSAGE = '운명의 흐름을 정리하는 중입니다. 다시 시도해주세요.';
 
@@ -60,7 +64,7 @@ const GUNGHAP_MAJOR_SECTION_PATTERNS = [
 ];
 
 function normalizeLineBreaks(text: string) {
-  return text
+  const normalized = text
     .replace(/\r\n/g, '\n')
     .replace(/\\n\\n/g, '\n\n')
     .replace(/\\n/g, '\n')
@@ -70,6 +74,8 @@ function normalizeLineBreaks(text: string) {
     .replace(/년\s*[~\-–—]\s*(\d{4})년/g, '$1년')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+  // 생성 시점·캐시 버전과 무관하게 화면에서 한자/전문용어 노출을 차단(레거시 결과 포함).
+  return scrubUserText(normalized);
 }
 
 function normalizeCompact(value: string) {
@@ -239,6 +245,14 @@ export function normalizeSajuAiResult(value: unknown): ParsedSectionsResult {
   // 신버전: 구조화 JSON이면 섹션을 그대로 신뢰하고 structured 부가정보를 함께 반환한다.
   const structured = coerceSajuStructured(value);
   if (structured) {
+    // 구조화 패널이 직접 읽는 값들도 화면 노출 전 한자/전문용어 제거(레거시·구버전 캐시 커버).
+    structured.headline = scrubUserText(structured.headline);
+    structured.keywords = structured.keywords.map(scrubUserText).filter(Boolean);
+    structured.caution = scrubUserText(structured.caution);
+    if (structured.lucky?.advice) structured.lucky.advice = scrubUserText(structured.lucky.advice);
+    if (structured.timing) {
+      for (const k of TIMING_KEYS) structured.timing[k] = structured.timing[k].map(scrubUserText);
+    }
     const sections = structured.sections.map((section) => ({
       title: cleanTitle(section.title),
       content: normalizeLineBreaks(section.content),
@@ -265,6 +279,14 @@ export function normalizeGunghapAiResult(value: unknown): ParsedGunghapResult {
   // 신버전: 구조화 JSON이면 섹션을 신뢰하고 구조화 부가정보(점수·헤드라인·timing)를 함께 반환.
   const structured = coerceGunghapStructured(value);
   if (structured) {
+    structured.headline = scrubUserText(structured.headline);
+    structured.synergy = structured.synergy.map(scrubUserText);
+    structured.conflict = structured.conflict.map(scrubUserText);
+    structured.action = structured.action.map(scrubUserText);
+    structured.avoid = structured.avoid.map(scrubUserText);
+    if (structured.timing) {
+      for (const k of GUNGHAP_TIMING_KEYS) structured.timing[k] = structured.timing[k].map(scrubUserText);
+    }
     const sections = structured.sections.map((section) => ({
       title: cleanTitle(section.title),
       content: normalizeLineBreaks(section.content),
