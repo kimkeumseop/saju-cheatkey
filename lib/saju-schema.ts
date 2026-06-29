@@ -97,6 +97,21 @@ function toStr(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
+/**
+ * 사용자에게 보이는 문자열 값 후필터. 제품 약속(화면에 한자·명리 전문용어 금지)을 보장한다.
+ * 한자(CJK 한자 영역)는 한글·이모지와 유니코드 영역이 달라 제거해도 한글이 깨지지 않는다.
+ * JSON 구조가 아니라 값(헤드라인/섹션 본문/timing 줄 등)에만 적용할 것.
+ */
+export function scrubUserText(text: string): string {
+  return text
+    .replace(/[㐀-鿿豈-﫿]/g, '') // 한자(전문용어) 노출 차단
+    .replace(/[（(]\s*[）)]/g, '')                  // 한자 제거 후 남은 빈 괄호 정리
+    .replace(/\s+([,.!?])/g, '$1')                 // 구두점 앞 공백 정리(파이프/콜론은 보존)
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 function toStrArray(value: unknown, max = 6): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((v): v is string => typeof v === 'string' && v.trim().length > 0).slice(0, max);

@@ -3,7 +3,7 @@ import { calculateSaju, GROUP_TRAIT } from '@/lib/saju';
 import { Solar } from 'lunar-javascript';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { streamReport, streamPrebuilt } from '@/lib/ai';
-import { coerceSajuStructured, TIMING_KEYS } from '@/lib/saju-schema';
+import { coerceSajuStructured, TIMING_KEYS, scrubUserText } from '@/lib/saju-schema';
 import { buildReportCacheKey, getCachedReport, saveCachedReport } from '@/lib/saju-cache';
 
 export const runtime = 'nodejs';
@@ -13,7 +13,8 @@ const apiKey = process.env.GEMINI_API_KEY;
 
 // 프롬프트/스키마가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
 // v2: timing 구조화 배열 도입. v3: 십성 종합·신강약 grounding 주입.
-const SAJU_CACHE_VERSION = 'v3';
+// v4: few-shot 톤 예시 + 한자/전문용어 후필터.
+const SAJU_CACHE_VERSION = 'v4';
 const SAJU_CACHE_COLLECTION = 'sajuCache';
 
 const STREAM_HEADERS = {
@@ -187,16 +188,21 @@ function sanitizeYearRangeText(text: string) {
  */
 function finalizeSajuJson(full: string) {
   const structured = coerceSajuStructured(full);
-  if (!structured) return sanitizeYearRangeText(full);
+  if (!structured) return scrubUserText(sanitizeYearRangeText(full));
 
+  const clean = (s: string) => scrubUserText(sanitizeYearRangeText(s));
+
+  structured.headline = scrubUserText(structured.headline);
+  structured.keywords = structured.keywords.map(scrubUserText).filter(Boolean);
   structured.sections = structured.sections.map((section) => ({
     title: section.title,
-    content: sanitizeYearRangeText(section.content),
+    content: clean(section.content),
   }));
-  if (structured.caution) structured.caution = sanitizeYearRangeText(structured.caution);
+  if (structured.caution) structured.caution = clean(structured.caution);
+  if (structured.lucky?.advice) structured.lucky.advice = scrubUserText(structured.lucky.advice);
   if (structured.timing) {
     for (const key of TIMING_KEYS) {
-      structured.timing[key] = structured.timing[key].map((line) => sanitizeYearRangeText(line));
+      structured.timing[key] = structured.timing[key].map((line) => clean(line));
     }
   }
 
@@ -282,6 +288,11 @@ export async function POST(req: Request) {
       2. "~할 수도 있어요", "~인 것 같아요", "사람마다 다르지만" 같은 흐리멍덩한 경어체·회피 표현은 전면 금지.
       3. 단정하되 비하·저주·공포 조장은 하지 마라. 미래를 100% 못박지 말고 "선택에 달렸다"는 여지는 남겨라.
       4. 따뜻함은 유지한다. 냉정하게 짚되 결국 응원하는 어른의 어조다.
+
+      [말투·형식 예시 - 톤과 흐름만 참고하고 내용은 절대 베끼지 마라]
+      - headline 예: "너는 마른 들판의 불씨다. 불붙으면 크게 번지지만, 바람이 없으면 혼자 꺼진다."
+      - timing 한 줄 예: "2027년: 판을 키우기 좋은 해 | 근거: 너를 밀어주는 기운이 들어온다 | 행동: 미뤄둔 제안을 먼저 꺼내라"
+      - 섹션 문장 흐름 예: "너는 시작은 빠른데 마무리 전에 마음이 먼저 식는다(왜). 그래서 일이 늘 끝의 문턱에서 멈춘다(현실). 마감을 사람에게 공개하면 끝까지 간다(활용). 다만 새 자극이 오면 또 갈아타니 그걸 경계해라(함정)."
 
       [근거 사용 - 개인화의 핵심]
       1. 아래 사주 데이터에 근거해서만 해석해라. 누구에게나 들어맞는 일반론은 실패다.

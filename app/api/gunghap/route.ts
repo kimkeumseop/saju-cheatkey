@@ -3,7 +3,7 @@ import { calculateSaju } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { streamReport, streamPrebuilt } from '@/lib/ai';
 import { buildReportCacheKey, getCachedReport, saveCachedReport } from '@/lib/saju-cache';
-import { coerceGunghapStructured, GUNGHAP_TIMING_KEYS } from '@/lib/saju-schema';
+import { coerceGunghapStructured, GUNGHAP_TIMING_KEYS, scrubUserText } from '@/lib/saju-schema';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -11,8 +11,8 @@ export const maxDuration = 60;
 const apiKey = process.env.GEMINI_API_KEY;
 
 // 프롬프트/스키마가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
-// v2: JSON 구조화 출력 도입.
-const GUNGHAP_CACHE_VERSION = 'v2';
+// v2: JSON 구조화 출력 도입. v3: few-shot 톤 예시 + 한자/전문용어 후필터.
+const GUNGHAP_CACHE_VERSION = 'v3';
 const GUNGHAP_CACHE_COLLECTION = 'gunghapCache';
 
 const STREAM_HEADERS = {
@@ -142,21 +142,24 @@ function sanitizeYearRangeText(text: string) {
  */
 function finalizeGunghapJson(full: string) {
   const structured = coerceGunghapStructured(full);
-  if (!structured) return sanitizeYearRangeText(full).trim();
+  if (!structured) return scrubUserText(sanitizeYearRangeText(full).trim());
 
+  const clean = (s: string) => scrubUserText(sanitizeYearRangeText(s));
+
+  structured.headline = scrubUserText(structured.headline);
   structured.sections = structured.sections.map((section) => ({
     title: section.title,
-    content: sanitizeYearRangeText(section.content),
+    content: clean(section.content),
   }));
   if (structured.timing) {
     for (const key of GUNGHAP_TIMING_KEYS) {
-      structured.timing[key] = structured.timing[key].map((line) => sanitizeYearRangeText(line));
+      structured.timing[key] = structured.timing[key].map((line) => clean(line));
     }
   }
-  structured.synergy = structured.synergy.map((line) => sanitizeYearRangeText(line));
-  structured.conflict = structured.conflict.map((line) => sanitizeYearRangeText(line));
-  structured.action = structured.action.map((line) => sanitizeYearRangeText(line));
-  structured.avoid = structured.avoid.map((line) => sanitizeYearRangeText(line));
+  structured.synergy = structured.synergy.map((line) => clean(line));
+  structured.conflict = structured.conflict.map((line) => clean(line));
+  structured.action = structured.action.map((line) => clean(line));
+  structured.avoid = structured.avoid.map((line) => clean(line));
 
   return JSON.stringify(structured);
 }
@@ -248,6 +251,10 @@ export async function POST(req: Request) {
       6. 관계가 직장/사업/친구/가족이면 사랑, 설렘, 연애 같은 표현을 남발하지 말고 그 관계에 맞는 언어를 써라.
       7. "대화를 많이 하세요" 같은 뻔한 조언을 금지한다. 돈, 일정, 말투, 감정, 거리감 중 무엇을 어떻게 조정해야 하는지 말해라.
       8. 같은 표현을 반복하지 마라. "운명", "찰떡", "빛나요", "따뜻해요"를 과하게 쓰면 실패다.
+
+      [말투·형식 예시 - 형식만 참고하고 내용은 절대 베끼지 마라]
+      - headline 예: "둘은 속도가 다른 두 시계다. 맞추면 오래 가고, 방치하면 어긋난다."
+      - timing 한 줄 예: "2028년: 가까워지기 좋은 해 | 근거: 둘 다 관계를 밖으로 드러내려는 흐름 | 행동: 만남 횟수와 약속의 이름을 분명히 정한다"
 
       [글쓰기 깊이]
       1. 각 섹션은 결론부터 시작해라.
