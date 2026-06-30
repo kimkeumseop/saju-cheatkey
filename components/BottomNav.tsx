@@ -13,17 +13,9 @@ type Tab = {
   action: () => void;
 };
 
-// 라이트(웜 아이보리)로 이미 이행된 라우트. 테마 이행이 진행되면 여기에 추가한다.
-// 전부 라이트가 되면 이 분기와 다크 스타일을 제거.
-function isLightRoute(pathname: string | null): boolean {
-  if (!pathname) return false;
-  return pathname.startsWith('/result') || pathname === '/unse' || pathname.startsWith('/unse/');
-}
-
 export default function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
-  const light = isLightRoute(pathname);
 
   const tabs: Tab[] = [
     {
@@ -68,20 +60,14 @@ export default function BottomNav() {
     },
   ];
 
-  // 경로별 컨테이너/비활성 텍스트 색 (라이트 이행 라우트 vs 다크)
-  const containerStyle = light
-    ? {
-        background: 'rgba(255,255,255,0.9)',
-        border: '1px solid rgba(45,27,30,0.08)',
-        boxShadow: '0 -4px 24px rgba(45,27,30,0.08), 0 8px 40px rgba(212,104,138,0.08)',
-      }
-    : {
-        background: 'rgba(13,7,16,0.82)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        boxShadow: '0 -4px 24px rgba(0,0,0,0.4), 0 8px 40px rgba(212,104,138,0.06), 0 1px 0 rgba(255,255,255,0.04) inset',
-      };
-  const labelIdle = light ? 'rgba(45,27,30,0.55)' : 'rgba(255,238,245,0.50)';
-  const subLabelIdle = light ? 'rgba(45,27,30,0.4)' : 'rgba(255,238,245,0.26)';
+  // 웜 아이보리 라이트 컨테이너
+  const containerStyle = {
+    background: 'rgba(255,255,255,0.9)',
+    border: '1px solid rgba(45,27,30,0.08)',
+    boxShadow: '0 -4px 24px rgba(45,27,30,0.08), 0 8px 40px rgba(212,104,138,0.08)',
+  };
+  const labelIdle = 'rgba(45,27,30,0.55)';
+  const subLabelIdle = 'rgba(45,27,30,0.4)';
 
   return (
     <nav className="fixed bottom-0 left-0 z-50 w-full pb-safe">

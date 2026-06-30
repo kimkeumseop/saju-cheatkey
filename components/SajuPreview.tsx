@@ -33,7 +33,7 @@ export default function SajuPreview({ name = '홍길동', gender = '남', birthD
     <div className="w-full max-w-md mx-auto space-y-6 pb-24 px-4">
       {/* 상단: 결제 유도 섹션 - 핑크 테마 적용 */}
       <div className="bg-primary-900 rounded-[2.5rem] p-8 text-center shadow-xl relative overflow-hidden mt-8">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-black/5 rounded-full -mr-16 -mt-16 blur-3xl" />
         
         <div className="space-y-4 relative z-10">
           <div className="flex items-center justify-center gap-2 text-primary-200 mb-2">
@@ -46,12 +46,12 @@ export default function SajuPreview({ name = '홍길동', gender = '남', birthD
           </h2>
 
           <div className="flex items-center justify-center gap-4 py-2">
-            <div className="bg-white/10 px-4 py-2 rounded-2xl">
+            <div className="bg-black/10 px-4 py-2 rounded-2xl">
               <p className="text-primary-200/60 text-[10px] font-bold">현재 포인트</p>
               <p className="text-white font-black">0 P</p>
             </div>
             <div className="text-primary-400 font-black">/</div>
-            <div className="bg-white/10 px-4 py-2 rounded-2xl">
+            <div className="bg-black/10 px-4 py-2 rounded-2xl">
               <p className="text-primary-200/60 text-[10px] font-bold">필요 포인트</p>
               <p className="text-primary-300 font-black">1 P</p>
             </div>
@@ -66,7 +66,7 @@ export default function SajuPreview({ name = '홍길동', gender = '남', birthD
 
       {/* 하단: 만세력 미리보기 섹션 */}
       <div className="bg-white rounded-[3rem] p-8 shadow-sm border border-pink-50 space-y-8 relative overflow-hidden">
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white via-white/80 to-transparent z-10 rounded-b-[2.5rem] flex items-end justify-center pb-12">
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white via-black/80 to-transparent z-10 rounded-b-[2.5rem] flex items-end justify-center pb-12">
           <div className="text-center space-y-2">
             <Lock className="w-8 h-8 text-primary-200 mx-auto" />
             <p className="text-gray-400 font-bold text-sm">결제 후 전체 분석 내용이 공개됩니다</p>

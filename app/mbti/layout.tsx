@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function MbtiLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="mbti-theme">
-      <Navbar dark />
+      <Navbar />
       {children}
     </div>
   );

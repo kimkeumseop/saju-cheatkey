@@ -46,8 +46,8 @@ export default function TarotCardImage({
     <div
       className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-[inherit] text-center"
       style={{
-        background: 'radial-gradient(circle at 50% 20%, rgba(157,143,255,0.22), rgba(83,74,183,0.14) 42%, rgba(13,7,16,0.10) 100%)',
-        color: '#9d8fff',
+        background: 'radial-gradient(circle at 50% 20%, rgba(124,111,214,0.22), rgba(83,74,183,0.14) 42%, rgba(255,255,255,0.10) 100%)',
+        color: '#7c6fd6',
       }}
     >
       <span className={fallbackClassName}>{emoji}</span>

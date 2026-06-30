@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { Brain, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import CosmicBackground from '@/components/CosmicBackground';
+import AuroraBackground from '@/components/AuroraBackground';
 import { MBTI_QUESTIONS } from '@/src/data/mbtiQuestions';
 import { calculateMbtiResult, MBTI_RESULT_STORAGE_KEY } from '@/lib/mbti';
 import { MBTI_TYPES } from '@/src/data/mbtiTypes';
@@ -101,42 +101,42 @@ export default function MbtiTestPage() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden px-6 pb-28 pt-24" style={{ background: '#0d0710' }}>
-      <CosmicBackground />
+    <main className="relative min-h-screen overflow-x-hidden px-6 pb-28 pt-24" style={{ background: '#FBF7F2' }}>
+      <AuroraBackground />
       <div className="relative z-10 mx-auto max-w-3xl">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black tracking-[0.18em]" style={{ background: 'rgba(0,229,160,0.10)', border: '1px solid rgba(0,229,160,0.25)', color: '#00e5a0' }}>
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black tracking-[0.18em]" style={{ background: 'rgba(14,159,115,0.10)', border: '1px solid rgba(14,159,115,0.25)', color: '#0e9f73' }}>
               <Brain className="h-3.5 w-3.5" />
               MBTI TEST
             </div>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>당신의 성향을 확인해보세요</h1>
+            <h1 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>당신의 성향을 확인해보세요</h1>
           </div>
-          <div className="rounded-2xl px-4 py-3 text-right" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(0,229,160,0.16)' }}>
-            <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: '#00e5a0' }}>Progress</p>
-            <p className="mt-1 text-lg font-black" style={{ color: '#f5eef2' }}>{currentIndex + 1} / {MBTI_QUESTIONS.length}</p>
+          <div className="rounded-2xl px-4 py-3 text-right" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.16)' }}>
+            <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: '#0e9f73' }}>Progress</p>
+            <p className="mt-1 text-lg font-black" style={{ color: '#2D1B1E' }}>{currentIndex + 1} / {MBTI_QUESTIONS.length}</p>
           </div>
         </div>
 
-        <div className="mb-6 h-3 overflow-hidden rounded-full" style={{ background: 'rgba(0,229,160,0.12)' }}>
+        <div className="mb-6 h-3 overflow-hidden rounded-full" style={{ background: 'rgba(14,159,115,0.12)' }}>
           <motion.div
-            className="h-full rounded-full bg-[linear-gradient(90deg,#00e5a0,#34D399)]"
+            className="h-full rounded-full bg-[linear-gradient(90deg,#0e9f73,#34D399)]"
             initial={false}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.35, ease: 'easeOut' }}
           />
         </div>
 
-        <div className="mb-6 grid gap-3 rounded-[2rem] p-5 md:grid-cols-4" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(0,229,160,0.14)', boxShadow: '0 4px 24px rgba(0,0,0,0.22)' }}>
+        <div className="mb-6 grid gap-3 rounded-[2rem] p-5 md:grid-cols-4" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.14)', boxShadow: '0 4px 24px rgba(45,27,30,0.22)' }}>
           {Object.entries(axisSummary).map(([axis, count]) => (
-            <div key={axis} className="rounded-2xl px-4 py-3" style={{ background: 'rgba(0,229,160,0.07)', border: '1px solid rgba(0,229,160,0.12)' }}>
-              <p className="text-xs font-black tracking-[0.18em]" style={{ color: '#00e5a0' }}>{axis}</p>
-              <p className="mt-1 text-sm font-bold" style={{ color: 'rgba(240,232,238,0.7)' }}>{count} / 5 답변</p>
+            <div key={axis} className="rounded-2xl px-4 py-3" style={{ background: 'rgba(14,159,115,0.07)', border: '1px solid rgba(14,159,115,0.12)' }}>
+              <p className="text-xs font-black tracking-[0.18em]" style={{ color: '#0e9f73' }}>{axis}</p>
+              <p className="mt-1 text-sm font-bold" style={{ color: 'rgba(45,27,30,0.7)' }}>{count} / 5 답변</p>
             </div>
           ))}
         </div>
 
-        <div className="overflow-hidden rounded-[2.2rem]" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(0,229,160,0.14)', boxShadow: '0 8px 40px rgba(0,229,160,0.08)' }}>
+        <div className="overflow-hidden rounded-[2.2rem]" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.14)', boxShadow: '0 8px 40px rgba(14,159,115,0.08)' }}>
           <AnimatePresence mode="wait">
             <motion.section
               key={question.id}
@@ -147,18 +147,18 @@ export default function MbtiTestPage() {
               className="p-7 md:p-10"
             >
               <div className="mb-8 flex items-center justify-between gap-4">
-                <div className="rounded-full px-4 py-2 text-sm font-black" style={{ background: 'rgba(0,229,160,0.12)', color: '#00e5a0' }}>
+                <div className="rounded-full px-4 py-2 text-sm font-black" style={{ background: 'rgba(14,159,115,0.12)', color: '#0e9f73' }}>
                   {question.axis} 척도
                 </div>
-                <p className="text-sm font-bold" style={{ color: 'rgba(240,232,238,0.4)' }}>문항 {question.id}</p>
+                <p className="text-sm font-bold" style={{ color: 'rgba(45,27,30,0.4)' }}>문항 {question.id}</p>
               </div>
 
-              <h2 className="text-lg font-bold leading-relaxed tracking-tight md:text-2xl break-keep" style={{ color: '#f5eef2' }}>
+              <h2 className="text-lg font-bold leading-relaxed tracking-tight md:text-2xl break-keep" style={{ color: '#2D1B1E' }}>
                 {question.statement}
               </h2>
 
               <div className="mt-10">
-                <div className="mb-4 flex items-center justify-between text-sm font-bold" style={{ color: 'rgba(240,232,238,0.5)' }}>
+                <div className="mb-4 flex items-center justify-between text-sm font-bold" style={{ color: 'rgba(45,27,30,0.5)' }}>
                   <span>매우 동의</span>
                   <span>매우 비동의</span>
                 </div>
@@ -173,11 +173,11 @@ export default function MbtiTestPage() {
                         className="rounded-[1.6rem] border px-4 py-5 text-center transition"
                         style={
                           selected
-                            ? { borderColor: 'transparent', background: 'linear-gradient(135deg, #00e5a0, #059669)', color: 'white', boxShadow: '0 14px 30px rgba(0,229,160,0.25)' }
-                            : { borderColor: 'rgba(0,229,160,0.16)', background: 'rgba(0,229,160,0.05)', color: 'rgba(240,232,238,0.7)' }
+                            ? { borderColor: 'transparent', background: 'linear-gradient(135deg, #0e9f73, #059669)', color: 'white', boxShadow: '0 14px 30px rgba(14,159,115,0.25)' }
+                            : { borderColor: 'rgba(14,159,115,0.16)', background: 'rgba(14,159,115,0.05)', color: 'rgba(45,27,30,0.7)' }
                         }
                       >
-                        <div className="mx-auto mb-3 h-4 rounded-full" style={{ width: `${12 + option.value * 5}px`, background: selected ? 'rgba(255,255,255,0.7)' : 'rgba(0,229,160,0.35)' }} />
+                        <div className="mx-auto mb-3 h-4 rounded-full" style={{ width: `${12 + option.value * 5}px`, background: selected ? 'rgba(255,255,255,0.7)' : 'rgba(14,159,115,0.35)' }} />
                         <p className="text-sm font-black">{option.short}</p>
                       </button>
                     );
@@ -193,8 +193,8 @@ export default function MbtiTestPage() {
             type="button"
             onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
             disabled={currentIndex === 0 || submitting}
-            className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-45 hover:bg-white/5"
-            style={{ border: '1px solid rgba(0,229,160,0.2)', color: 'rgba(0,229,160,0.85)' }}
+            className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-45 hover:bg-black/5"
+            style={{ border: '1px solid rgba(14,159,115,0.2)', color: 'rgba(14,159,115,0.85)' }}
           >
             <ChevronLeft className="h-4 w-4" />
             이전 문항
@@ -205,7 +205,7 @@ export default function MbtiTestPage() {
             onClick={handleNext}
             disabled={!canGoNext || submitting}
             className="inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-45 hover:brightness-110"
-            style={{ background: 'linear-gradient(135deg, #00e5a0, #059669)', boxShadow: '0 8px 32px rgba(0,229,160,0.24), 0 1px 0 rgba(255,255,255,0.16) inset' }}
+            style={{ background: 'linear-gradient(135deg, #0e9f73, #059669)', boxShadow: '0 8px 32px rgba(14,159,115,0.24)' }}
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {currentIndex === MBTI_QUESTIONS.length - 1 ? '결과 보기' : '다음 문항'}

@@ -99,8 +99,8 @@ export default function ShareButtons({
   const shareBtnClasses = 'relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-[1.5rem] shadow-md transition-all active:scale-90';
 
   return (
-    <div className="mt-10 flex flex-col items-center gap-6 py-10" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-      <h3 className="text-lg font-bold tracking-tight" style={{ color: '#f5eef2' }}>친구에게 결과 공유하기</h3>
+    <div className="mt-10 flex flex-col items-center gap-6 py-10" style={{ borderTop: '1px solid rgba(45,27,30,0.10)' }}>
+      <h3 className="text-lg font-bold tracking-tight" style={{ color: '#2D1B1E' }}>친구에게 결과 공유하기</h3>
 
       <div className="flex gap-6">
         <div className="flex flex-col items-center gap-2">
@@ -110,22 +110,22 @@ export default function ShareButtons({
           >
             <MessageSquare className="h-7 w-7 fill-current text-[#3C1E1E]" />
           </button>
-          <span className="text-[11px] font-black uppercase tracking-widest text-white/40">Kakao</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-black/40">Kakao</span>
         </div>
 
         <div className="flex flex-col items-center gap-2">
           <button
             onClick={handleCopyLink}
-            className={cn(shareBtnClasses, 'border border-white/10 bg-white/5 text-white/70 hover:bg-white/10')}
+            className={cn(shareBtnClasses, 'border border-black/10 bg-black/5 text-black/70 hover:bg-black/10')}
           >
             {copied ? <Check className="h-7 w-7 text-green-400" /> : <Copy className="h-7 w-7" />}
           </button>
-          <span className="text-[11px] font-black uppercase tracking-widest text-white/40">{copied ? 'Copied' : 'Link'}</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-black/40">{copied ? 'Copied' : 'Link'}</span>
         </div>
 
         <div className="flex flex-col items-center gap-2">
           <button
-            className={cn(shareBtnClasses, 'border border-white/10 bg-white/5 text-white/70 hover:bg-white/10')}
+            className={cn(shareBtnClasses, 'border border-black/10 bg-black/5 text-black/70 hover:bg-black/10')}
             onClick={() => {
               if (navigator.share) {
                 navigator.share({
@@ -140,7 +140,7 @@ export default function ShareButtons({
           >
             <Share2 className="h-7 w-7" />
           </button>
-          <span className="text-[11px] font-black uppercase tracking-widest text-white/40">More</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-black/40">More</span>
         </div>
       </div>
     </div>

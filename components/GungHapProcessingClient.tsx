@@ -117,54 +117,54 @@ function GungHapProcessingContent() {
   if (!shouldProcess) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] overflow-hidden p-6 text-center" style={{ background: '#0d0710' }}>
+    <div className="fixed inset-0 z-[200] overflow-hidden p-6 text-center" style={{ background: '#FBF7F2' }}>
       <div className="flex min-h-screen flex-col items-center justify-center">
         <div className="relative mb-12">
           <div
             className="relative z-10 flex h-32 w-32 items-center justify-center rounded-[3rem]"
             style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(232,130,154,0.18)',
+              background: 'rgba(255,255,255,0.85)',
+              border: '1px solid rgba(212,104,138,0.18)',
               backdropFilter: 'blur(20px)',
-              boxShadow: '0 8px 40px rgba(232,130,154,0.18), 0 1px 0 rgba(255,255,255,0.06) inset',
+              boxShadow: '0 8px 40px rgba(212,104,138,0.18)',
             }}
           >
-            <Loader2 className="h-12 w-12 animate-spin stroke-[3]" style={{ color: '#e8829a' }} />
+            <Loader2 className="h-12 w-12 animate-spin stroke-[3]" style={{ color: '#d4688a' }} />
           </div>
-          <div className="absolute inset-0 scale-150 rounded-full blur-3xl" style={{ background: 'rgba(232,130,154,0.16)' }} />
+          <div className="absolute inset-0 scale-150 rounded-full blur-3xl" style={{ background: 'rgba(212,104,138,0.16)' }} />
           <Heart className="absolute -right-6 -top-6 h-12 w-12 animate-bounce" style={{ fill: '#d4688a', color: '#d4688a' }} />
         </div>
         <div className="space-y-6">
           <div
             className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-black"
-            style={{ background: 'rgba(232,130,154,0.10)', border: '1px solid rgba(232,130,154,0.20)', color: '#e8829a' }}
+            style={{ background: 'rgba(212,104,138,0.10)', border: '1px solid rgba(212,104,138,0.20)', color: '#d4688a' }}
           >
-            <Sparkles className="h-3.5 w-3.5" style={{ fill: '#e8829a', color: '#e8829a' }} />
+            <Sparkles className="h-3.5 w-3.5" style={{ fill: '#d4688a', color: '#d4688a' }} />
             COMPATIBILITY READING
           </div>
           <h2
             className="whitespace-pre-line text-3xl font-bold leading-tight tracking-tight md:text-4xl"
-            style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}
+            style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}
           >
             두 사람의 인연을{'\n'}하나씩 맞춰보고 있어요
           </h2>
-          <p className="text-lg font-bold" style={{ color: 'rgba(240,232,238,0.42)' }}>{loadingStep}</p>
+          <p className="text-lg font-bold" style={{ color: 'rgba(45,27,30,0.42)' }}>{loadingStep}</p>
 
           {streamedText && (
             <div
               ref={streamBoxRef}
               className="mx-auto mt-2 max-h-52 w-full max-w-md overflow-y-auto rounded-2xl px-5 py-4 text-left"
               style={{
-                background: 'rgba(255,255,255,0.035)',
-                border: '1px solid rgba(232,130,154,0.16)',
-                boxShadow: '0 8px 30px rgba(0,0,0,0.25) inset',
+                background: 'rgba(255,255,255,0.85)',
+                border: '1px solid rgba(212,104,138,0.16)',
+                boxShadow: '0 8px 30px rgba(45,27,30,0.25) inset',
                 maskImage: 'linear-gradient(to bottom, transparent, #000 18%)',
                 WebkitMaskImage: 'linear-gradient(to bottom, transparent, #000 18%)',
               }}
             >
-              <p className="whitespace-pre-wrap break-keep text-sm leading-7" style={{ color: 'rgba(240,232,238,0.62)' }}>
+              <p className="whitespace-pre-wrap break-keep text-sm leading-7" style={{ color: 'rgba(45,27,30,0.62)' }}>
                 {cleanPreview(streamedText)}
-                <span className="ml-0.5 inline-block h-4 w-1.5 translate-y-0.5 animate-pulse" style={{ background: '#e8829a' }} />
+                <span className="ml-0.5 inline-block h-4 w-1.5 translate-y-0.5 animate-pulse" style={{ background: '#d4688a' }} />
               </p>
             </div>
           )}

@@ -50,7 +50,7 @@ export default function RecentHistory() {
           <Link 
             key={item.id}
             href={`/saju?name=${item.name}&birthDate=${item.birthDate}&birthTime=${item.birthTime}&calendarType=${item.calendarType}&gender=${item.gender}`}
-            className="group block relative p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-gold-500/20 hover:bg-white/10 transition-all overflow-hidden"
+            className="group block relative p-4 rounded-2xl bg-black/5 border border-black/5 hover:border-gold-500/20 hover:bg-black/10 transition-all overflow-hidden"
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">

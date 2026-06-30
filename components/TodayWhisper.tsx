@@ -6,11 +6,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/lib/auth';
 
 const darkGlass = {
-  background: 'rgba(255,255,255,0.04)',
+  background: 'rgba(255,255,255,0.85)',
   backdropFilter: 'blur(20px)',
   WebkitBackdropFilter: 'blur(20px)',
   border: '1px solid rgba(255,110,180,0.15)',
-  boxShadow: '0 4px 32px rgba(255,110,180,0.08), 0 1px 0 rgba(255,255,255,0.05) inset',
+  boxShadow: '0 4px 32px rgba(255,110,180,0.08)',
 } as React.CSSProperties;
 
 export default function TodayWhisper() {

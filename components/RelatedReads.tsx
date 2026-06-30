@@ -26,26 +26,26 @@ export default function RelatedReads({
     <section
       className="rounded-[2.5rem] p-8 md:p-10 space-y-6"
       style={{
-        background: 'radial-gradient(ellipse at 0% 0%, rgba(157,143,255,0.12) 0%, rgba(18,8,16,0.85) 60%)',
-        border: '1px solid rgba(157,143,255,0.16)',
-        boxShadow: '0 8px 40px rgba(157,143,255,0.08), 0 1px 0 rgba(255,255,255,0.04) inset',
+        background: 'radial-gradient(ellipse at 0% 0%, rgba(124,111,214,0.12) 0%, rgba(255,255,255,0.85) 60%)',
+        border: '1px solid rgba(124,111,214,0.16)',
+        boxShadow: '0 8px 40px rgba(124,111,214,0.08)',
       }}
     >
       <div className="space-y-2">
-        <h2 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>{title}</h2>
-        <p className="text-sm leading-7 break-keep" style={{ color: 'rgba(240,232,238,0.46)' }}>{description}</p>
+        <h2 className="text-xl font-bold" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>{title}</h2>
+        <p className="text-sm leading-7 break-keep" style={{ color: 'rgba(45,27,30,0.46)' }}>{description}</p>
       </div>
 
       {guideLinks.length > 0 && (
         <div className="space-y-3">
-          <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(157,143,255,0.7)' }}>기초 가이드</p>
+          <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(124,111,214,0.7)' }}>기초 가이드</p>
           <div className="flex flex-wrap gap-3">
             {guideLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className="px-4 py-2 rounded-full text-sm font-bold transition-colors"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(157,143,255,0.18)', color: 'rgba(240,232,238,0.82)' }}
+                style={{ background: 'rgba(45,27,30,0.08)', border: '1px solid rgba(124,111,214,0.18)', color: 'rgba(45,27,30,0.82)' }}
               >
                 {link.label}
               </Link>
@@ -56,8 +56,8 @@ export default function RelatedReads({
 
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-4">
-          <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(157,143,255,0.7)' }}>명리 칼럼</p>
-          <Link href="/column" className="text-sm font-bold transition-colors" style={{ color: '#9d8fff' }}>전체 보기 →</Link>
+          <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(124,111,214,0.7)' }}>명리 칼럼</p>
+          <Link href="/column" className="text-sm font-bold transition-colors" style={{ color: '#7c6fd6' }}>전체 보기 →</Link>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {featured.map((column) => (
@@ -65,10 +65,10 @@ export default function RelatedReads({
               key={column.id}
               href={`/column/${column.id}`}
               className="rounded-[1.5rem] p-5 space-y-2 transition-transform hover:-translate-y-0.5"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(157,143,255,0.14)' }}
+              style={{ background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(124,111,214,0.14)' }}
             >
-              <h3 className="text-sm font-bold break-keep leading-snug" style={{ color: '#f5eef2' }}>{column.title}</h3>
-              <p className="text-xs leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.5)' }}>{column.description}</p>
+              <h3 className="text-sm font-bold break-keep leading-snug" style={{ color: '#2D1B1E' }}>{column.title}</h3>
+              <p className="text-xs leading-relaxed break-keep" style={{ color: 'rgba(45,27,30,0.5)' }}>{column.description}</p>
             </Link>
           ))}
         </div>

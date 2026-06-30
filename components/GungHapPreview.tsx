@@ -154,24 +154,24 @@ function RelationBriefingPanel({ sections, theme, gunghap }: { sections: Relatio
           <Sparkles className="w-4 h-4" />
           First Check
         </div>
-        <h3 className="text-2xl md:text-3xl font-bold tracking-tight break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
+        <h3 className="text-2xl md:text-3xl font-bold tracking-tight break-keep" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>
           먼저 보는 관계 브리핑
         </h3>
-        <p className="text-sm md:text-base font-medium leading-relaxed break-keep max-w-2xl" style={{ color: 'rgba(240,232,238,0.58)' }}>
+        <p className="text-sm md:text-base font-medium leading-relaxed break-keep max-w-2xl" style={{ color: 'rgba(45,27,30,0.58)' }}>
           {coreLines[0] || '두 사람은 좋은 지점과 조심할 지점이 함께 보이는 관계예요.'}
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <RelationBriefingCard icon={<Heart className="w-5 h-5" />} label="시너지" title="잘 맞는 지점" lines={pick(g?.synergy, synergyLines.length ? synergyLines : coreLines)} accent={theme.color} />
-        <RelationBriefingCard icon={<AlertTriangle className="w-5 h-5" />} label="주의" title="반복 갈등 포인트" lines={pick(g?.conflict, conflictLines.length ? conflictLines : avoidLines)} accent="#ffb86b" />
-        <RelationBriefingCard icon={<CheckCircle2 className="w-5 h-5" />} label="행동" title="관계를 지키는 방법" lines={pick(g?.action, actionLines.length ? actionLines : decisionLines)} accent="#9d8fff" />
+        <RelationBriefingCard icon={<AlertTriangle className="w-5 h-5" />} label="주의" title="반복 갈등 포인트" lines={pick(g?.conflict, conflictLines.length ? conflictLines : avoidLines)} accent="#c2883a" />
+        <RelationBriefingCard icon={<CheckCircle2 className="w-5 h-5" />} label="행동" title="관계를 지키는 방법" lines={pick(g?.action, actionLines.length ? actionLines : decisionLines)} accent="#7c6fd6" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <RelationBriefingCard icon={<CalendarDays className="w-5 h-5" />} label="타이밍" title="가까워지는 구간" lines={pick(g?.timing?.closer, closerLines.length ? closerLines : synergyLines)} accent="#00d18f" />
-        <RelationBriefingCard icon={<AlertTriangle className="w-5 h-5" />} label="거리감" title="멀어지기 쉬운 구간" lines={pick(g?.timing?.distance, distanceLines.length ? distanceLines : conflictLines)} accent="#ffb86b" />
-        <RelationBriefingCard icon={<CheckCircle2 className="w-5 h-5" />} label="결정" title="관계 결정 포인트" lines={pick(g?.timing?.decision, decisionLines.length ? decisionLines : actionLines)} accent="#e8829a" />
+        <RelationBriefingCard icon={<CalendarDays className="w-5 h-5" />} label="타이밍" title="가까워지는 구간" lines={pick(g?.timing?.closer, closerLines.length ? closerLines : synergyLines)} accent="#0e9f73" />
+        <RelationBriefingCard icon={<AlertTriangle className="w-5 h-5" />} label="거리감" title="멀어지기 쉬운 구간" lines={pick(g?.timing?.distance, distanceLines.length ? distanceLines : conflictLines)} accent="#c2883a" />
+        <RelationBriefingCard icon={<CheckCircle2 className="w-5 h-5" />} label="결정" title="관계 결정 포인트" lines={pick(g?.timing?.decision, decisionLines.length ? decisionLines : actionLines)} accent="#d4688a" />
       </div>
     </section>
   );
@@ -182,9 +182,9 @@ function RelationBriefingCard({ icon, label, title, lines, accent }: { icon: Rea
     <article
       className="rounded-[2rem] p-5 md:p-6 min-h-[12rem] flex flex-col gap-4"
       style={{
-        background: 'rgba(255,255,255,0.025)',
+        background: 'rgba(255,255,255,0.92)',
         border: `1px solid ${accent}33`,
-        boxShadow: `0 8px 32px ${accent}12, 0 1px 0 rgba(255,255,255,0.04) inset`,
+        boxShadow: `0 8px 32px ${accent}12`,
       }}
     >
       <div className="flex items-center gap-2">
@@ -193,13 +193,13 @@ function RelationBriefingCard({ icon, label, title, lines, accent }: { icon: Rea
         </div>
         <span className="text-[10px] font-black uppercase tracking-[0.22em]" style={{ color: accent }}>{label}</span>
       </div>
-      <h4 className="text-lg font-bold leading-snug break-keep" style={{ color: '#f5eef2' }}>{title}</h4>
+      <h4 className="text-lg font-bold leading-snug break-keep" style={{ color: '#2D1B1E' }}>{title}</h4>
       <div className="space-y-2.5">
         {(lines.length ? lines : ['아직 리포트 내용을 정리하는 중이에요.']).slice(0, 3).map((line, index) => {
           const parsed = parseBriefingLine(line);
           return (
-            <div key={`${title}-${index}`} className="space-y-1.5 rounded-2xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <p className="text-[13px] md:text-sm font-bold leading-relaxed break-keep" style={{ color: 'rgba(245,238,242,0.84)' }}>
+            <div key={`${title}-${index}`} className="space-y-1.5 rounded-2xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(45,27,30,0.08)' }}>
+              <p className="text-[13px] md:text-sm font-bold leading-relaxed break-keep" style={{ color: 'rgba(45,27,30,0.84)' }}>
                 <span className="font-black" style={{ color: accent }}>{index + 1}. </span>
                 {parsed.headline}
               </p>
@@ -212,10 +212,10 @@ function RelationBriefingCard({ icon, label, title, lines, accent }: { icon: Rea
                     {hasLabel ? (
                       <>
                         <span className="text-[10px] font-black" style={{ color: accent }}>{rawLabel.trim()}</span>
-                        <span className="text-[12px] md:text-[13px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.58)' }}>{body}</span>
+                        <span className="text-[12px] md:text-[13px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(45,27,30,0.58)' }}>{body}</span>
                       </>
                     ) : (
-                      <span className="text-[12px] md:text-[13px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.58)' }}>{detail}</span>
+                      <span className="text-[12px] md:text-[13px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(45,27,30,0.58)' }}>{detail}</span>
                     )}
                   </div>
                 );
@@ -247,7 +247,7 @@ function PillarChart({
   return (
     <div className="space-y-4">
       {title && (
-        <h4 className="text-center font-bold text-sm md:text-base" style={{ color: '#f5eef2' }}>{title}</h4>
+        <h4 className="text-center font-bold text-sm md:text-base" style={{ color: '#2D1B1E' }}>{title}</h4>
       )}
       <div className="grid grid-cols-4 gap-1.5 md:gap-3">
         {pillars.map((p: any, colIdx: number) => {
@@ -260,21 +260,21 @@ function PillarChart({
           return (
             <div key={colIdx} className="space-y-2">
               <div className="text-center space-y-0.5">
-                <div className="text-[8px] md:text-[10px] font-black tracking-tighter uppercase" style={{ color: 'rgba(240,232,238,0.4)' }}>{p.label}</div>
-                <div className="text-[9px] md:text-[11px] font-black" style={{ color: 'rgba(240,232,238,0.7)' }}>{showDash ? '-' : p.tenGodGan}</div>
+                <div className="text-[8px] md:text-[10px] font-black tracking-tighter uppercase" style={{ color: 'rgba(45,27,30,0.4)' }}>{p.label}</div>
+                <div className="text-[9px] md:text-[11px] font-black" style={{ color: 'rgba(45,27,30,0.7)' }}>{showDash ? '-' : p.tenGodGan}</div>
               </div>
               <div className="space-y-1.5 md:space-y-3">
-                <div className={cn(ganStyle.bg, ganStyle.text, 'p-2.5 md:p-6 rounded-[1.2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center border-[2px] md:border-[3px] transition-all', isDayPillar ? cn('scale-105 z-10', borderColor) : 'border-white/10 shadow-sm')}>
+                <div className={cn(ganStyle.bg, ganStyle.text, 'p-2.5 md:p-6 rounded-[1.2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center border-[2px] md:border-[3px] transition-all', isDayPillar ? cn('scale-105 z-10', borderColor) : 'border-black/10 shadow-sm')}>
                   <span className="text-xl md:text-5xl font-sans font-black leading-none tracking-tight">{showDash ? '-' : p.ganKo}</span>
                 </div>
-                <div className={cn(zhiStyle.bg, zhiStyle.text, 'p-2.5 md:p-6 rounded-[1.2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center border-[2px] md:border-[3px] border-white/10 shadow-sm overflow-hidden relative')}>
+                <div className={cn(zhiStyle.bg, zhiStyle.text, 'p-2.5 md:p-6 rounded-[1.2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center border-[2px] md:border-[3px] border-black/10 shadow-sm overflow-hidden relative')}>
                   {!showDash && <span className="text-xs md:text-xl absolute top-1 right-1 opacity-10">{p.zodiacIcon}</span>}
                   <span className="text-xl md:text-5xl font-sans font-black leading-none tracking-tight relative z-10">{showDash ? '-' : p.zhiKo}</span>
                 </div>
               </div>
               <div className="text-center space-y-0.5 mt-1">
-                <div className="text-[9px] md:text-[11px] font-black" style={{ color: 'rgba(240,232,238,0.7)' }}>{showDash ? '-' : p.tenGodZhi}</div>
-                <div className="text-[8px] md:text-[10px] font-bold" style={{ color: 'rgba(240,232,238,0.4)' }}>{showDash ? '-' : p.unSeong}</div>
+                <div className="text-[9px] md:text-[11px] font-black" style={{ color: 'rgba(45,27,30,0.7)' }}>{showDash ? '-' : p.tenGodZhi}</div>
+                <div className="text-[8px] md:text-[10px] font-bold" style={{ color: 'rgba(45,27,30,0.4)' }}>{showDash ? '-' : p.unSeong}</div>
               </div>
             </div>
           );
@@ -305,14 +305,14 @@ function ScoreGauge({
         <span className="text-4xl">{theme.icon}</span>
         {name1 && name2 && (
           <div className="flex items-center justify-center gap-3 flex-wrap">
-            <span className="font-black text-xl md:text-2xl" style={{ color: '#f5eef2' }}>{name1}</span>
+            <span className="font-black text-xl md:text-2xl" style={{ color: '#2D1B1E' }}>{name1}</span>
             <div
               className="flex items-center justify-center w-9 h-9 rounded-full shadow-md"
               style={{ backgroundColor: `${theme.color}20` }}
             >
               <Heart className="w-5 h-5" style={{ color: theme.color, fill: theme.color }} />
             </div>
-            <span className="font-black text-xl md:text-2xl" style={{ color: '#f5eef2' }}>{name2}</span>
+            <span className="font-black text-xl md:text-2xl" style={{ color: '#2D1B1E' }}>{name2}</span>
           </div>
         )}
       </div>
@@ -349,7 +349,7 @@ function ScoreGauge({
       </motion.div>
 
       {/* 상위 N% 문구 — theme.percentText 적용 */}
-      <p className="text-center font-black text-base md:text-lg break-keep px-4" style={{ color: 'rgba(240,232,238,0.72)' }}>
+      <p className="text-center font-black text-base md:text-lg break-keep px-4" style={{ color: 'rgba(45,27,30,0.72)' }}>
         두 사람은 상위{' '}
         <span className="text-2xl md:text-3xl font-black" style={{ color: theme.color }}>
           {percentile}%
@@ -360,7 +360,7 @@ function ScoreGauge({
       {/* 프로그레스 바 — theme.color 통일 */}
       <div className="w-full max-w-[280px] mx-auto space-y-2">
         <div className="flex justify-between px-1">
-          <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'rgba(240,232,238,0.4)' }}>Synergy Level</span>
+          <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'rgba(45,27,30,0.4)' }}>Synergy Level</span>
           <span className="text-[9px] font-black" style={{ color: theme.color }}>{score}%</span>
         </div>
         <div
@@ -476,7 +476,7 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
         <div
           className="relative rounded-[2.4rem] p-6 md:p-10 overflow-hidden"
           style={{
-            background: `linear-gradient(135deg, ${theme.color}18, rgba(18,8,16,0.92) 55%, ${theme.color}10)`,
+            background: `linear-gradient(135deg, ${theme.color}18, rgba(255,255,255,0.92) 55%, ${theme.color}10)`,
             backdropFilter: 'blur(2px)',
           }}
         >
@@ -494,7 +494,7 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
 
           {/* 헤드라인 */}
           <div className="text-center pb-2 relative z-10">
-            <p className="font-black text-base md:text-lg leading-tight break-keep px-2" style={{ color: '#f5eef2' }}>
+            <p className="font-black text-base md:text-lg leading-tight break-keep px-2" style={{ color: '#2D1B1E' }}>
               &ldquo;{aiResult.headline || '두 사람의 운명이 선명하게 겹쳐지네요.'}&rdquo;
             </p>
           </div>
@@ -506,7 +506,7 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
         <button
           onClick={handleQuickShare}
           className="inline-flex items-center gap-2.5 font-black px-7 py-3.5 rounded-2xl transition-all active:scale-95 text-sm"
-          style={{ border: `2px solid ${theme.color}40`, background: 'rgba(255,255,255,0.04)', color: '#f5eef2' }}
+          style={{ border: `2px solid ${theme.color}40`, background: 'rgba(255,255,255,0.85)', color: '#2D1B1E' }}
           onMouseEnter={(e) => (e.currentTarget.style.borderColor = `${theme.color}80`)}
           onMouseLeave={(e) => (e.currentTarget.style.borderColor = `${theme.color}40`)}
         >
@@ -522,7 +522,7 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
             </>
           )}
         </button>
-        <p className="text-[10px] font-bold" style={{ color: 'rgba(240,232,238,0.34)' }}>카카오톡 공유 또는 링크 복사</p>
+        <p className="text-[10px] font-bold" style={{ color: 'rgba(45,27,30,0.34)' }}>카카오톡 공유 또는 링크 복사</p>
       </div>
 
       {/* 이름 + 관계 인포 카드 */}
@@ -531,17 +531,17 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
           { label: '나', user: user1, saju: normalizedSaju1, unknown: isUser1TimeUnknown },
           { label: '그대', user: user2, saju: normalizedSaju2, unknown: isUser2TimeUnknown },
         ].map((item, idx) => (
-          <div key={idx} className="p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] space-y-3 md:space-y-4" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.12)', boxShadow: '0 4px 24px rgba(0,0,0,0.22)' }}>
+          <div key={idx} className="p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] space-y-3 md:space-y-4" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(212,104,138,0.12)', boxShadow: '0 4px 24px rgba(45,27,30,0.22)' }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className={cn('w-2 h-2 rounded-full', idx === 0 ? 'bg-blue-400' : 'bg-pink-400')} />
-                <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'rgba(240,232,238,0.4)' }}>{item.label}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'rgba(45,27,30,0.4)' }}>{item.label}</span>
               </div>
-              <span className="text-[10px] font-black" style={{ color: 'rgba(240,232,238,0.7)' }}>{item.saju.dayGanKo}일간</span>
+              <span className="text-[10px] font-black" style={{ color: 'rgba(45,27,30,0.7)' }}>{item.saju.dayGanKo}일간</span>
             </div>
             <div className="space-y-1">
-              <p className="text-lg font-bold" style={{ color: '#f5eef2' }}>{item.user.name}</p>
-              <p className="text-[10px] font-bold" style={{ color: 'rgba(240,232,238,0.34)' }}>
+              <p className="text-lg font-bold" style={{ color: '#2D1B1E' }}>{item.user.name}</p>
+              <p className="text-[10px] font-bold" style={{ color: 'rgba(45,27,30,0.34)' }}>
                 {item.user.birthDate} {getDisplayTime(item.user, item.unknown)}
               </p>
             </div>
@@ -549,9 +549,9 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
         ))}
       </div>
 
-      <div className="flex items-center justify-center gap-3 py-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.12)' }}>
-        <Heart className="w-5 h-5 fill-current" style={{ color: '#e8829a' }} />
-        <span className="font-bold leading-none mt-0.5" style={{ color: '#f5eef2' }}>
+      <div className="flex items-center justify-center gap-3 py-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(212,104,138,0.12)' }}>
+        <Heart className="w-5 h-5 fill-current" style={{ color: '#d4688a' }} />
+        <span className="font-bold leading-none mt-0.5" style={{ color: '#2D1B1E' }}>
           관계: {relationLabels[relation] || '궁합'}
         </span>
       </div>
@@ -560,28 +560,28 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
       <div
         className="p-5 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] overflow-hidden"
         style={{
-          background: 'rgba(255,255,255,0.025)',
+          background: 'rgba(255,255,255,0.92)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: '1px solid rgba(212,104,138,0.14)',
-          boxShadow: '0 8px 40px rgba(212,104,138,0.08), 0 1px 0 rgba(255,255,255,0.04) inset',
+          boxShadow: '0 8px 40px rgba(212,104,138,0.08)',
         }}
       >
         {/* 섹션 헤더 */}
         <div className="text-center space-y-1 mb-8">
-          <h3 className="text-2xl font-bold tracking-tight" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>영혼의 설계도 대조</h3>
+          <h3 className="text-2xl font-bold tracking-tight" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>영혼의 설계도 대조</h3>
           <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(212,104,138,0.4)' }}>Manseyrok Comparison</p>
         </div>
 
         {/* "두 사람의 사주" 페어 컨테이너 */}
         <div
           className="rounded-[1.5rem] md:rounded-[2rem] overflow-hidden"
-          style={{ background: 'linear-gradient(180deg, rgba(157,143,255,0.06) 0%, rgba(255,255,255,0.01) 40%, rgba(255,255,255,0.01) 60%, rgba(212,104,138,0.06) 100%)', border: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(124,111,214,0.06) 0%, rgba(255,255,255,0.01) 40%, rgba(255,255,255,0.01) 60%, rgba(212,104,138,0.06) 100%)', border: '1px solid rgba(45,27,30,0.08)' }}
         >
           {/* 상단 레이블 */}
-          <div className="flex items-center justify-center gap-2 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center justify-center gap-2 py-3" style={{ borderBottom: '1px solid rgba(45,27,30,0.08)' }}>
             <div className="w-2 h-2 rounded-full bg-blue-400" />
-            <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: 'rgba(240,232,238,0.5)' }}>두 사람의 사주</span>
+            <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: 'rgba(45,27,30,0.5)' }}>두 사람의 사주</span>
             <div className="w-2 h-2 rounded-full bg-pink-400" />
           </div>
 
@@ -602,12 +602,12 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
             {/* 중앙 연결 구분선 (♥ 인연 분석) */}
             <div className="flex items-center justify-center gap-3 relative">
               <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(212,104,138,0.3), rgba(212,104,138,0.15))' }} />
-              <div className="flex items-center gap-2 px-5 py-2.5 rounded-full" style={{ background: 'rgba(232,130,154,0.10)', border: '1px solid rgba(232,130,154,0.2)' }}>
-                <Heart className="w-3.5 h-3.5" style={{ color: '#e8829a', fill: '#e8829a' }} />
-                <span className="text-[11px] font-black tracking-wider" style={{ color: '#e8829a' }}>인연 분석</span>
-                <Heart className="w-3.5 h-3.5" style={{ color: '#e8829a', fill: '#e8829a' }} />
+              <div className="flex items-center gap-2 px-5 py-2.5 rounded-full" style={{ background: 'rgba(212,104,138,0.10)', border: '1px solid rgba(212,104,138,0.2)' }}>
+                <Heart className="w-3.5 h-3.5" style={{ color: '#d4688a', fill: '#d4688a' }} />
+                <span className="text-[11px] font-black tracking-wider" style={{ color: '#d4688a' }}>인연 분석</span>
+                <Heart className="w-3.5 h-3.5" style={{ color: '#d4688a', fill: '#d4688a' }} />
               </div>
-              <div className="flex-1 h-px" style={{ background: 'linear-gradient(to left, transparent, rgba(157,143,255,0.3), rgba(157,143,255,0.15))' }} />
+              <div className="flex-1 h-px" style={{ background: 'linear-gradient(to left, transparent, rgba(124,111,214,0.3), rgba(124,111,214,0.15))' }} />
             </div>
 
             {/* 두 번째 만세력 */}
@@ -630,7 +630,7 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
       <div className="space-y-8">
         <div className="flex items-center gap-3 ml-2">
           <Moon className="w-6 h-6" style={{ color: '#d4688a', fill: '#d4688a' }} />
-          <h3 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>운명적인 인연의 리포트</h3>
+          <h3 className="text-2xl font-bold" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>운명적인 인연의 리포트</h3>
         </div>
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
           {(() => {
@@ -659,13 +659,13 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
       {/* 타로 리딩 CTA */}
       <div
         className="p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] text-center space-y-4"
-        style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(157,143,255,0.14)', boxShadow: '0 4px 32px rgba(157,143,255,0.05), 0 1px 0 rgba(255,255,255,0.04) inset' }}
+        style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(124,111,214,0.14)', boxShadow: '0 4px 32px rgba(124,111,214,0.05)' }}
       >
-        <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(157,143,255,0.6)' }}>타로 리딩</p>
-        <h4 className="text-xl font-bold break-keep" style={{ color: '#f5eef2' }}>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(124,111,214,0.6)' }}>타로 리딩</p>
+        <h4 className="text-xl font-bold break-keep" style={{ color: '#2D1B1E' }}>
           지금 두 사람의 에너지, 카드로 확인해볼까요?
         </h4>
-        <p className="text-sm break-keep max-w-sm mx-auto" style={{ color: 'rgba(240,232,238,0.42)' }}>
+        <p className="text-sm break-keep max-w-sm mx-auto" style={{ color: 'rgba(45,27,30,0.42)' }}>
           궁합을 확인했다면, 타로로 오늘의 관계 흐름과 메시지를 읽어보세요.
         </p>
         <button
@@ -680,7 +680,7 @@ export default function GungHapPreview({ data }: { data: any; resultId: string }
       {/* 하단 공유 버튼 */}
       <div
         className="p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] text-center"
-        style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.12)' }}
+        style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(212,104,138,0.12)' }}
       >
         <ShareButtons name={`${user1.name} & ${user2.name}`} />
       </div>

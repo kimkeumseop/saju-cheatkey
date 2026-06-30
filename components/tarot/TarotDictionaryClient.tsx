@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { TAROT_CARDS, ARCANA_LABELS, TarotCard, Arcana } from '@/data/tarotCards'
 import { getTarotImageUrl } from '@/data/tarotImages'
 import { AnimatePresence, motion } from 'framer-motion'
-import CosmicBackground from '@/components/CosmicBackground'
+import AuroraBackground from '@/components/AuroraBackground'
 import TarotCardImage from './TarotCardImage'
 
 // 아르카나별 색상 (퍼플 베이스 + 아르카나 고유색)
@@ -32,15 +32,15 @@ export default function TarotDictionaryClient() {
   }, [filter, search])
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden pb-20" style={{ background: '#0d0710' }}>
-      <CosmicBackground />
+    <main className="relative min-h-screen overflow-x-hidden pb-20" style={{ background: '#FBF7F2' }}>
+      <AuroraBackground />
       <div className="relative z-10 max-w-2xl mx-auto px-4 pt-8">
 
         {/* 헤더 */}
         <div className="text-center mb-8">
-          <div className="text-xs font-black tracking-widest mb-2" style={{ color: '#9d8fff' }}>✦ CARD LIBRARY ✦</div>
-          <h1 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>타로 카드 사전</h1>
-          <p className="text-sm mt-1" style={{ color: 'rgba(240,232,238,0.42)' }}>78장의 의미를 찾아보세요</p>
+          <div className="text-xs font-black tracking-widest mb-2" style={{ color: '#7c6fd6' }}>✦ CARD LIBRARY ✦</div>
+          <h1 className="text-2xl font-bold" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>타로 카드 사전</h1>
+          <p className="text-sm mt-1" style={{ color: 'rgba(45,27,30,0.42)' }}>78장의 의미를 찾아보세요</p>
         </div>
 
         {/* 검색 */}
@@ -50,12 +50,12 @@ export default function TarotDictionaryClient() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="카드 이름, 키워드로 검색..."
-            className="w-full pl-10 pr-4 py-3 rounded-2xl text-sm outline-none transition-all text-[#f5eef2] placeholder:text-white/30"
-            style={{ border: '1px solid rgba(157,143,255,0.2)', background: 'rgba(255,255,255,0.04)' }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(157,143,255,0.5)' }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(157,143,255,0.2)' }}
+            className="w-full pl-10 pr-4 py-3 rounded-2xl text-sm outline-none transition-all text-[#2D1B1E] placeholder:text-black/30"
+            style={{ border: '1px solid rgba(124,111,214,0.2)', background: 'rgba(255,255,255,0.85)' }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(124,111,214,0.5)' }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(124,111,214,0.2)' }}
           />
-          <span className="absolute left-3.5 top-3.5 text-white/30 text-sm">🔍</span>
+          <span className="absolute left-3.5 top-3.5 text-black/30 text-sm">🔍</span>
         </div>
 
         {/* 필터 */}
@@ -66,8 +66,8 @@ export default function TarotDictionaryClient() {
               onClick={() => setFilter(key)}
               className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
               style={filter === key
-                ? { background: '#9d8fff', color: 'white', border: '1px solid #9d8fff' }
-                : { background: 'rgba(255,255,255,0.04)', color: 'rgba(240,232,238,0.5)', border: '1px solid rgba(255,255,255,0.12)' }
+                ? { background: '#7c6fd6', color: 'white', border: '1px solid #7c6fd6' }
+                : { background: 'rgba(255,255,255,0.85)', color: 'rgba(45,27,30,0.5)', border: '1px solid rgba(45,27,30,0.12)' }
               }
             >
               {ARCANA_LABELS[key]}
@@ -76,7 +76,7 @@ export default function TarotDictionaryClient() {
         </div>
 
         {/* 카운트 */}
-        <div className="text-xs mb-4" style={{ color: 'rgba(240,232,238,0.42)' }}>{filtered.length}장</div>
+        <div className="text-xs mb-4" style={{ color: 'rgba(45,27,30,0.42)' }}>{filtered.length}장</div>
 
         {/* 그리드 */}
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
@@ -93,8 +93,8 @@ export default function TarotDictionaryClient() {
                 <div className="mb-1.5 w-full aspect-[2/3] rounded-xl overflow-hidden flex items-center justify-center" style={{ background: 'var(--tarot-50)' }}>
                   <TarotCardImage imageUrl={getTarotImageUrl(card.id)} name={card.name} emoji={card.emoji} fallbackClassName="text-3xl" />
                 </div>
-                <div className="text-[10px] mb-0.5" style={{ color: 'rgba(240,232,238,0.4)' }}>{card.num}</div>
-                <div className="text-xs font-bold leading-tight mb-2" style={{ color: '#f5eef2' }}>{card.name}</div>
+                <div className="text-[10px] mb-0.5" style={{ color: 'rgba(45,27,30,0.4)' }}>{card.num}</div>
+                <div className="text-xs font-bold leading-tight mb-2" style={{ color: '#2D1B1E' }}>{card.name}</div>
                 <span className="text-[9px] px-2 py-0.5 rounded-full border"
                   style={{ background: s.bg, color: s.color, borderColor: s.border }}>
                   {s.label}
@@ -119,11 +119,11 @@ export default function TarotDictionaryClient() {
             <motion.div
               className="w-full max-w-md rounded-3xl p-6 max-h-[85vh] overflow-y-auto"
               style={{
-                background: 'linear-gradient(180deg, rgba(26,14,24,0.97), rgba(13,7,16,0.98))',
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.97), rgba(255,255,255,0.98))',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
-                border: '1px solid rgba(157,143,255,0.18)',
-                boxShadow: '0 24px 80px rgba(0,0,0,0.7), 0 8px 40px rgba(157,143,255,0.1)',
+                border: '1px solid rgba(124,111,214,0.18)',
+                boxShadow: '0 24px 80px rgba(45,27,30,0.7), 0 8px 40px rgba(124,111,214,0.1)',
               }}
               initial={{ y: 60, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -137,13 +137,13 @@ export default function TarotDictionaryClient() {
                   <TarotCardImage imageUrl={getTarotImageUrl(selected.id)} name={selected.name} emoji={selected.emoji} fallbackClassName="text-4xl" showName />
                 </div>
                 <div className="flex-1">
-                  <div className="text-[10px] tracking-widest mb-1" style={{ color: '#9d8fff' }}>{selected.num}</div>
-                  <div className="text-lg font-bold mb-0.5" style={{ color: '#f5eef2' }}>{selected.name}</div>
-                  <div className="text-xs mb-3" style={{ color: 'rgba(240,232,238,0.4)' }}>{selected.eng}</div>
+                  <div className="text-[10px] tracking-widest mb-1" style={{ color: '#7c6fd6' }}>{selected.num}</div>
+                  <div className="text-lg font-bold mb-0.5" style={{ color: '#2D1B1E' }}>{selected.name}</div>
+                  <div className="text-xs mb-3" style={{ color: 'rgba(45,27,30,0.4)' }}>{selected.eng}</div>
                   <div className="flex flex-wrap gap-1">
                     {selected.keywords.map((k) => (
                       <span key={k} className="text-[10px] px-2 py-0.5 rounded-full"
-                        style={{ background: 'rgba(157,143,255,0.15)', color: '#9d8fff', border: '1px solid rgba(157,143,255,0.2)' }}>
+                        style={{ background: 'rgba(124,111,214,0.15)', color: '#7c6fd6', border: '1px solid rgba(124,111,214,0.2)' }}>
                         {k}
                       </span>
                     ))}
@@ -151,24 +151,24 @@ export default function TarotDictionaryClient() {
                 </div>
               </div>
 
-              <p className="text-sm leading-relaxed mb-5" style={{ color: 'rgba(240,232,238,0.62)' }}>{selected.desc}</p>
+              <p className="text-sm leading-relaxed mb-5" style={{ color: 'rgba(45,27,30,0.62)' }}>{selected.desc}</p>
 
               {/* 정방향 / 역방향 */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-2xl" style={{ background: 'rgba(157,143,255,0.1)', border: '1px solid rgba(157,143,255,0.18)' }}>
-                  <div className="text-[10px] font-bold mb-1.5" style={{ color: '#9d8fff' }}>⬆ 정방향</div>
-                  <p className="text-xs leading-relaxed" style={{ color: 'rgba(240,232,238,0.62)' }}>{selected.upright}</p>
+                <div className="p-3 rounded-2xl" style={{ background: 'rgba(124,111,214,0.1)', border: '1px solid rgba(124,111,214,0.18)' }}>
+                  <div className="text-[10px] font-bold mb-1.5" style={{ color: '#7c6fd6' }}>⬆ 정방향</div>
+                  <p className="text-xs leading-relaxed" style={{ color: 'rgba(45,27,30,0.62)' }}>{selected.upright}</p>
                 </div>
-                <div className="p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <div className="text-[10px] font-bold mb-1.5" style={{ color: 'rgba(157,143,255,0.7)' }}>⬇ 역방향</div>
-                  <p className="text-xs leading-relaxed" style={{ color: 'rgba(240,232,238,0.62)' }}>{selected.reversed}</p>
+                <div className="p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(45,27,30,0.12)' }}>
+                  <div className="text-[10px] font-bold mb-1.5" style={{ color: 'rgba(124,111,214,0.7)' }}>⬇ 역방향</div>
+                  <p className="text-xs leading-relaxed" style={{ color: 'rgba(45,27,30,0.62)' }}>{selected.reversed}</p>
                 </div>
               </div>
 
               <button
                 onClick={() => setSelected(null)}
                 className="w-full mt-5 py-3 rounded-2xl text-sm transition-opacity hover:opacity-70"
-                style={{ border: '1px solid rgba(157,143,255,0.25)', color: 'rgba(157,143,255,0.8)' }}
+                style={{ border: '1px solid rgba(124,111,214,0.25)', color: 'rgba(124,111,214,0.8)' }}
               >
                 닫기
               </button>

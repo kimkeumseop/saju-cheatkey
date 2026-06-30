@@ -674,12 +674,12 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                         'relative z-10 mt-3.5 w-10 h-10 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all duration-300',
                         isCurrent
                           ? 'border-[#7c6fd6] shadow-lg shadow-[#7c6fd6]/40 scale-110'
-                          : 'border-white/15'
-                      )} style={{ background: '#160c1a' }}>
+                          : 'border-black/15'
+                      )} style={{ background: '#FFFFFF' }}>
                         {isCurrent ? (
                           <div className="w-4 h-4 rounded-full" style={{ background: '#7c6fd6' }} />
                         ) : (
-                          <span className="text-[10px] font-black text-white/30">{idx + 1}</span>
+                          <span className="text-[10px] font-black text-black/40">{idx + 1}</span>
                         )}
                       </div>
 

@@ -116,10 +116,10 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
     router.replace(`/gunghap?${params.toString()}`);
   };
 
-  const inputClasses = "w-full bg-white/[0.04] text-[#f5eef2] border border-white/10 rounded-2xl py-4 px-4 focus:ring-4 focus:ring-[#d4688a]/20 focus:border-[#d4688a]/50 outline-none transition-all placeholder:text-white/30 font-medium text-sm [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer";
+  const inputClasses = "w-full bg-black/[0.04] text-[#2D1B1E] border border-black/10 rounded-2xl py-4 px-4 focus:ring-4 focus:ring-[#d4688a]/20 focus:border-[#d4688a]/50 outline-none transition-all placeholder:text-black/30 font-medium text-sm [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer";
   const radioBtnClasses = (active: boolean) => cn(
     "flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 border text-xs",
-    active ? "bg-[#d4688a] border-transparent text-white shadow-md shadow-[#d4688a]/30" : "bg-white/[0.03] border-white/10 text-white/40 hover:bg-white/[0.06]"
+    active ? "bg-[#d4688a] border-transparent text-white shadow-md shadow-[#d4688a]/30" : "bg-black/[0.03] border-black/10 text-black/40 hover:bg-black/[0.06]"
   );
 
   return (
@@ -127,21 +127,21 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
       <div
         className="w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-8 relative overflow-hidden max-h-[90vh] overflow-y-auto"
         style={{
-          background: 'linear-gradient(180deg, rgba(26,14,24,0.96), rgba(13,7,16,0.97))',
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.97))',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
           border: '1px solid rgba(212,104,138,0.18)',
-          boxShadow: '0 -8px 60px rgba(0,0,0,0.6), 0 8px 40px rgba(212,104,138,0.10), 0 1px 0 rgba(255,255,255,0.05) inset',
+          boxShadow: '0 -8px 60px rgba(45,27,30,0.6), 0 8px 40px rgba(212,104,138,0.10)',
         }}
       >
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
             <Heart className="w-6 h-6" style={{ color: '#d4688a', fill: '#d4688a' }} />
-            <h3 className="text-2xl font-bold tracking-tight" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
+            <h3 className="text-2xl font-bold tracking-tight" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>
               {view === 'me' ? '나는 누구인가요?' : view === 'partner' ? '상대방은 누구인가요?' : view === 'relation' ? '어떤 관계인가요?' : '정보 등록하기'}
             </h3>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"><X className="w-5 h-5 text-white/40" /></button>
+          <button onClick={onClose} className="p-2 rounded-full bg-black/5 hover:bg-black/10 transition-colors"><X className="w-5 h-5 text-black/40" /></button>
         </div>
 
         <div className="space-y-6">
@@ -150,26 +150,26 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-3 max-h-[40vh] overflow-y-auto pr-1 no-scrollbar">
                 {profiles.map((p, i) => (
-                  <div key={p.id || i} onClick={() => view === 'me' ? handleMeSelect(p) : handlePartnerSelect(p)} className="w-full flex items-center gap-4 p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-[1.5rem] transition-all cursor-pointer group">
-                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-lg">👤</div>
+                  <div key={p.id || i} onClick={() => view === 'me' ? handleMeSelect(p) : handlePartnerSelect(p)} className="w-full flex items-center gap-4 p-4 bg-black/[0.03] hover:bg-black/[0.06] border border-black/10 rounded-[1.5rem] transition-all cursor-pointer group">
+                    <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center text-lg">👤</div>
                     <div className="flex-1 text-left">
-                      <p className="font-bold text-sm" style={{ color: '#f5eef2' }}>{p.name}</p>
-                      <p className="text-[10px] font-bold" style={{ color: 'rgba(240,232,238,0.36)' }}>{p.birthDate} · {p.gender === 'male' ? '남성' : '여성'}</p>
+                      <p className="font-bold text-sm" style={{ color: '#2D1B1E' }}>{p.name}</p>
+                      <p className="text-[10px] font-bold" style={{ color: 'rgba(45,27,30,0.36)' }}>{p.birthDate} · {p.gender === 'male' ? '남성' : '여성'}</p>
                     </div>
                     <button onClick={(e) => handleDelete(e, p.id)} className="p-2 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-red-400/50 hover:text-red-400 transition-all"><Trash2 className="w-4 h-4" /></button>
-                    <ChevronRight className="w-5 h-5 text-white/20" />
+                    <ChevronRight className="w-5 h-5 text-black/20" />
                   </div>
                 ))}
               </div>
 
               <button
                 onClick={() => { setFormType(view as any); setView('form'); }}
-                className="w-full flex items-center gap-4 p-5 rounded-[1.5rem] bg-white/[0.02] border-2 border-dashed border-white/10 hover:border-[#d4688a]/40 transition-all group"
+                className="w-full flex items-center gap-4 p-5 rounded-[1.5rem] bg-black/[0.02] border-2 border-dashed border-black/10 hover:border-[#d4688a]/40 transition-all group"
               >
-                <div className="w-12 h-12 rounded-xl bg-white/5 group-hover:bg-[#d4688a]/15 flex items-center justify-center transition-colors">
-                  <Plus className="w-6 h-6 text-white/40 group-hover:text-[#d4688a]" />
+                <div className="w-12 h-12 rounded-xl bg-black/5 group-hover:bg-[#d4688a]/15 flex items-center justify-center transition-colors">
+                  <Plus className="w-6 h-6 text-black/40 group-hover:text-[#d4688a]" />
                 </div>
-                <p className="font-bold flex-1 text-left" style={{ color: '#f5eef2' }}>새로운 정보 등록하기</p>
+                <p className="font-bold flex-1 text-left" style={{ color: '#2D1B1E' }}>새로운 정보 등록하기</p>
               </button>
 
               {view === 'partner' && (
@@ -187,10 +187,10 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
                   <button
                     key={rel.id}
                     onClick={() => handleRelationSelect(rel.id)}
-                    className="flex flex-col items-center gap-2 p-5 bg-white/[0.03] border border-white/10 rounded-[1.5rem] hover:border-[#d4688a]/50 hover:bg-[#d4688a]/10 transition-all group active:scale-95"
+                    className="flex flex-col items-center gap-2 p-5 bg-black/[0.03] border border-black/10 rounded-[1.5rem] hover:border-[#d4688a]/50 hover:bg-[#d4688a]/10 transition-all group active:scale-95"
                   >
                     <span className="text-3xl group-hover:scale-110 transition-transform">{rel.icon}</span>
-                    <span className="font-bold text-sm" style={{ color: '#f5eef2' }}>{rel.label}</span>
+                    <span className="font-bold text-sm" style={{ color: '#2D1B1E' }}>{rel.label}</span>
                   </button>
                 ))}
               </div>
@@ -204,20 +204,20 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
               <div className="space-y-4">
                 <input type="text" placeholder="성함을 알려주세요" className={inputClasses} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="flex p-1 bg-white/[0.03] rounded-xl border border-white/10">
+                  <div className="flex p-1 bg-black/[0.03] rounded-xl border border-black/10">
                     <button type="button" onClick={() => setFormData({...formData, gender: 'male'})} className={radioBtnClasses(formData.gender === 'male')}>남성</button>
                     <button type="button" onClick={() => setFormData({...formData, gender: 'female'})} className={radioBtnClasses(formData.gender === 'female')}>여성</button>
                   </div>
-                  <div className="flex p-1 bg-white/[0.03] rounded-xl border border-white/10">
+                  <div className="flex p-1 bg-black/[0.03] rounded-xl border border-black/10">
                     <button type="button" onClick={() => setFormData({...formData, calendarType: 'solar'})} className={radioBtnClasses(formData.calendarType === 'solar')}>양력</button>
                     <button type="button" onClick={() => setFormData({...formData, calendarType: 'lunar'})} className={radioBtnClasses(formData.calendarType === 'lunar')}>음력</button>
                   </div>
                 </div>
                 <input type="date" className={inputClasses} value={formData.birthDate} onChange={e => setFormData({...formData, birthDate: e.target.value})} required />
 
-                <div className="space-y-4 pt-4 border-t border-white/10">
+                <div className="space-y-4 pt-4 border-t border-black/10">
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold ml-1 flex items-center gap-2" style={{ color: '#f5eef2' }}>
+                    <label className="text-[11px] font-bold ml-1 flex items-center gap-2" style={{ color: '#2D1B1E' }}>
                       <Clock className="w-3.5 h-3.5" style={{ color: '#d4688a' }} />태어난 시간을 아시나요?
                     </label>
                     <div className="flex gap-2">
@@ -228,7 +228,7 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
                   
                   {formData.isTimeKnown && (
                     <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                      <label className="text-[11px] font-bold ml-1 italic" style={{ color: '#f5eef2' }}>정확한 시간인가요?</label>
+                      <label className="text-[11px] font-bold ml-1 italic" style={{ color: '#2D1B1E' }}>정확한 시간인가요?</label>
                       <div className="flex gap-2">
                         <button type="button" onClick={() => setFormData({...formData, isExactTime: true})} className={radioBtnClasses(formData.isExactTime)}>예</button>
                         <button type="button" onClick={() => setFormData({...formData, isExactTime: false})} className={radioBtnClasses(!formData.isExactTime)}>아니오</button>
@@ -238,7 +238,7 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
 
                   {formData.isTimeKnown && formData.isExactTime && (
                     <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                      <label className="text-[11px] font-bold ml-1 uppercase tracking-widest" style={{ color: '#f5eef2' }}>Birth Time</label>
+                      <label className="text-[11px] font-bold ml-1 uppercase tracking-widest" style={{ color: '#2D1B1E' }}>Birth Time</label>
                       <input type="time" className={inputClasses} value={formData.birthTime} onChange={e => setFormData({...formData, birthTime: e.target.value})} required={formData.isExactTime} />
                     </div>
                   )}
@@ -246,11 +246,11 @@ export default function GungHapInputModal({ isOpen, onClose }: GungHapInputModal
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setView(formType)} className="flex-1 bg-white/5 text-white/50 py-4 rounded-2xl font-bold hover:bg-white/10 transition-colors">뒤로</button>
+                <button type="button" onClick={() => setView(formType)} className="flex-1 bg-black/5 text-black/50 py-4 rounded-2xl font-bold hover:bg-black/10 transition-colors">뒤로</button>
                 <button
                   type="submit"
                   className="flex-[2] text-white py-4 rounded-2xl font-bold transition hover:brightness-110 active:scale-[0.98]"
-                  style={{ background: 'linear-gradient(135deg, #d4688a, #9e1c4e)', boxShadow: '0 4px 24px rgba(212,104,138,0.32), 0 1px 0 rgba(255,255,255,0.16) inset' }}
+                  style={{ background: 'linear-gradient(135deg, #d4688a, #9e1c4e)', boxShadow: '0 4px 24px rgba(212,104,138,0.32)' }}
                 >
                   저장하고 계속
                 </button>

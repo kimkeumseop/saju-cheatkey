@@ -109,7 +109,7 @@ function renderInlineText(rawText: string) {
       {parts.map((part, i) => {
         if (part.startsWith('**') && part.endsWith('**')) {
           return (
-            <strong key={i} className="font-black" style={{ color: '#f5eef2' }}>
+            <strong key={i} className="font-black" style={{ color: '#2D1B1E' }}>
               {part.slice(2, -2)}
             </strong>
           );
@@ -161,9 +161,9 @@ function renderStructuredLine(rawLine: string, key: string | number) {
     <div
       key={key}
       className="rounded-2xl px-4 py-3 space-y-2"
-      style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.10)' }}
+      style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(212,104,138,0.10)' }}
     >
-      <p className="text-[14px] md:text-[15px] font-black leading-relaxed break-keep" style={{ color: '#f5eef2' }}>
+      <p className="text-[14px] md:text-[15px] font-black leading-relaxed break-keep" style={{ color: '#2D1B1E' }}>
         {renderInlineText(parsed.headline)}
       </p>
       <div className="space-y-1.5">
@@ -176,13 +176,13 @@ function renderStructuredLine(rawLine: string, key: string | number) {
             <div key={`${key}-${index}`} className="grid gap-1 md:grid-cols-[5.5rem_1fr] md:items-start">
               {hasLabel ? (
                 <>
-                  <span className="text-[11px] font-black" style={{ color: '#e8829a' }}>{label.trim()}</span>
-                  <span className="text-[13px] md:text-sm font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.66)' }}>
+                  <span className="text-[11px] font-black" style={{ color: '#d4688a' }}>{label.trim()}</span>
+                  <span className="text-[13px] md:text-sm font-medium leading-relaxed break-keep" style={{ color: 'rgba(45,27,30,0.66)' }}>
                     {renderInlineText(body)}
                   </span>
                 </>
               ) : (
-                <span className="text-[13px] md:text-sm font-medium leading-relaxed break-keep md:col-span-2" style={{ color: 'rgba(240,232,238,0.66)' }}>
+                <span className="text-[13px] md:text-sm font-medium leading-relaxed break-keep md:col-span-2" style={{ color: 'rgba(45,27,30,0.66)' }}>
                   {renderInlineText(detail)}
                 </span>
               )}
@@ -270,7 +270,7 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
   return (
     <div className="space-y-5 w-full">
       {liveData.length === 0 && (
-        <div className="rounded-[2rem] p-5 text-sm font-medium" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(232,130,154,0.14)', color: 'rgba(240,232,238,0.62)' }}>
+        <div className="rounded-[2rem] p-5 text-sm font-medium" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(212,104,138,0.14)', color: 'rgba(45,27,30,0.62)' }}>
           리포트 내용을 정리하는 중입니다. 다시 생성하면 더 안정적으로 표시돼요.
         </div>
       )}
@@ -287,22 +287,22 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
             key={`${index}-${item.title}`}
             className="rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 overflow-hidden"
             style={{
-              background: 'rgba(255,255,255,0.025)',
+              background: 'rgba(255,255,255,0.92)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(232,130,154,0.14)',
-              boxShadow: '0 8px 40px rgba(232,130,154,0.06), 0 1px 0 rgba(255,255,255,0.04) inset',
+              border: '1px solid rgba(212,104,138,0.14)',
+              boxShadow: '0 8px 40px rgba(212,104,138,0.06)',
             }}
           >
             {/* ── 헤더: 번호 + 제목 + 버튼 ── */}
             <div className="flex items-start gap-3 mb-4">
               <div
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-base font-black text-white"
-                style={{ background: 'linear-gradient(135deg, #e8829a, #c2255c)', boxShadow: '0 4px 16px rgba(232,130,154,0.35)' }}
+                style={{ background: 'linear-gradient(135deg, #d4688a, #c2255c)', boxShadow: '0 4px 16px rgba(212,104,138,0.35)' }}
               >
                 {index + 1}
               </div>
-              <h4 className="flex-1 font-bold tracking-tight break-keep leading-snug text-[17px] md:text-[21px] pt-1.5" style={{ color: '#f5eef2' }}>
+              <h4 className="flex-1 font-bold tracking-tight break-keep leading-snug text-[17px] md:text-[21px] pt-1.5" style={{ color: '#2D1B1E' }}>
                 {cleanTitle}
               </h4>
               {/* 액션 버튼 */}
@@ -314,7 +314,7 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
                     'rounded-full border p-2 transition-all active:scale-95',
                     isCopied
                       ? 'border-green-400/40 bg-green-400/10 text-green-400'
-                      : 'border-white/10 bg-white/5 text-white/40 hover:text-[#e8829a] hover:border-[#e8829a]/30'
+                      : 'border-black/10 bg-black/5 text-black/40 hover:text-[#d4688a] hover:border-[#d4688a]/30'
                   )}
                   aria-label="링크 복사"
                   title="이 결과 링크 복사"
@@ -327,8 +327,8 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
                   className={cn(
                     'rounded-full border p-2 transition-all active:scale-95',
                     isSpeaking
-                      ? 'border-transparent bg-[#e8829a] text-white'
-                      : 'border-white/10 bg-white/5 text-white/40 hover:text-[#e8829a] hover:border-[#e8829a]/30'
+                      ? 'border-transparent bg-[#d4688a] text-white'
+                      : 'border-black/10 bg-black/5 text-black/40 hover:text-[#d4688a] hover:border-[#d4688a]/30'
                   )}
                   aria-label={isSpeaking ? '음성 재생 중지' : '본문 음성 재생'}
                 >
@@ -338,16 +338,16 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
             </div>
 
             {/* ── 핵심 요약 (항상 표시) ── */}
-            <div className="rounded-[1.5rem] px-5 py-4" style={{ background: 'rgba(232,130,154,0.06)', border: '1px solid rgba(232,130,154,0.12)' }}>
-              <div className="text-[15px] font-medium leading-relaxed md:text-[16px] break-keep" style={{ color: isSpeaking ? '#f5eef2' : 'rgba(240,232,238,0.72)' }}>
+            <div className="rounded-[1.5rem] px-5 py-4" style={{ background: 'rgba(212,104,138,0.06)', border: '1px solid rgba(212,104,138,0.12)' }}>
+              <div className="text-[15px] font-medium leading-relaxed md:text-[16px] break-keep" style={{ color: isSpeaking ? '#2D1B1E' : 'rgba(45,27,30,0.72)' }}>
                 {renderParagraph(summaryParagraph)}
               </div>
             </div>
 
             {/* ── 펼쳐지는 나머지 내용 ── */}
             {hasMore && isExpanded && (
-              <div className="mt-3 px-5 py-4 rounded-[1.5rem] space-y-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div className="space-y-3 text-[14px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.6)' }}>
+              <div className="mt-3 px-5 py-4 rounded-[1.5rem] space-y-3" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(45,27,30,0.10)' }}>
+                <div className="space-y-3 text-[14px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(45,27,30,0.6)' }}>
                   {restParagraphs.map((p, i) => (
                     <div key={i}>{renderParagraph(p)}</div>
                   ))}
@@ -361,7 +361,7 @@ export default function AnalysisAccordion({ data }: AnalysisAccordionProps) {
                 type="button"
                 onClick={() => toggleExpand(index)}
                 className="mt-3 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-black transition-all"
-                style={{ color: 'rgba(232,130,154,0.7)' }}
+                style={{ color: 'rgba(212,104,138,0.7)' }}
               >
                 {isExpanded ? (
                   <>접기 <ChevronUp className="w-3.5 h-3.5" /></>
