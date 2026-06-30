@@ -1,17 +1,19 @@
 # Design System — Saju Cheatkey
 
 ## Direction
-**Mystic Feminine Luxury** — 별이 가득한 밤하늘 아래, 나를 위한 럭셔리 웰니스 공간.
-따뜻한 다크 플럼 배경 위에 더스티 로즈 + 소프트 바이올렛 + 티파니 틸 조합.
-Noto Serif KR 헤딩으로 럭셔리/신비로운 감성, 글래스모피즘 카드, 달 장식 모티프.
-타겟: 20-30대 여성 — 게이밍 느낌 제거, 웰니스/럭셔리 K-뷰티 감성 강화.
+**Warm Ivory Luxury** — 밝고 따뜻한 아이보리 위, 나를 위한 럭셔리 웰니스 공간.
+웜 아이보리 배경 위에 더스티 로즈 + 소프트 바이올렛 + 그린 + 소프트 골드 조합.
+Noto Serif KR 헤딩으로 럭셔리/신비로운 감성, 흰 카드 + 컬러 글로우 섀도, 달 장식 모티프.
+타겟: 20-30대 여성 — 밝고 고급스러운 K-뷰티 웰니스 감성.
+(2026-07 다크 플럼 → 라이트 아이보리로 전면 이행. 이전 다크 기준값은 git 히스토리 참고.)
 
 ## Foundation
-- **Background:** #0d0710 (warm dark plum — 보라빛 도는 따뜻한 어두움)
-- **Star color:** #ffeef5 (핑크빛 화이트 별)
-- **Text base:** #f5eef2 (웜 화이트)
-- **Depth:** Shadow-heavy with brand color glow (no neutral gray-only shadows)
-- **Feel:** Glass morphism, aurora orbs, moon crescent decoration, serif headings
+- **Background:** #FBF7F2 (warm ivory)
+- **Card:** #FFFFFF / rgba(255,255,255,0.92) — 흰 카드 + 컬러 글로우 섀도
+- **Text base:** #2D1B1E (deep brown) / 보조 rgba(45,27,30, 0.5~0.78)
+- **Depth:** 흰 카드 + 브랜드 컬러 글로우 섀도(0 8px 24~40px accent/0.08~0.12) + rgba(45,27,30,0.06~0.12) 보더
+- **Feel:** 라이트 글래스(흰 카드), aurora orbs(옅은 로즈/골드/피치), moon crescent, serif headings
+- **배경 컴포넌트:** `components/AuroraBackground.tsx` (다크 CosmicBackground는 이행 완료로 미사용)
 
 ---
 
@@ -39,38 +41,37 @@ full: rounded-full   (pills, pill buttons, scroll indicator)
 ### Colors
 ```
 Background:
-  base:     #0d0710   (warm dark plum)
-  card-bg:  rgba(18,8,16,0.88–0.90)
-  glass:    rgba(255,255,255,0.025)
-  overlay:  rgba(255,255,255,0.035)
+  base:     #FBF7F2   (warm ivory)
+  card:     #FFFFFF / rgba(255,255,255,0.92)
+  card-soft: rgba(255,255,255,0.6–0.85)
+  border:   rgba(45,27,30, 0.08–0.12)
 
 Primary (Dusty Rose — 사주/궁합):
-  사주:     #e8829a   (dusty rose — softer than neon pink)
-  사주-end: #c2255c
-  궁합:     #d4688a
-  궁합-end: #9e1c4e
+  사주/궁합: #d4688a   (dusty rose, 라이트 대비용으로 심화)
+  rose-end: #c2255c
 
 Accent Purple (타로):
-  light:    #c49fff
-  default:  #9d8fff
-  dark:     #534ab7
+  default:  #7c6fd6   (라이트 대비용 심화)
 
-Accent Teal (MBTI):
-  default:  #00e5a0 → #7decc8 (gradient end in hero)
-  dark:     #059669
+Accent Green (MBTI):
+  default:  #0e9f73
+
+Accent Gold:
+  default:  #c2883a (소프트 골드 — 앰버/주의 액센트)
 
 Text:
-  heading:  #f5eef2  (warm white)
-  body:     rgba(240,232,238, 0.66)
-  muted:    rgba(240,232,238, 0.36–0.46)
-  label:    rgba(232,130,154, 0.60–0.72)
+  heading:  #2D1B1E  (deep brown)
+  body:     rgba(45,27,30, 0.7–0.78)
+  muted:    rgba(45,27,30, 0.4–0.55)
+  label:    rgba(212,104,138, 0.6–0.72) (rose)
 
-Glow Opacities:
-  rose:     rgba(232,130,154, 0.07–0.22)
-  purple:   rgba(157,143,255, 0.03–0.20)
-  teal:     rgba(0,229,160,   0.05–0.16)
+Glow / Tint Opacities (흰 카드 위):
+  rose:     rgba(212,104,138, 0.06–0.18)
+  purple:   rgba(124,111,214, 0.06–0.16)
+  green:    rgba(14,159,115,  0.05–0.18)
+  shadow:   rgba(45,27,30,    0.06–0.12)
 
-Star color: #ffeef5 (핑크빛 화이트)
+Sparkle/dust: rgba(185,138,60,0.9) (옅은 골드)
 ```
 
 ### Typography
@@ -224,10 +225,12 @@ modal:       z-[100]–z-[110]
 
 ## Notes
 - **헤딩은 반드시 Noto Serif KR** — 럭셔리/신비 감성의 핵심
-- **배경색 #0d0710** — 절대 #06040f(쿨블랙)으로 되돌리지 말 것
-- **Primary pink = #e8829a** (더스티 로즈) — #ff6eb4(형광 핫핑크) 사용 금지
-- Glass morphism dominant — bg-white/opacity + backdrop-blur
-- Shadows carry color (rose/purple/teal glow) — neutral gray-only 금지
+- **배경색 #FBF7F2(웜 아이보리)** — 순백 #fff 페이지 배경 금지(아이보리 유지). 카드는 흰색 OK.
+- **텍스트는 #2D1B1E(딥브라운)** — 순흑 #000 금지
+- **Primary rose = #d4688a** — 형광 핫핑크 금지. 퍼플 #7c6fd6 / 그린 #0e9f73 / 골드 #c2883a (모두 라이트 대비용 심화값)
+- 흰 카드 + 컬러 글로우 섀도 — neutral gray-only 섀도 금지(브랜드 컬러 glow 포함)
+- 보더는 rgba(45,27,30, 0.08~0.12) 저채도 1px — 흰 위 흰 보더(white/0.1) 금지
 - All-caps labels: tracking-[0.28–0.3em]
-- Star color: #ffeef5 (핑크빛 화이트) — 순백 #fff 사용 금지
 - 달 초승달(MoonCrescent SVG) 히어로 우측 상단 고정 장식
+- **그라디언트 텍스트 주의**: 라이트 배경에선 밝은 끝색(연틸/연퍼플)이 묻힌다 — 끝색을 심화(#0e9f73 등)할 것
+- 다크 잔재 hex(#160c1a, #0d0710 등)를 카드/마스크 배경에 쓰지 말 것
