@@ -1,9 +1,9 @@
 'use client';
 
 import {
-  coerceSajuStructured, coerceGunghapStructured, scrubUserText,
-  TIMING_KEYS, GUNGHAP_TIMING_KEYS,
-  type SajuStructured, type GunghapStructured,
+  coerceSajuStructured, coerceGunghapStructured, coerceSajuReport, scrubUserText,
+  TIMING_KEYS, GUNGHAP_TIMING_KEYS, SAJU_ITEM_KEYS,
+  type SajuStructured, type GunghapStructured, type SajuReport,
 } from './saju-schema';
 
 const SOFT_ERROR_MESSAGE = '운명의 흐름을 정리하는 중입니다. 다시 시도해주세요.';
@@ -239,6 +239,38 @@ export function parseAnalysisSections(value: unknown): ParsedSectionsResult {
     rawText,
     sections: [{ title: '운명의 흐름', content: rawText }],
   };
+}
+
+/**
+ * 점신식 SajuReport 정규화(신규 메인). items가 있는 신버전 JSON이면 SajuReport를 돌려주고,
+ * 화면 노출 전 한자/전문용어를 제거한다. 레거시(sections 결과)면 null → 호출부가 폴백 렌더.
+ */
+export function normalizeSajuReport(value: unknown): SajuReport | null {
+  const report = coerceSajuReport(value);
+  if (!report) return null;
+
+  report.headline = scrubUserText(report.headline);
+  report.keywords = report.keywords.map(scrubUserText).filter(Boolean);
+  report.overall = normalizeLineBreaks(report.overall);
+  for (const k of SAJU_ITEM_KEYS) {
+    report.items[k] = {
+      score: report.items[k].score,
+      body: normalizeLineBreaks(report.items[k].body),
+      tip: scrubUserText(report.items[k].tip),
+    };
+  }
+  if (report.lifeStages) {
+    report.lifeStages = {
+      early: scrubUserText(report.lifeStages.early),
+      middle: scrubUserText(report.lifeStages.middle),
+      late: scrubUserText(report.lifeStages.late),
+      peak: scrubUserText(report.lifeStages.peak),
+    };
+  }
+  report.shinsal = report.shinsal.map((s) => ({ name: scrubUserText(s.name), meaning: normalizeLineBreaks(s.meaning) }));
+  if (report.lucky?.advice) report.lucky.advice = scrubUserText(report.lucky.advice);
+  report.caution = normalizeLineBreaks(report.caution);
+  return report;
 }
 
 export function normalizeSajuAiResult(value: unknown): ParsedSectionsResult {

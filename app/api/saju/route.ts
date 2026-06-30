@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { calculateSaju, GROUP_TRAIT } from '@/lib/saju';
-import { Solar } from 'lunar-javascript';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { streamReport, streamPrebuilt } from '@/lib/ai';
-import { coerceSajuStructured, TIMING_KEYS, scrubUserText } from '@/lib/saju-schema';
+import { coerceSajuReport, SAJU_ITEM_KEYS, scrubUserText } from '@/lib/saju-schema';
 import { buildReportCacheKey, getCachedReport, saveCachedReport } from '@/lib/saju-cache';
 
 export const runtime = 'nodejs';
@@ -14,8 +13,8 @@ const apiKey = process.env.GEMINI_API_KEY;
 // 프롬프트/스키마가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
 // v2: timing 구조화 배열 도입. v3: 십성 종합·신강약 grounding 주입.
 // v4: few-shot 톤 예시 + 한자/전문용어 후필터. v5: scores를 십성·신강약 구조에 근거.
-// v6: lifeStages(생애 흐름) 추가.
-const SAJU_CACHE_VERSION = 'v6';
+// v6: lifeStages(생애 흐름) 추가. v7: 점신식 정통사주 구조로 전면 재설계(항목별 별점/본문/조언+신살풀이).
+const SAJU_CACHE_VERSION = 'v7';
 const SAJU_CACHE_COLLECTION = 'sajuCache';
 
 const STREAM_HEADERS = {
@@ -88,13 +87,6 @@ function getElement(char: string) {
   return '土';
 }
 
-function formatGanZhiContext(gz: string) {
-  const [gan, zhi] = gz.split('');
-  const ganElement = getElement(gan);
-  const zhiElement = getElement(zhi);
-  return describeElementPair(ganElement, zhiElement);
-}
-
 function getKoreanDateParts() {
   const formatter = new Intl.DateTimeFormat('ko-KR', {
     timeZone: 'Asia/Seoul',
@@ -111,23 +103,6 @@ function getKoreanDateParts() {
     todayText: formatter.format(new Date()),
     currentYear: Number(yearFormatter.format(new Date())),
   };
-}
-
-function buildYearlyFlowText(currentYear: number, _currentAge: number) {
-  return Array.from({ length: 10 }, (_, index) => currentYear + index)
-    .map((year) => {
-      const yearGz = Solar.fromYmd(year, 6, 15).getLunar().getYearInGanZhiExact();
-      return `${year}년: ${formatGanZhiContext(yearGz)}`;
-    })
-    .join(' / ');
-}
-
-function buildMonthlyFlowText(currentYear: number) {
-  return Array.from({ length: 12 }, (_, monthIndex) => {
-    const month = monthIndex + 1;
-    const monthGz = Solar.fromYmd(currentYear, month, 15).getLunar().getMonthInGanZhiExact();
-    return `${month}월: ${formatGanZhiContext(monthGz)}`;
-  }).join(' / ');
 }
 
 function buildDaYunText(daYun: any[]) {
@@ -183,39 +158,38 @@ function sanitizeYearRangeText(text: string) {
 }
 
 /**
- * 모델이 출력한 JSON 문자열을 파싱·검증하고, 각 섹션 본문과 caution의 연도 범위 표기를
- * 정리한 뒤 정규화된 JSON 문자열로 돌려준다. (streamReport done 이벤트의 analysis로 저장됨)
- * 파싱 실패 시 원문을 그대로 돌려 레거시 마크다운 렌더 경로로 떨어지게 한다.
+ * 점신식 SajuReport JSON을 파싱·검증하고 연도 범위/한자 누수를 정리한 뒤 정규화 문자열로 돌려준다.
+ * (streamReport done 이벤트의 analysis로 저장됨) 파싱 실패 시 원문을 정리해 폴백 경로로 보낸다.
  */
-function finalizeSajuJson(full: string) {
-  const structured = coerceSajuStructured(full);
-  if (!structured) return scrubUserText(sanitizeYearRangeText(full));
+function finalizeSajuReport(full: string) {
+  const report = coerceSajuReport(full);
+  if (!report) return scrubUserText(sanitizeYearRangeText(full));
 
   const clean = (s: string) => scrubUserText(sanitizeYearRangeText(s));
 
-  structured.headline = scrubUserText(structured.headline);
-  structured.keywords = structured.keywords.map(scrubUserText).filter(Boolean);
-  structured.sections = structured.sections.map((section) => ({
-    title: section.title,
-    content: clean(section.content),
-  }));
-  if (structured.caution) structured.caution = clean(structured.caution);
-  if (structured.lifeStages) {
-    structured.lifeStages = {
-      early: clean(structured.lifeStages.early),
-      middle: clean(structured.lifeStages.middle),
-      late: clean(structured.lifeStages.late),
-      peak: clean(structured.lifeStages.peak),
+  report.headline = scrubUserText(report.headline);
+  report.keywords = report.keywords.map(scrubUserText).filter(Boolean);
+  report.overall = clean(report.overall);
+  for (const k of SAJU_ITEM_KEYS) {
+    report.items[k] = {
+      score: report.items[k].score,
+      body: clean(report.items[k].body),
+      tip: clean(report.items[k].tip),
     };
   }
-  if (structured.lucky?.advice) structured.lucky.advice = scrubUserText(structured.lucky.advice);
-  if (structured.timing) {
-    for (const key of TIMING_KEYS) {
-      structured.timing[key] = structured.timing[key].map((line) => clean(line));
-    }
+  if (report.lifeStages) {
+    report.lifeStages = {
+      early: clean(report.lifeStages.early),
+      middle: clean(report.lifeStages.middle),
+      late: clean(report.lifeStages.late),
+      peak: clean(report.lifeStages.peak),
+    };
   }
+  report.shinsal = report.shinsal.map((s) => ({ name: scrubUserText(s.name), meaning: clean(s.meaning) }));
+  if (report.lucky?.advice) report.lucky.advice = scrubUserText(report.lucky.advice);
+  if (report.caution) report.caution = clean(report.caution);
 
-  return JSON.stringify(structured);
+  return JSON.stringify(report);
 }
 
 export async function POST(req: Request) {
@@ -250,8 +224,6 @@ export async function POST(req: Request) {
     }
 
     const currentAge = calcAge(birthDate, currentYear);
-    const yearlyFlowText = buildYearlyFlowText(currentYear, currentAge);
-    const monthlyFlowText = buildMonthlyFlowText(currentYear);
     const daYunText = buildDaYunText(sajuData.daYun);
     const daYunRangeText = buildDaYunRangeText(sajuData.daYun, currentYear, currentAge);
 
@@ -300,8 +272,8 @@ export async function POST(req: Request) {
 
       [말투·형식 예시 - 톤과 흐름만 참고하고 내용은 절대 베끼지 마라]
       - headline 예: "너는 마른 들판의 불씨다. 불붙으면 크게 번지지만, 바람이 없으면 혼자 꺼진다."
-      - timing 한 줄 예: "2027년: 판을 키우기 좋은 해 | 근거: 너를 밀어주는 기운이 들어온다 | 행동: 미뤄둔 제안을 먼저 꺼내라"
-      - 섹션 문장 흐름 예: "너는 시작은 빠른데 마무리 전에 마음이 먼저 식는다(왜). 그래서 일이 늘 끝의 문턱에서 멈춘다(현실). 마감을 사람에게 공개하면 끝까지 간다(활용). 다만 새 자극이 오면 또 갈아타니 그걸 경계해라(함정)."
+      - 항목 body 흐름 예: "너는 시작은 빠른데 마무리 전에 마음이 먼저 식는다(왜). 그래서 일이 늘 끝의 문턱에서 멈춘다(현실). 마감을 사람에게 공개하면 끝까지 간다(활용). 다만 새 자극이 오면 또 갈아타니 그걸 경계해라(함정)."
+      - tip 예: "큰일은 혼자 끌지 말고 마무리 담당을 옆에 둬라."
 
       [근거 사용 - 개인화의 핵심]
       1. 아래 사주 데이터에 근거해서만 해석해라. 누구에게나 들어맞는 일반론은 실패다.
@@ -324,26 +296,20 @@ export async function POST(req: Request) {
       - 핵심 신살: ${shinsalText}
       - 10년 주기 흐름: ${daYunText}
       - 10년 주기 상세 구간: ${daYunRangeText}
-      - ${currentYear}년 월별 흐름 참고값: ${monthlyFlowText}
-      - 향후 10년 연도별 흐름 참고값: ${yearlyFlowText}
 
       [출력 JSON 스키마 - 이 형태만 출력]
       {
         "headline": "한 줄로 끊는 후킹 요약(해라체). 예: '너는 불씨를 키워 큰불로 만드는 사람이다.'",
         "keywords": ["기질 키워드 3~5개. 예: 추진력, 직관, 뒷심부족"],
-        "scores": { "총운": 4, "직업운": 4.5, "재물운": 3.5, "애정운": 4, "건강운": 3, "대인관계": 4 },
-        "sections": [ 아래 8개 섹션 객체 ],
-        "timing": {
-          "daeunExpansion": ["대운 확장 구간 2개"],
-          "daeunMaintenance": ["대운 정비·축적 구간 2개"],
-          "daeunCaution": ["대운 주의 구간 2개"],
-          "daeunDecisions": ["인생 중요 결정 포인트 3개"],
-          "wealthGoodYears": ["재물운 좋은 해 3개"],
-          "wealthCautionYears": ["지출 주의 해 3개"],
-          "monthlyGrowth": ["${currentYear}년 일·성장에 좋은 달 3개"],
-          "monthlyMoney": ["${currentYear}년 돈 관리에 유리한 달 2개"],
-          "monthlyCaution": ["${currentYear}년 컨디션·감정 관리가 필요한 달 3개"],
-          "monthlyActions": ["이번 시기에 바로 할 일 3개"]
+        "overallScore": 4,
+        "overall": "평생 총운 한 단락(6~9줄). 일간·오행·신강약을 근거로 이 사람 인생 전체를 관통하는 결을 단정해라.",
+        "items": {
+          "personality": { "score": 4, "body": "성격·기질운 본문 5~8줄", "tip": "한 줄 실천 조언" },
+          "wealth":      { "score": 3.5, "body": "재물운 본문 5~8줄", "tip": "한 줄 실천 조언" },
+          "career":      { "score": 4, "body": "직업·사업운 본문 5~8줄", "tip": "한 줄 실천 조언" },
+          "love":        { "score": 4, "body": "애정·결혼운 본문 5~8줄", "tip": "한 줄 실천 조언" },
+          "health":      { "score": 3, "body": "건강운 본문 5~8줄", "tip": "한 줄 실천 조언" },
+          "relationship":{ "score": 4, "body": "대인관계운 본문 5~8줄", "tip": "한 줄 실천 조언" }
         },
         "lifeStages": {
           "early": "초년(태어나 20대까지) 흐름 2~3문장(해라체)",
@@ -351,58 +317,33 @@ export async function POST(req: Request) {
           "late": "말년(50대 이후) 흐름 2~3문장(해라체)",
           "peak": "인생이 가장 크게 피는 시기를 한 줄로 단정(해라체)"
         },
+        "shinsal": [ { "name": "천을귀인", "meaning": "이 신살이 네 삶에서 뜻하는 바를 해라체로 2~3문장" } ],
         "lucky": { "numbers": [3, 7], "color": "남색", "direction": "동쪽", "advice": "부족한 기운을 채우는 개운 한 줄(해라체)" },
         "caution": "강점이 과해질 때 손해 보는 패턴을 냉정하게 짚는 한 단락(해라체)"
       }
 
-      [scores 규칙] 0~5 사이, 0.5 단위. 모두 높게 주지 마라. 위 구조에 근거해 차등을 둬라.
-      - 재물운: 재성이 강하고 신강이면 높게, 재성이 없거나 신약이면 낮게.
-      - 직업운: 관성(책임·통제)이 안정적이면 높게, 관성이 과하거나 비면 낮게.
-      - 대인관계: 식상(표현)·비겁(사교)이 받쳐주면 높게, 한쪽으로 치우치면 낮게.
-      - 건강운: 오행이 고르면 높게, 한 오행이 0이거나 한쪽으로 심하게 쏠리면 낮게.
-      - 애정운/총운: 위 항목과 신강약을 종합해 정하되, 약한 구조면 총운도 솔직히 낮춰라.
+      [items 규칙 - 결과의 핵심. 6개 항목을 모두, 이 키 그대로 채워라]
+      - 각 body는 5~8줄. "왜 그런지(근거) → 현실에서 어떻게 나타나는지 → 좋게 쓰는 법 → 조심할 함정" 흐름. 한 문장 끝나면 줄을 바꿔라(가독성).
+      - 항목마다 서로 다른 데이터를 근거로 다른 판단을 내려라. 얕은 칭찬·복붙 금지.
+      - tip은 당장 실천 가능한 한 줄.
+      - personality: 십성 최강 축으로 기질을 단정.
+      - wealth: 재성+신강이면 돈길이 넓다, 재성 약/신약이면 새기 쉽다. 계약·부업·지출 같은 생활 단어로.
+      - career: 관성(책임·통제)과 식상(표현)으로 일하는 방식과 커리어 전략을.
+      - love: 관계에서 끌리는 결과 어긋나는 지점을. 연애·결혼 단정은 피하고 선택 여지는 남겨라.
+      - health: 질병 단정 금지. 오행 균형으로 에너지 소모 패턴·회복 루틴을.
+      - relationship: 식상·비겁으로 사람 대하는 방식과 조심할 점을.
+
+      [score 규칙] 각 item.score와 overallScore는 0~5, 0.5 단위. 모두 높게 주지 마라. 위 구조에 근거해 차등을 둬라.
+      - wealth: 재성 강+신강이면 높게, 재성 0/신약이면 낮게. career: 관성 안정이면 높게, 과하거나 비면 낮게.
+      - relationship: 식상·비겁이 받치면 높게. health: 오행 고르면 높게, 한 오행 0/심한 쏠림이면 낮게.
+      - overallScore: 6개 항목과 신강약을 종합. 약한 구조면 솔직히 낮춰라.
 
       [lifeStages 규칙 - 점신식 생애 흐름 서사]
       - 대운 흐름(${daYunRangeText})에 근거해 초년→중년→말년의 큰 흐름을 단정해라. 막연한 일반론 금지.
       - peak는 "너의 전성기는 40대 중반부터 50대 초반이다." 처럼 가장 크게 피는 시기를 대운 근거로 한 줄 단정.
       - 좋게만 쓰지 말고 단계마다 강점과 조심할 점을 함께 담아라. 전문용어·한자 금지.
 
-      [timing 규칙 - 화면 카드로 바로 쓰임, 매우 중요]
-      - 각 배열의 원소는 한 줄 문자열이며 형식은 "라벨: 핵심 | 근거: ... | 행동: ..." 다.
-      - 연도형(daeun*, wealth*): "2028년: 수입을 넓히기 좋은 해 | 근거: ... | 행동: ..." 처럼 개별 연도로 시작해라. 연도를 범위(~, -)로 묶지 마라.
-      - 월형(monthly*): "3월: 새 일을 키우기 좋은 달 | 근거: ... | 행동: ..." 처럼 개별 월로 시작해라.
-      - monthlyActions는 라벨 없이 "지금 바로 할 일" 한 줄씩 짧게 써도 된다.
-      - 근거는 사주 데이터(오행·대운·흐름)에 붙여라. 모든 구간을 좋다고 하지 말고 좋음/주의를 섞어라.
-      - 위 sections 본문과 내용이 겹쳐도 되지만, timing 배열은 반드시 채워라. 화면 핵심 카드가 이 배열로 그려진다.
-
-      [sections 규칙 - 정확히 아래 8개를, 이 title 그대로, 이 순서로]
-      각 섹션 객체는 { "title": "...", "content": "..." } 형태다.
-      content는 줄바꿈(\\n\\n)으로 문단을 나눈 문자열이다. 한 문장이 끝나면 줄을 바꿔라(스낵 컬처 가독성).
-      핵심 항목은 글머리기호(✅, 💡, 📌)로 3~4개 요약하는 구간을 각 섹션에 넣어라.
-      각 섹션은 6~9줄. 얕은 칭찬 금지. "왜 그런지(근거) → 현실에서 어떻게 나타나는지 → 좋게 쓰는 법 → 조심할 함정" 흐름을 담아라.
-
-      1) "title": "🧭 핵심 운세 브리핑"
-         - 지금 가장 먼저 알아야 할 결론을 단정해라.
-      2) "title": "🪞 타고난 기질과 생활 패턴"
-         - 나도 몰랐던 진짜 성향. "시작은 빠른데 마무리 전에 마음이 먼저 지친다" 같은 관찰 문장을 넣어라.
-      3) "title": "🚀 향후 대운 10년 인생 타이밍"
-         - ${daYunRangeText} 를 기준으로 미래 10년을 비교해 풀어라.
-         - 모든 구간을 좋다고 하지 마라. 등급(확장/축적/정비/주의)을 나눠라.
-         - 연도는 범위(~, -)로 묶지 말고 "2028년, 2029년"처럼 개별 연도로 써라.
-         - 투자종목/로또/코인 대박 같은 확정 표현 금지. (구간별 한 줄 요약은 위 timing 배열에 따로 채운다.)
-      4) "title": "💼 직업운과 성장운"
-         - 내가 빛나는 일의 방식과 커리어 전략. 좋은 해/주의 해/추천 행동/피해야 할 행동을 담아라.
-      5) "title": "💰 재물운과 현실적인 돈 관리"
-         - 돈이 들어오는 흐름과 새는 흐름을 사주 근거로 짚어라.
-         - 계약, 이직, 성과급, 부업, 지출 정리 같은 생활 단어로 현실적으로 써라.
-         - 돈을 쌓는 방법 3가지를 글머리기호로 정리해라. (연도별 좋은 해/주의 해는 위 timing 배열에 채운다.)
-      6) "title": "📅 ${currentYear}년 월별 운세 캘린더"
-         - 올해 흐름을 월 단위로 풀되 좋음/보통/주의를 섞어라.
-         - 개별 월("3월")로 짚고 범위로 묶지 마라. (월별 좋은 달/주의 달/바로 할 일은 위 timing 배열에 채운다.)
-      7) "title": "🌙 컨디션과 회복 루틴"
-         - 질병 단정 금지. 에너지 소모 패턴, 수면/루틴/과로 주의, 회복 루틴을 현실적으로.
-      8) "title": "📸 인스타 스토리 요약"
-         - 후킹 한 문장 비유(해라체) + 핵심 특징 3가지(💡/✅) + 마지막에 바이럴 한 줄.
+      [shinsal 규칙] 위 '핵심 신살'에 적힌 신살 각각을 name(그 이름)과 meaning(그 신살이 이 사람 삶에서 뜻하는 바, 해라체 2~3문장)으로 풀어라. '특별한 신살 없음'이면 빈 배열 []로 둬라. 한자 금지.
 
       [최종] 위 JSON 객체 하나만 출력해라. 첫 글자는 '{', 마지막 글자는 '}' 여야 한다.
     `;
@@ -411,10 +352,10 @@ export async function POST(req: Request) {
       prompt,
       openai: { model: 'gpt-5-mini', maxTokens: 16000, reasoningEffort: 'low', json: true },
       geminiModels: [model, fallbackModel],
-      postProcess: finalizeSajuJson,
-      // 구조화 JSON으로 정상 생성된 경우에만 캐시에 저장(폴백 마크다운은 캐싱하지 않음).
+      postProcess: finalizeSajuReport,
+      // 점신식 리포트(items 포함)로 정상 생성된 경우에만 캐시에 저장.
       onComplete: async (analysis) => {
-        if (coerceSajuStructured(analysis)) {
+        if (coerceSajuReport(analysis)) {
           await saveCachedReport(SAJU_CACHE_COLLECTION, cacheKey, analysis, {
             version: SAJU_CACHE_VERSION,
             year: currentYear,

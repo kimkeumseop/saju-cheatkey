@@ -8,13 +8,12 @@ import Navbar from '@/components/Navbar';
 import CosmicBackground from '@/components/CosmicBackground';
 import AnalysisAccordion from '@/components/AnalysisAccordion';
 import ShareButtons from '@/components/ShareButtons';
-import InstaStoryButton from '@/components/InstaStoryButton';
 import GungHapPreview from '@/components/GungHapPreview';
 import GungHapInputModal from '@/components/GungHapInputModal';
-import { Loader2, BarChart3, Star, History, Moon, Heart, CircleDollarSign, AlertTriangle, CheckCircle2, CalendarDays, TrendingUp } from 'lucide-react';
+import { Loader2, BarChart3, Star, History, Moon, Heart, CircleDollarSign, AlertTriangle, TrendingUp, Sparkles, Activity, Users } from 'lucide-react';
 import { ELEMENT_STYLE } from '@/lib/saju';
-import { normalizeSajuAiResult } from '@/lib/ai-result';
-import { SCORE_KEYS, type SajuStructured, type SajuTiming, type SajuScores, type SajuLifeStages } from '@/lib/saju-schema';
+import { normalizeSajuAiResult, normalizeSajuReport } from '@/lib/ai-result';
+import { SAJU_ITEM_LABELS, type SajuReport, type SajuItem, type SajuItemKey, type SajuShinsalReading, type SajuLifeStages } from '@/lib/saju-schema';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -165,77 +164,6 @@ type BriefingSection = {
   content: string;
 };
 
-function normalizeContentLines(content = '') {
-  return content
-    .replace(/\\n\\n/g, '\n\n')
-    .replace(/\\n/g, '\n')
-    .replace(/\r\n/g, '\n')
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
-function cleanInsightLine(line: string) {
-  return line
-    .replace(/^#+\s*/, '')
-    .replace(/\*\*/g, '')
-    .replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\-*•\s]+/u, '')
-    .replace(/^\d+[.)]\s+/u, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-}
-
-function findReportSection(sections: BriefingSection[], titleWords: string[], contentWords: string[] = []) {
-  return sections.find((section) => {
-    const title = section.title.replace(/\s/g, '');
-    const content = section.content.replace(/\s/g, '');
-    return titleWords.some((word) => title.includes(word.replace(/\s/g, ''))) ||
-      contentWords.some((word) => content.includes(word.replace(/\s/g, '')));
-  });
-}
-
-function getUsefulLines(section: BriefingSection | undefined, max = 3) {
-  if (!section) return [];
-  return normalizeContentLines(section.content)
-    .map(cleanInsightLine)
-    .filter((line) => line.length >= 8 && !line.includes('가지') && !line.endsWith(':'))
-    .slice(0, max);
-}
-
-function getBlockLines(section: BriefingSection | undefined, startWords: string[], stopWords: string[], max = 3) {
-  if (!section) return [];
-  const lines = normalizeContentLines(section.content);
-  const startIndex = lines.findIndex((line) => startWords.some((word) => line.includes(word)));
-  const scanLines = startIndex >= 0 ? lines.slice(startIndex + 1) : lines;
-  const picked: string[] = [];
-
-  for (const rawLine of scanLines) {
-    const isNextBlock = picked.length > 0 && stopWords.some((word) => rawLine.includes(word));
-    if (isNextBlock) break;
-
-    const line = cleanInsightLine(rawLine);
-    if (!line || line.length < 8 || startWords.some((word) => line.includes(word))) continue;
-    if (line.endsWith(':')) continue;
-
-    picked.push(line);
-    if (picked.length >= max) break;
-  }
-
-  return picked;
-}
-
-function extractMonths(lines: string[]) {
-  const months = new Set<number>();
-  lines.forEach((line) => {
-    const matches = line.matchAll(/(\d{1,2})\s*월/g);
-    Array.from(matches).forEach((match) => {
-      const month = Number(match[1]);
-      if (month >= 1 && month <= 12) months.add(month);
-    });
-  });
-  return months;
-}
-
 function isLowPrioritySajuSection(section: BriefingSection) {
   const title = section.title.replace(/\s/g, '');
   return title.includes('연애운') ||
@@ -252,337 +180,20 @@ function isSajuOverviewSection(section: BriefingSection) {
     title.includes('가장먼저알아야할결론');
 }
 
-function SajuBriefingPanel({ sections, userName, currentYear, timing }: { sections: BriefingSection[]; userName: string; currentYear: number; timing?: SajuTiming | null }) {
-  // timing(신버전 구조화 배열)이 있으면 그 값을 최우선으로 쓰고, 없으면 아래 정규식 스크래핑으로 폴백한다.
-  const t = timing && timing.daeunExpansion ? timing : null;
-  const pick = (timingArr: string[] | undefined, fallback: string[]) =>
-    timingArr && timingArr.length > 0 ? timingArr : fallback;
-  const daeyunSection = findReportSection(sections, ['향후대운10년인생타이밍', '대운10년인생타이밍', '향후대운10년돈타이밍'], ['확장 구간', '정비 구간', '주의 구간']);
-  const yearlyCalendarSection = findReportSection(sections, [`${currentYear}년월별운세캘린더`, '월별운세캘린더'], ['일과 성장에 좋은 구간', '컨디션과 감정 관리']);
-  const moneyTimingSection = yearlyCalendarSection || findReportSection(sections, [`${currentYear}년돈이움직이는시기표`, '돈이움직이는시기표', '돈들어오는시기'], ['돈이 들어오기 쉬운 구간', '지출과 손실']);
-  const wealthSection = findReportSection(sections, ['재물운', '지갑', '돈'], ['재물 포인트', '수입']);
-  const careerSection = findReportSection(sections, ['직업운', '성장운', '커리어']);
-  const recoverySection = findReportSection(sections, ['컨디션과회복루틴', '회복루틴', '컨디션']);
-  const yearSection = yearlyCalendarSection || findReportSection(sections, [`${currentYear}년`, '운세흐름', '럭키포인트']);
-  const natureSection = findReportSection(sections, ['기질', '본성', '진짜모습']);
-
-  const daeyunExpandLines = getBlockLines(
-    daeyunSection,
-    ['확장 구간', '승부'],
-    ['정비 구간', '주의 구간', '중요 결정', '인생 의사결정'],
-    2
-  );
-  const daeyunMaintenanceLines = getBlockLines(
-    daeyunSection,
-    ['정비 구간', '축적'],
-    ['주의 구간', '중요 결정', '확장 구간'],
-    2
-  );
-  const daeyunCautionLines = getBlockLines(
-    daeyunSection,
-    ['주의 구간', '손실 주의 구간', '주의'],
-    ['중요 결정', '인생 의사결정', '확장 구간', '정비 구간'],
-    2
-  );
-  const daeyunDecisionLines = getBlockLines(
-    daeyunSection,
-    ['중요 결정 포인트', '인생 의사결정 포인트', '의사결정'],
-    ['확장 구간', '정비 구간', '주의 구간'],
-    3
-  );
-  const daeyunYearLines = getBlockLines(
-    daeyunSection,
-    ['연도별 체크포인트'],
-    ['확장 구간', '정비 구간', '주의 구간', '중요 결정'],
-    3
-  );
-
-  const careerLines = getBlockLines(
-    yearlyCalendarSection,
-    ['일과 성장에 좋은 구간'],
-    ['돈 관리에 유리한 구간', '컨디션과 감정 관리', '바로 할 일'],
-    3
-  );
-  const opportunityLines = getBlockLines(
-    moneyTimingSection,
-    ['돈 관리에 유리한 구간', '돈이 들어오기 쉬운', '기회가 커지는', '승부 구간'],
-    ['컨디션과 감정 관리', '지출과 손실', '조심할 구간', '바로 할 일', '확장 방식'],
-    2
-  );
-  const wealthGoodYearLines = getBlockLines(
-    wealthSection,
-    ['재물운 좋은 해', '수입 확장에 좋은 해'],
-    ['지출 주의 해', '돈을 쌓는 방법'],
-    3
-  );
-  const wealthCautionYearLines = getBlockLines(
-    wealthSection,
-    ['지출 주의 해'],
-    ['돈을 쌓는 방법', '재물운 좋은 해', '수입 확장에 좋은 해'],
-    3
-  );
-  const cautionLines = getBlockLines(
-    moneyTimingSection,
-    ['컨디션과 감정 관리', '지출과 손실', '조심할 구간', '주의'],
-    ['바로 할 일', '돈이 들어오기', '돈 관리에 유리한', '확장 방식'],
-    3
-  );
-  const actionLines = getBlockLines(
-    moneyTimingSection,
-    ['바로 할 일', '지금 할 일', '액션'],
-    ['돈이 들어오기', '지출과 손실', '확장 방식'],
-    3
-  );
-  const winLines = getBlockLines(
-    moneyTimingSection,
-    ['확장 방식', '승부 구간', '승부 방식'],
-    ['지출과 손실', '조심할 구간', '바로 할 일'],
-    2
-  );
-
-  const moneyFallback = getUsefulLines(wealthSection, 3);
-  const careerFallback = getUsefulLines(careerSection, 3);
-  const recoveryFallback = getUsefulLines(recoverySection, 3);
-  const yearFallback = getUsefulLines(yearSection, 3);
-  const natureFallback = getUsefulLines(natureSection, 2);
-
-  const opportunities = pick(t?.wealthGoodYears, wealthGoodYearLines.length > 0 ? wealthGoodYearLines : (opportunityLines.length > 0 ? opportunityLines : (moneyFallback.length > 0 ? moneyFallback : yearFallback)));
-  const cautions = pick(t?.wealthCautionYears, wealthCautionYearLines.length > 0 ? wealthCautionYearLines : (cautionLines.length > 0 ? cautionLines : yearFallback.slice(0, 3)));
-  const actions = pick(t?.monthlyActions, actionLines.length > 0 ? actionLines : [
-    `${currentYear}년 일정표에 수입 목표와 큰 지출 예정일을 먼저 적어두세요.`,
-    '중요한 제안이나 계약은 조건, 일정, 내 컨디션을 함께 확인하세요.',
-    '조심 구간에는 충동 지출보다 정산과 기록을 우선해보세요.',
-  ]);
-  const wins = winLines.length > 0 ? winLines : [
-    '무리하게 판을 키우기보다 잘하는 일을 반복 가능한 구조로 바꾸는 쪽이 좋아요.',
-    '성과 정리, 역할 조정, 루틴 재설계처럼 결과가 남는 움직임에 힘을 주세요.',
-  ];
-  const daeyunWins = pick(t?.daeunExpansion, daeyunExpandLines.length > 0 ? daeyunExpandLines : wins);
-  const daeyunMaintenance = pick(t?.daeunMaintenance, daeyunMaintenanceLines.length > 0 ? daeyunMaintenanceLines : (careerFallback.length > 0 ? careerFallback.slice(0, 2) : wins));
-  const daeyunRisks = pick(t?.daeunCaution, daeyunCautionLines.length > 0 ? daeyunCautionLines : cautions.slice(0, 2));
-  const daeyunDecisions = pick(t?.daeunDecisions, daeyunYearLines.length > 0 ? daeyunYearLines : (daeyunDecisionLines.length > 0 ? daeyunDecisionLines : actions));
-  const careerBrief = pick(t?.monthlyGrowth, careerLines.length > 0 ? careerLines : (careerFallback.length > 0 ? careerFallback : yearFallback));
-  const recoveryBrief = pick(t?.monthlyCaution, recoveryFallback.length > 0 ? recoveryFallback : cautions);
-
-  // 캘린더 월 신호: timing이 있으면 월 단위 배열에서 추출(연도형 opportunities에는 월이 없음).
-  const opportunityMonths = extractMonths(t ? [...t.monthlyGrowth, ...t.monthlyMoney] : opportunities);
-  const cautionMonths = extractMonths(t ? t.monthlyCaution : cautions);
-  const hasMonthSignals = opportunityMonths.size > 0 || cautionMonths.size > 0;
-  const quickHeadline = natureFallback[0] || `${userName}님의 운세는 밀어붙일 때와 쉬어야 할 때를 나누는 것이 핵심이에요.`;
-
-  const monthTone = (month: number) => {
-    if (opportunityMonths.has(month)) return { label: '기회', color: '#00d18f', bg: 'rgba(0,209,143,0.10)', border: 'rgba(0,209,143,0.26)' };
-    if (cautionMonths.has(month)) return { label: '주의', color: '#ffb86b', bg: 'rgba(255,184,107,0.10)', border: 'rgba(255,184,107,0.28)' };
-    return { label: '점검', color: 'rgba(240,232,238,0.38)', bg: 'rgba(255,255,255,0.025)', border: 'rgba(255,255,255,0.08)' };
-  };
-
-  return (
-    <section className="space-y-5">
-      <div className="flex items-start justify-between gap-4 px-1">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: '#00d18f' }}>
-            <TrendingUp className="w-4 h-4" />
-            First Check
-          </div>
-          <h3 className="text-2xl md:text-3xl font-bold tracking-tight break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
-            먼저 보는 핵심 브리핑
-          </h3>
-          <p className="text-sm md:text-base font-medium leading-relaxed break-keep max-w-2xl" style={{ color: 'rgba(240,232,238,0.58)' }}>
-            {quickHeadline}
-          </p>
-        </div>
-        <div className="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl" style={{ background: 'rgba(0,209,143,0.10)', border: '1px solid rgba(0,209,143,0.22)' }}>
-          <CircleDollarSign className="w-6 h-6" style={{ color: '#00d18f' }} />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <BriefingCard
-          icon={<TrendingUp className="w-5 h-5" />}
-          label="대운"
-          title="향후 10년 확장 구간"
-          lines={daeyunWins}
-          accent="#9d8fff"
-        />
-        <BriefingCard
-          icon={<CheckCircle2 className="w-5 h-5" />}
-          label="정비"
-          title="차분히 다듬을 구간"
-          lines={daeyunMaintenance}
-          accent="#00d18f"
-        />
-        <BriefingCard
-          icon={<CalendarDays className="w-5 h-5" />}
-          label="결정"
-          title="인생 의사결정 포인트"
-          lines={daeyunDecisions}
-          accent="#e8829a"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <BriefingCard
-          icon={<TrendingUp className="w-5 h-5" />}
-          label="일"
-          title={`${currentYear}년 성장 포인트`}
-          lines={careerBrief}
-          accent="#9d8fff"
-        />
-        <BriefingCard
-          icon={<CircleDollarSign className="w-5 h-5" />}
-          label="돈"
-          title="재물운 좋은 해"
-          lines={opportunities}
-          accent="#00d18f"
-        />
-        <BriefingCard
-          icon={<AlertTriangle className="w-5 h-5" />}
-          label="컨디션"
-          title="무리하면 흔들리는 지점"
-          lines={recoveryBrief}
-          accent="#ffb86b"
-        />
-      </div>
-
-      {hasMonthSignals && (
-        <div className="rounded-[2rem] p-5 md:p-6 space-y-4" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <div className="flex items-center gap-2">
-            <CalendarDays className="w-5 h-5" style={{ color: '#9d8fff' }} />
-            <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>{currentYear} 운세 캘린더</h4>
-          </div>
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-2">
-            {Array.from({ length: 12 }, (_, index) => {
-              const month = index + 1;
-              const tone = monthTone(month);
-              return (
-                <div
-                  key={month}
-                  className="min-h-16 rounded-2xl border px-2 py-3 text-center flex flex-col items-center justify-center gap-1"
-                  style={{ background: tone.bg, borderColor: tone.border }}
-                >
-                  <span className="text-sm font-black" style={{ color: '#f5eef2' }}>{month}월</span>
-                  <span className="text-[10px] font-black" style={{ color: tone.color }}>{tone.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <BriefingCard
-          icon={<AlertTriangle className="w-5 h-5" />}
-          label="주의"
-          title="조심해야 할 구간"
-          lines={daeyunRisks.length ? daeyunRisks : cautions}
-          accent="#ffb86b"
-        />
-        <BriefingCard
-          icon={<CheckCircle2 className="w-5 h-5" />}
-          label="액션"
-          title="지금 바로 할 일"
-          lines={actions}
-          accent="#e8829a"
-        />
-      </div>
-    </section>
-  );
-}
-
-function BriefingCard({ icon, label, title, lines, accent }: { icon: ReactNode; label: string; title: string; lines: string[]; accent: string }) {
-  const displayLines = lines
-    .map((line) => cleanInsightLine(line))
-    .filter((line) => line.length >= 6)
-    .filter((line) => !/^년\s*[:：]/.test(line))
-    .slice(0, 3);
-
-  const describeTiming = (value: string, unit: 'year' | 'month') => {
-    const suffix = unit === 'year' ? '해예요' : '달이에요';
-    if (value.includes('확장')) return `밀어붙이고 넓히기 좋은 ${suffix}`;
-    if (value.includes('성장')) return `새 일을 키우기 좋은 ${suffix}`;
-    if (value.includes('정비')) return `정리하고 다듬어야 하는 ${suffix}`;
-    if (value.includes('축적')) return `차분히 쌓아두기 좋은 ${suffix}`;
-    if (value.includes('주의')) return `무리하지 말고 점검해야 하는 ${suffix}`;
-    if (value.includes('결정')) return `중요한 선택을 점검하기 좋은 ${suffix}`;
-    if (value.includes('수입')) return `수입 흐름을 만들기 좋은 ${suffix}`;
-    if (value.includes('지출')) return `지출을 조심해야 하는 ${suffix}`;
-    return value;
-  };
-
-  const formatTimingHeadline = (value: string) => {
-    const yearMatch = value.match(/^(\d{4})년\s*:\s*(.+)$/);
-    if (yearMatch) {
-      return `${yearMatch[1]}년은 ${describeTiming(yearMatch[2], 'year')}`;
-    }
-
-    const monthMatch = value.match(/^(\d{1,2})월\s*:\s*(.+)$/);
-    if (monthMatch) {
-      return `${monthMatch[1]}월은 ${describeTiming(monthMatch[2], 'month')}`;
-    }
-
-    return value;
-  };
-
-  const formatTimingDetail = (value: string) => value
-    .replace(/^근거\s*:\s*/, '좋은 이유: ')
-    .replace(/^왜\s*이렇게\s*보나요\s*:\s*/, '좋은 이유: ')
-    .replace(/^행동\s*:\s*/, '추천 행동: ')
-    .replace(/^추천\s*행동\s*:\s*/, '추천 행동: ');
-
-  return (
-    <article
-      className="rounded-[2rem] p-5 md:p-6 min-h-[13rem] flex flex-col gap-4"
-      style={{
-        background: 'rgba(255,255,255,0.025)',
-        border: `1px solid ${accent}33`,
-        boxShadow: `0 8px 32px ${accent}12, 0 1px 0 rgba(255,255,255,0.04) inset`,
-      }}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-2xl flex items-center justify-center" style={{ background: `${accent}18`, color: accent }}>
-            {icon}
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.22em]" style={{ color: accent }}>{label}</span>
-        </div>
-      </div>
-      <h4 className="text-lg font-bold leading-snug break-keep" style={{ color: '#f5eef2' }}>{title}</h4>
-      <div className="space-y-2.5">
-        {(displayLines.length > 0 ? displayLines : ['리포트 내용을 다시 정리하는 중이에요.']).map((line, index) => {
-          const [headline = line, ...details] = line.split('|').map((part) => part.trim()).filter(Boolean);
-          return (
-            <div key={`${title}-${index}`} className="space-y-1.5 rounded-2xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <p className="text-[13px] md:text-sm font-black leading-relaxed break-keep" style={{ color: 'rgba(245,238,242,0.86)' }}>
-                <span style={{ color: accent }}>{index + 1}. </span>
-                {formatTimingHeadline(headline)}
-              </p>
-              {details.slice(0, 2).map((detail, detailIndex) => (
-                <p key={`${title}-${index}-${detailIndex}`} className="text-[12px] md:text-[13px] font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.56)' }}>
-                  {formatTimingDetail(detail)}
-                </p>
-              ))}
-            </div>
-          );
-        })}
-      </div>
-    </article>
-  );
-}
-
 // ── 운세 점수 육각 레이더 차트 ────────────────────────────────────
-function ScoreRadar({ scores }: { scores: SajuScores }) {
-  const keys = SCORE_KEYS; // 6축
+function Radar({ entries }: { entries: { label: string; value: number }[] }) {
+  const n = entries.length || 6;
   const W = 340, H = 290, cx = 170, cy = 145, R = 92, labelR = R + 22;
   const levels = [0.25, 0.5, 0.75, 1];
   const clamp = (v: number) => Math.max(0, Math.min(5, v ?? 0));
 
-  const angleFor = (i: number) => (-90 + i * (360 / keys.length)) * (Math.PI / 180);
+  const angleFor = (i: number) => (-90 + i * (360 / n)) * (Math.PI / 180);
   const pt = (i: number, r: number): [number, number] => {
     const a = angleFor(i);
     return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
   };
-  const ring = (ratio: number) => keys.map((_, i) => pt(i, R * ratio).join(',')).join(' ');
-  const valuePoly = keys.map((k, i) => pt(i, R * (clamp(scores[k]) / 5)).join(',')).join(' ');
+  const ring = (ratio: number) => entries.map((_, i) => pt(i, R * ratio).join(',')).join(' ');
+  const valuePoly = entries.map((e, i) => pt(i, R * (clamp(e.value) / 5)).join(',')).join(' ');
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-[340px] mx-auto" role="img" aria-label="운세 점수 레이더 차트">
@@ -595,27 +206,104 @@ function ScoreRadar({ scores }: { scores: SajuScores }) {
       {levels.map((lv) => (
         <polygon key={lv} points={ring(lv)} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={1} />
       ))}
-      {keys.map((_, i) => {
+      {entries.map((_, i) => {
         const [x, y] = pt(i, R);
         return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgba(255,255,255,0.07)" strokeWidth={1} />;
       })}
       <polygon points={valuePoly} fill="url(#radarFill)" stroke="#c8bdff" strokeWidth={2} strokeLinejoin="round" />
-      {keys.map((k, i) => {
-        const [x, y] = pt(i, R * (clamp(scores[k]) / 5));
-        return <circle key={k} cx={x} cy={y} r={3.5} fill="#e8829a" />;
+      {entries.map((e, i) => {
+        const [x, y] = pt(i, R * (clamp(e.value) / 5));
+        return <circle key={e.label} cx={x} cy={y} r={3.5} fill="#e8829a" />;
       })}
-      {keys.map((k, i) => {
+      {entries.map((e, i) => {
         const [lx, ly] = pt(i, labelR);
         const cos = Math.cos(angleFor(i));
         const anchor = Math.abs(cos) < 0.35 ? 'middle' : cos > 0 ? 'start' : 'end';
         return (
-          <g key={k}>
-            <text x={lx} y={ly - 3} textAnchor={anchor} fontSize={12} fontWeight={800} fill="rgba(240,232,238,0.6)">{k}</text>
-            <text x={lx} y={ly + 12} textAnchor={anchor} fontSize={13} fontWeight={900} fill="#f5eef2">{clamp(scores[k]).toFixed(1)}</text>
+          <g key={e.label}>
+            <text x={lx} y={ly - 3} textAnchor={anchor} fontSize={12} fontWeight={800} fill="rgba(240,232,238,0.6)">{e.label}</text>
+            <text x={lx} y={ly + 12} textAnchor={anchor} fontSize={13} fontWeight={900} fill="#f5eef2">{clamp(e.value).toFixed(1)}</text>
           </g>
         );
       })}
     </svg>
+  );
+}
+
+// ── 별점 (반 개 단위) ─────────────────────────────────────────────
+function Stars({ score, size = 16 }: { score: number; size?: number }) {
+  const v = Math.max(0, Math.min(5, score));
+  return (
+    <div className="inline-flex items-center gap-0.5" aria-label={`별점 ${v.toFixed(1)}/5`}>
+      {[0, 1, 2, 3, 4].map((i) => {
+        const fill = Math.max(0, Math.min(1, v - i));
+        return (
+          <span key={i} className="relative inline-block" style={{ width: size, height: size }}>
+            <Star className="absolute left-0 top-0" style={{ width: size, height: size, color: 'rgba(255,255,255,0.16)' }} />
+            <span className="absolute left-0 top-0 overflow-hidden block" style={{ width: fill * size, height: size }}>
+              <Star className="block" style={{ width: size, height: size, color: '#e8829a', fill: '#e8829a' }} />
+            </span>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── 항목별 정통사주 카드 ──────────────────────────────────────────
+const ITEM_META: { key: SajuItemKey; short: string; icon: ReactNode; accent: string }[] = [
+  { key: 'personality', short: '성격', icon: <Sparkles className="w-5 h-5" />, accent: '#9d8fff' },
+  { key: 'wealth', short: '재물', icon: <CircleDollarSign className="w-5 h-5" />, accent: '#00d18f' },
+  { key: 'career', short: '직업', icon: <TrendingUp className="w-5 h-5" />, accent: '#e8829a' },
+  { key: 'love', short: '애정', icon: <Heart className="w-5 h-5" />, accent: '#d4688a' },
+  { key: 'health', short: '건강', icon: <Activity className="w-5 h-5" />, accent: '#ffb86b' },
+  { key: 'relationship', short: '대인', icon: <Users className="w-5 h-5" />, accent: '#9d8fff' },
+];
+
+function ItemCard({ label, item, icon, accent }: { label: string; item: SajuItem; icon: ReactNode; accent: string }) {
+  return (
+    <article className="rounded-[2rem] p-6 md:p-7 space-y-4" style={{ background: 'rgba(255,255,255,0.025)', border: `1px solid ${accent}30`, boxShadow: `0 8px 32px ${accent}10, 0 1px 0 rgba(255,255,255,0.04) inset` }}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="h-10 w-10 rounded-2xl flex items-center justify-center" style={{ background: `${accent}18`, color: accent }}>{icon}</div>
+          <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>{label}</h4>
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <Stars score={item.score} />
+          <span className="text-xs font-black" style={{ color: accent }}>{item.score.toFixed(1)}</span>
+        </div>
+      </div>
+      {item.body && (
+        <p className="text-[14px] md:text-[15px] font-medium leading-[1.85] break-keep whitespace-pre-wrap" style={{ color: 'rgba(240,232,238,0.78)' }}>{item.body}</p>
+      )}
+      {item.tip && (
+        <div className="rounded-2xl px-4 py-3 flex items-start gap-2" style={{ background: `${accent}10`, border: `1px solid ${accent}22` }}>
+          <span className="text-[10px] font-black mt-1 shrink-0" style={{ color: accent }}>TIP</span>
+          <p className="text-[13px] font-bold leading-relaxed break-keep" style={{ color: 'rgba(245,238,242,0.86)' }}>{item.tip}</p>
+        </div>
+      )}
+    </article>
+  );
+}
+
+// ── 길흉성(신살) 풀이 ─────────────────────────────────────────────
+function ShinsalPanel({ shinsal }: { shinsal: SajuShinsalReading[] }) {
+  if (!shinsal.length) return null;
+  return (
+    <section className="rounded-[2rem] p-6 md:p-8 space-y-4" style={{ background: 'rgba(232,130,154,0.05)', border: '1px solid rgba(232,130,154,0.16)' }}>
+      <div className="flex items-center gap-2">
+        <Star className="w-5 h-5" style={{ color: '#e8829a', fill: '#e8829a' }} />
+        <h3 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>길흉성 풀이</h3>
+      </div>
+      <div className="space-y-3">
+        {shinsal.map((s) => (
+          <div key={s.name} className="rounded-2xl px-4 py-3.5 space-y-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span className="inline-block px-3 py-1 rounded-full text-[12px] font-black" style={{ background: 'rgba(232,130,154,0.12)', color: '#e8829a', border: '1px solid rgba(232,130,154,0.22)' }}>#{s.name}</span>
+            <p className="text-sm font-medium leading-relaxed break-keep whitespace-pre-wrap" style={{ color: 'rgba(240,232,238,0.74)' }}>{s.meaning}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -659,54 +347,73 @@ function LifeArcPanel({ stages }: { stages: SajuLifeStages }) {
   );
 }
 
-// ── 구조화 시그니처 패널 (신버전 JSON 결과 전용) ──────────────────
-function SajuSignaturePanel({ structured }: { structured: SajuStructured }) {
-  const { headline, keywords, scores, lucky, caution } = structured;
-  const hasScores = !!scores;
+// ── 점신식 정통사주 결과 뷰 (신버전 메인) ──────────────────────────
+function SajuReportView({ report }: { report: SajuReport }) {
+  const { headline, keywords, overallScore, overall, items, lifeStages, shinsal, lucky, caution } = report;
+  const radarEntries = ITEM_META.map((m) => ({ label: m.short, value: items[m.key].score }));
   const hasLucky = !!lucky && (lucky.numbers.length > 0 || !!lucky.color || !!lucky.direction || !!lucky.advice);
 
-  if (!headline && !keywords.length && !hasScores && !hasLucky && !caution) return null;
-
   return (
-    <section className="space-y-5">
-      {(headline || keywords.length > 0) && (
-        <div className="rounded-[2rem] p-6 md:p-8 space-y-4" style={{ background: 'rgba(232,130,154,0.06)', border: '1px solid rgba(232,130,154,0.16)', boxShadow: '0 8px 40px rgba(232,130,154,0.08)' }}>
-          <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: '#e8829a' }}>
-            <Star className="w-4 h-4" style={{ fill: '#e8829a' }} />
-            한 줄 정의
-          </div>
-          {headline && (
-            <p className="text-xl md:text-2xl font-bold leading-snug break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
-              {headline}
-            </p>
-          )}
-          {keywords.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {keywords.map((kw) => (
-                <span key={kw} className="px-3 py-1.5 rounded-full text-[12px] font-black" style={{ background: 'rgba(232,130,154,0.12)', color: '#e8829a', border: '1px solid rgba(232,130,154,0.22)' }}>
-                  #{kw}
-                </span>
-              ))}
-            </div>
-          )}
+    <div className="space-y-12">
+      {/* 평생 총운 히어로 */}
+      <section className="rounded-[2rem] p-6 md:p-8 space-y-5" style={{ background: 'rgba(232,130,154,0.06)', border: '1px solid rgba(232,130,154,0.16)', boxShadow: '0 8px 40px rgba(232,130,154,0.08)' }}>
+        <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: '#e8829a' }}>
+          <Star className="w-4 h-4" style={{ fill: '#e8829a' }} />
+          평생 총운
         </div>
-      )}
-
-      {hasScores && (
-        <div className="rounded-[2rem] p-6 md:p-8 space-y-5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(157,143,255,0.14)' }}>
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" style={{ color: '#9d8fff' }} />
-            <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>운세 점수</h4>
-          </div>
-          <ScoreRadar scores={scores!} />
+        {headline && (
+          <p className="text-xl md:text-2xl font-bold leading-snug break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>{headline}</p>
+        )}
+        <div className="flex items-center gap-3">
+          <Stars score={overallScore} size={22} />
+          <span className="text-lg font-black" style={{ color: '#e8829a' }}>{overallScore.toFixed(1)}</span>
         </div>
-      )}
+        {keywords.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {keywords.map((kw) => (
+              <span key={kw} className="px-3 py-1.5 rounded-full text-[12px] font-black" style={{ background: 'rgba(232,130,154,0.12)', color: '#e8829a', border: '1px solid rgba(232,130,154,0.22)' }}>#{kw}</span>
+            ))}
+          </div>
+        )}
+        {overall && (
+          <p className="text-[14px] md:text-[15px] font-medium leading-[1.9] break-keep whitespace-pre-wrap pt-1" style={{ color: 'rgba(240,232,238,0.78)' }}>{overall}</p>
+        )}
+      </section>
 
+      {/* 종합 레이더 */}
+      <section className="rounded-[2rem] p-6 md:p-8 space-y-5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(157,143,255,0.14)' }}>
+        <div className="flex items-center gap-2">
+          <BarChart3 className="w-5 h-5" style={{ color: '#9d8fff' }} />
+          <h3 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>운세 종합 점수</h3>
+        </div>
+        <Radar entries={radarEntries} />
+      </section>
+
+      {/* 항목별 정통사주 */}
+      <section className="space-y-5">
+        <div className="flex items-center gap-3 ml-1">
+          <Moon className="w-6 h-6" style={{ color: '#e8829a', fill: '#e8829a' }} />
+          <h3 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>항목별 정통사주</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {ITEM_META.map((m) => (
+            <ItemCard key={m.key} label={SAJU_ITEM_LABELS[m.key]} item={items[m.key]} icon={m.icon} accent={m.accent} />
+          ))}
+        </div>
+      </section>
+
+      {/* 생애 흐름 */}
+      {lifeStages && <LifeArcPanel stages={lifeStages} />}
+
+      {/* 길흉성 풀이 */}
+      <ShinsalPanel shinsal={shinsal} />
+
+      {/* 개운법 */}
       {hasLucky && (
-        <div className="rounded-[2rem] p-6 md:p-8 space-y-4" style={{ background: 'rgba(0,209,143,0.05)', border: '1px solid rgba(0,209,143,0.18)' }}>
+        <section className="rounded-[2rem] p-6 md:p-8 space-y-4" style={{ background: 'rgba(0,209,143,0.05)', border: '1px solid rgba(0,209,143,0.18)' }}>
           <div className="flex items-center gap-2">
             <Star className="w-5 h-5" style={{ color: '#00d18f', fill: '#00d18f' }} />
-            <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>행운 포인트</h4>
+            <h3 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>개운법 · 행운 포인트</h3>
           </div>
           <div className="flex flex-wrap gap-3">
             {lucky!.numbers.length > 0 && (
@@ -731,19 +438,20 @@ function SajuSignaturePanel({ structured }: { structured: SajuStructured }) {
           {lucky!.advice && (
             <p className="text-sm font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.66)' }}>{lucky!.advice}</p>
           )}
-        </div>
+        </section>
       )}
 
+      {/* 냉정하게 짚는 약점 */}
       {caution && (
-        <div className="rounded-[2rem] p-6 md:p-8 space-y-2" style={{ background: 'rgba(255,184,107,0.05)', border: '1px solid rgba(255,184,107,0.2)' }}>
+        <section className="rounded-[2rem] p-6 md:p-8 space-y-2" style={{ background: 'rgba(255,184,107,0.05)', border: '1px solid rgba(255,184,107,0.2)' }}>
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" style={{ color: '#ffb86b' }} />
-            <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>냉정하게 짚는 약점</h4>
+            <h3 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>냉정하게 짚는 약점</h3>
           </div>
           <p className="text-sm md:text-[15px] font-medium leading-relaxed break-keep whitespace-pre-wrap" style={{ color: 'rgba(240,232,238,0.7)' }}>{caution}</p>
-        </div>
+        </section>
       )}
-    </section>
+    </div>
   );
 }
 
@@ -1038,40 +746,24 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
               </div>
             </div>
 
-            {/* 핵심 브리핑 + 상세 리포트 */}
+            {/* 정통사주 리포트 */}
             <div className="space-y-10 relative">
               <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
                 {(() => {
-                  const result = normalizeSajuAiResult(data.aiResult);
-                  const storySection = result.sections.find(
-                    (s) => s.title.includes('인스타 스토리') || s.title.includes('스토리 요약')
-                  );
-                  const accordionSections = result.sections.filter((s) => s !== storySection && !isLowPrioritySajuSection(s) && !isSajuOverviewSection(s));
+                  const report = normalizeSajuReport(data.aiResult);
+                  if (report) return <SajuReportView report={report} />;
+
+                  // 레거시(옛 sections 결과) 폴백: 상세 리포트 아코디언만 렌더
+                  const legacy = normalizeSajuAiResult(data.aiResult);
+                  const sections = legacy.sections.filter((s) => !isLowPrioritySajuSection(s) && !isSajuOverviewSection(s));
                   return (
-                    <>
-                      {result.structured && <SajuSignaturePanel structured={result.structured} />}
-                      {result.structured?.lifeStages && <LifeArcPanel stages={result.structured.lifeStages} />}
-                      <SajuBriefingPanel
-                        sections={accordionSections}
-                        userName={data.userName}
-                        currentYear={currentYear}
-                        timing={result.structured?.timing}
-                      />
-                      <div className="space-y-8 pt-2">
-                        <div className="flex items-center gap-3 ml-2">
-                          <Moon className="w-6 h-6" style={{ color: '#e8829a', fill: '#e8829a' }} />
-                          <h3 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>상세 리포트</h3>
-                        </div>
-                        <AnalysisAccordion data={accordionSections} />
+                    <div className="space-y-8">
+                      <div className="flex items-center gap-3 ml-2">
+                        <Moon className="w-6 h-6" style={{ color: '#e8829a', fill: '#e8829a' }} />
+                        <h3 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>상세 리포트</h3>
                       </div>
-                      {storySection && (
-                        <InstaStoryButton
-                          userName={data.userName}
-                          summaryContent={storySection.content}
-                          type="saju"
-                        />
-                      )}
-                    </>
+                      <AnalysisAccordion data={sections} />
+                    </div>
                   );
                 })()}
               </div>

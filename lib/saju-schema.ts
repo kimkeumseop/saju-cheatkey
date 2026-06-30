@@ -229,6 +229,86 @@ export function isSajuStructured(input: unknown): boolean {
   return coerceSajuStructured(input) !== null;
 }
 
+// ── 점신식 정통사주 리포트 스키마 (신규 메인) ──────────────────────
+// 평생총운 + 항목별(별점/본문/조언) + 시기별 + 신살풀이 + 개운법.
+
+export interface SajuItem {
+  score: number; // 0~5, 0.5 단위
+  body: string;  // 항목 본문(근거→현실→활용→함정, 해라체)
+  tip: string;   // 한 줄 실천 조언
+}
+
+export const SAJU_ITEM_KEYS = ['personality', 'wealth', 'career', 'love', 'health', 'relationship'] as const;
+export type SajuItemKey = typeof SAJU_ITEM_KEYS[number];
+
+export const SAJU_ITEM_LABELS: Record<SajuItemKey, string> = {
+  personality: '성격·기질운',
+  wealth: '재물운',
+  career: '직업·사업운',
+  love: '애정·결혼운',
+  health: '건강운',
+  relationship: '대인관계운',
+};
+
+export interface SajuShinsalReading {
+  name: string;
+  meaning: string;
+}
+
+export interface SajuReport {
+  headline: string;
+  keywords: string[];
+  overallScore: number;   // 종합 별점 0~5
+  overall: string;        // 평생 총운 한 단락
+  items: Record<SajuItemKey, SajuItem>;
+  lifeStages: SajuLifeStages | null;
+  shinsal: SajuShinsalReading[];
+  lucky: SajuLucky | null;
+  caution: string;
+}
+
+function coerceItem(value: unknown): SajuItem {
+  const v = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+  return { score: clampScore(v.score), body: toStr(v.body).trim(), tip: toStr(v.tip).trim() };
+}
+
+function coerceShinsal(value: unknown): SajuShinsalReading[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((s) => {
+      const r = s && typeof s === 'object' ? (s as Record<string, unknown>) : {};
+      return { name: toStr(r.name).trim(), meaning: toStr(r.meaning).trim() };
+    })
+    .filter((s) => s.name && s.meaning)
+    .slice(0, 6);
+}
+
+/** 임의 입력을 SajuReport로 정규화. items가 없으면 null(레거시 sections 결과 처리). */
+export function coerceSajuReport(input: unknown): SajuReport | null {
+  const obj = extractJsonObject(input);
+  if (!obj || !obj.items || typeof obj.items !== 'object') return null;
+  const itemsRaw = obj.items as Record<string, unknown>;
+  const items = {} as Record<SajuItemKey, SajuItem>;
+  let hasItem = false;
+  for (const k of SAJU_ITEM_KEYS) {
+    items[k] = coerceItem(itemsRaw[k]);
+    if (items[k].body) hasItem = true;
+  }
+  if (!hasItem) return null;
+
+  return {
+    headline: toStr(obj.headline).trim(),
+    keywords: toStrArray(obj.keywords),
+    overallScore: clampScore(obj.overallScore),
+    overall: toStr(obj.overall).trim(),
+    items,
+    lifeStages: coerceLifeStages(obj.lifeStages),
+    shinsal: coerceShinsal(obj.shinsal),
+    lucky: coerceLucky(obj.lucky),
+    caution: toStr(obj.caution).trim(),
+  };
+}
+
 // ── 궁합 구조화 스키마 ────────────────────────────────────────────
 
 export interface GunghapTiming {
