@@ -309,6 +309,80 @@ export function coerceSajuReport(input: unknown): SajuReport | null {
   };
 }
 
+// ── 오늘의 운세(데일리 재방문 콘텐츠) 스키마 ──────────────────────
+// 사주 + 그날 일진으로 매일 갱신되는 무료 데일리 카드. 날짜 캐싱으로 하루 고정.
+
+export interface DailyUnseCategory {
+  score: number; // 0~5, 0.5 단위
+  line: string;  // 카테고리 한 줄(해라체)
+}
+
+export const DAILY_UNSE_CATS = ['love', 'money', 'work', 'health'] as const;
+export type DailyUnseCatKey = typeof DAILY_UNSE_CATS[number];
+
+export const DAILY_UNSE_CAT_LABELS: Record<DailyUnseCatKey, string> = {
+  love: '애정운',
+  money: '재물운',
+  work: '일·학업운',
+  health: '건강운',
+};
+
+export interface DailyUnseLucky {
+  color: string;
+  number: number | null;
+  item: string;      // 행운의 아이템(예: 작은 노트, 따뜻한 차)
+  direction: string;
+}
+
+export interface DailyUnse {
+  date: string;         // YYYY-MM-DD (KST) — 서버가 주입
+  overallScore: number; // 오늘 종합 0~5
+  headline: string;     // 오늘 한 줄(해라체)
+  message: string;      // 오늘 총평 2~3문장
+  categories: Record<DailyUnseCatKey, DailyUnseCategory>;
+  lucky: DailyUnseLucky;
+  doToday: string;      // 오늘 하면 좋은 것 한 줄
+  avoidToday: string;   // 오늘 피할 것 한 줄
+  tomorrow: string;     // 내일 한 줄 미리보기
+}
+
+function coerceDailyCategory(value: unknown): DailyUnseCategory {
+  const v = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+  return { score: clampScore(v.score), line: toStr(v.line).trim() };
+}
+
+function coerceDailyLucky(value: unknown): DailyUnseLucky {
+  const v = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+  const n = typeof v.number === 'number' ? v.number : Number(v.number);
+  return {
+    color: toStr(v.color).trim(),
+    number: Number.isFinite(n) ? n : null,
+    item: toStr(v.item).trim(),
+    direction: toStr(v.direction).trim(),
+  };
+}
+
+/** 임의 입력을 DailyUnse로 정규화. message·categories가 없으면 null(레거시/실패 폴백). */
+export function coerceDailyUnse(input: unknown): DailyUnse | null {
+  const obj = extractJsonObject(input);
+  if (!obj || !obj.message || typeof obj.categories !== 'object') return null;
+  const catsRaw = obj.categories as Record<string, unknown>;
+  const categories = {} as Record<DailyUnseCatKey, DailyUnseCategory>;
+  for (const k of DAILY_UNSE_CATS) categories[k] = coerceDailyCategory(catsRaw[k]);
+
+  return {
+    date: toStr(obj.date).trim(),
+    overallScore: clampScore(obj.overallScore),
+    headline: toStr(obj.headline).trim(),
+    message: toStr(obj.message).trim(),
+    categories,
+    lucky: coerceDailyLucky(obj.lucky),
+    doToday: toStr(obj.doToday).trim(),
+    avoidToday: toStr(obj.avoidToday).trim(),
+    tomorrow: toStr(obj.tomorrow).trim(),
+  };
+}
+
 // ── 궁합 구조화 스키마 ────────────────────────────────────────────
 
 export interface GunghapTiming {
