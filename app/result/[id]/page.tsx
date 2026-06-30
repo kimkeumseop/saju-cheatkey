@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import Navbar from '@/components/Navbar';
-import CosmicBackground from '@/components/CosmicBackground';
+import AuroraBackground from '@/components/AuroraBackground';
 import AnalysisAccordion from '@/components/AnalysisAccordion';
 import ShareButtons from '@/components/ShareButtons';
 import GungHapPreview from '@/components/GungHapPreview';
@@ -41,7 +41,7 @@ function calcAge(birthDate: string): number {
 function PillarChart({ pillars, title, isTimeUnknown }: { pillars: any[]; title?: string; isTimeUnknown?: boolean }) {
   return (
     <div className="space-y-6">
-      {title && <h4 className="text-center font-bold text-lg" style={{ color: '#f5eef2' }}>{title}</h4>}
+      {title && <h4 className="text-center font-bold text-lg" style={{ color: '#2D1B1E' }}>{title}</h4>}
       <div className="grid grid-cols-4 gap-2 md:gap-4 relative z-10">
         {pillars.map((p: any, colIdx: number) => {
           const isDayPillar = p.label === '일주';
@@ -54,12 +54,12 @@ function PillarChart({ pillars, title, isTimeUnknown }: { pillars: any[]; title?
           return (
             <div key={colIdx} className="space-y-3">
               <div className="text-center space-y-1">
-                <div className="text-[10px] font-black tracking-tighter uppercase" style={{ color: 'rgba(232,130,154,0.55)' }}>{p.label}</div>
-                <div className="text-[11px] font-black" style={{ color: 'rgba(240,232,238,0.7)' }}>{showDash ? '-' : p.tenGodGan}</div>
+                <div className="text-[10px] font-black tracking-tighter uppercase" style={{ color: 'rgba(212,104,138,0.55)' }}>{p.label}</div>
+                <div className="text-[11px] font-black" style={{ color: 'rgba(45,27,30,0.7)' }}>{showDash ? '-' : p.tenGodGan}</div>
               </div>
               <div className="space-y-2 md:space-y-4">
                 <div className={cn('relative transition-all duration-500', isDayPillar ? 'scale-105 z-20' : '')}>
-                  <div className={cn(ganStyle.bg, ganStyle.text, 'p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center border-[2px] md:border-[4px]', isDayPillar ? 'border-[#e8829a] shadow-xl shadow-[#e8829a]/30' : 'border-white/10 shadow-sm')}>
+                  <div className={cn(ganStyle.bg, ganStyle.text, 'p-3 md:p-8 rounded-[1.5rem] md:rounded-[3rem] flex flex-col items-center justify-center border-[2px] md:border-[4px]', isDayPillar ? 'border-[#d4688a] shadow-xl shadow-[#d4688a]/30' : 'border-white/10 shadow-sm')}>
                     <span className="text-2xl md:text-7xl font-sans font-black leading-none tracking-tight">{showDash ? '-' : p.ganKo}</span>
                   </div>
                 </div>
@@ -71,8 +71,8 @@ function PillarChart({ pillars, title, isTimeUnknown }: { pillars: any[]; title?
                 </div>
               </div>
               <div className="text-center space-y-1 mt-2">
-                <div className="text-[11px] font-black" style={{ color: 'rgba(240,232,238,0.7)' }}>{showDash ? '-' : p.tenGodZhi}</div>
-                <div className="text-[10px] font-bold" style={{ color: 'rgba(240,232,238,0.4)' }}>{showDash ? '-' : p.unSeong}</div>
+                <div className="text-[11px] font-black" style={{ color: 'rgba(45,27,30,0.7)' }}>{showDash ? '-' : p.tenGodZhi}</div>
+                <div className="text-[10px] font-bold" style={{ color: 'rgba(45,27,30,0.4)' }}>{showDash ? '-' : p.unSeong}</div>
               </div>
             </div>
           );
@@ -199,21 +199,21 @@ function Radar({ entries }: { entries: { label: string; value: number }[] }) {
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-[340px] mx-auto" role="img" aria-label="운세 점수 레이더 차트">
       <defs>
         <linearGradient id="radarFill" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#9d8fff" stopOpacity="0.55" />
-          <stop offset="100%" stopColor="#e8829a" stopOpacity="0.5" />
+          <stop offset="0%" stopColor="#7c6fd6" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#d4688a" stopOpacity="0.5" />
         </linearGradient>
       </defs>
       {levels.map((lv) => (
-        <polygon key={lv} points={ring(lv)} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={1} />
+        <polygon key={lv} points={ring(lv)} fill="none" stroke="rgba(45,27,30,0.10)" strokeWidth={1} />
       ))}
       {entries.map((_, i) => {
         const [x, y] = pt(i, R);
-        return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgba(255,255,255,0.07)" strokeWidth={1} />;
+        return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgba(45,27,30,0.10)" strokeWidth={1} />;
       })}
-      <polygon points={valuePoly} fill="url(#radarFill)" stroke="#c8bdff" strokeWidth={2} strokeLinejoin="round" />
+      <polygon points={valuePoly} fill="url(#radarFill)" stroke="#7c6fd6" strokeWidth={2} strokeLinejoin="round" />
       {entries.map((e, i) => {
         const [x, y] = pt(i, R * (clamp(e.value) / 5));
-        return <circle key={e.label} cx={x} cy={y} r={3.5} fill="#e8829a" />;
+        return <circle key={e.label} cx={x} cy={y} r={3.5} fill="#d4688a" />;
       })}
       {entries.map((e, i) => {
         const [lx, ly] = pt(i, labelR);
@@ -221,8 +221,8 @@ function Radar({ entries }: { entries: { label: string; value: number }[] }) {
         const anchor = Math.abs(cos) < 0.35 ? 'middle' : cos > 0 ? 'start' : 'end';
         return (
           <g key={e.label}>
-            <text x={lx} y={ly - 3} textAnchor={anchor} fontSize={12} fontWeight={800} fill="rgba(240,232,238,0.6)">{e.label}</text>
-            <text x={lx} y={ly + 12} textAnchor={anchor} fontSize={13} fontWeight={900} fill="#f5eef2">{clamp(e.value).toFixed(1)}</text>
+            <text x={lx} y={ly - 3} textAnchor={anchor} fontSize={12} fontWeight={800} fill="rgba(45,27,30,0.6)">{e.label}</text>
+            <text x={lx} y={ly + 12} textAnchor={anchor} fontSize={13} fontWeight={900} fill="#2D1B1E">{clamp(e.value).toFixed(1)}</text>
           </g>
         );
       })}
@@ -239,9 +239,9 @@ function Stars({ score, size = 16 }: { score: number; size?: number }) {
         const fill = Math.max(0, Math.min(1, v - i));
         return (
           <span key={i} className="relative inline-block" style={{ width: size, height: size }}>
-            <Star className="absolute left-0 top-0" style={{ width: size, height: size, color: 'rgba(255,255,255,0.16)' }} />
+            <Star className="absolute left-0 top-0" style={{ width: size, height: size, color: 'rgba(45,27,30,0.16)' }} />
             <span className="absolute left-0 top-0 overflow-hidden block" style={{ width: fill * size, height: size }}>
-              <Star className="block" style={{ width: size, height: size, color: '#e8829a', fill: '#e8829a' }} />
+              <Star className="block" style={{ width: size, height: size, color: '#d4688a', fill: '#d4688a' }} />
             </span>
           </span>
         );
@@ -252,21 +252,21 @@ function Stars({ score, size = 16 }: { score: number; size?: number }) {
 
 // ── 항목별 정통사주 카드 ──────────────────────────────────────────
 const ITEM_META: { key: SajuItemKey; short: string; icon: ReactNode; accent: string }[] = [
-  { key: 'personality', short: '성격', icon: <Sparkles className="w-5 h-5" />, accent: '#9d8fff' },
-  { key: 'wealth', short: '재물', icon: <CircleDollarSign className="w-5 h-5" />, accent: '#00d18f' },
-  { key: 'career', short: '직업', icon: <TrendingUp className="w-5 h-5" />, accent: '#e8829a' },
+  { key: 'personality', short: '성격', icon: <Sparkles className="w-5 h-5" />, accent: '#7c6fd6' },
+  { key: 'wealth', short: '재물', icon: <CircleDollarSign className="w-5 h-5" />, accent: '#0e9f73' },
+  { key: 'career', short: '직업', icon: <TrendingUp className="w-5 h-5" />, accent: '#d4688a' },
   { key: 'love', short: '애정', icon: <Heart className="w-5 h-5" />, accent: '#d4688a' },
-  { key: 'health', short: '건강', icon: <Activity className="w-5 h-5" />, accent: '#ffb86b' },
-  { key: 'relationship', short: '대인', icon: <Users className="w-5 h-5" />, accent: '#9d8fff' },
+  { key: 'health', short: '건강', icon: <Activity className="w-5 h-5" />, accent: '#c2883a' },
+  { key: 'relationship', short: '대인', icon: <Users className="w-5 h-5" />, accent: '#7c6fd6' },
 ];
 
 function ItemCard({ label, item, icon, accent }: { label: string; item: SajuItem; icon: ReactNode; accent: string }) {
   return (
-    <article className="rounded-[2rem] p-6 md:p-7 space-y-4" style={{ background: 'rgba(255,255,255,0.025)', border: `1px solid ${accent}30`, boxShadow: `0 8px 32px ${accent}10, 0 1px 0 rgba(255,255,255,0.04) inset` }}>
+    <article className="rounded-[2rem] p-6 md:p-7 space-y-4" style={{ background: 'rgba(255,255,255,0.92)', border: `1px solid ${accent}30`, boxShadow: `0 8px 32px ${accent}10` }}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="h-10 w-10 rounded-2xl flex items-center justify-center" style={{ background: `${accent}18`, color: accent }}>{icon}</div>
-          <h4 className="text-lg font-bold" style={{ color: '#f5eef2' }}>{label}</h4>
+          <h4 className="text-lg font-bold" style={{ color: '#2D1B1E' }}>{label}</h4>
         </div>
         <div className="flex flex-col items-end gap-1">
           <Stars score={item.score} />
@@ -274,12 +274,12 @@ function ItemCard({ label, item, icon, accent }: { label: string; item: SajuItem
         </div>
       </div>
       {item.body && (
-        <p className="text-[14px] md:text-[15px] font-medium leading-[1.85] break-keep whitespace-pre-wrap" style={{ color: 'rgba(240,232,238,0.78)' }}>{item.body}</p>
+        <p className="text-[14px] md:text-[15px] font-medium leading-[1.85] break-keep whitespace-pre-wrap" style={{ color: 'rgba(45,27,30,0.78)' }}>{item.body}</p>
       )}
       {item.tip && (
         <div className="rounded-2xl px-4 py-3 flex items-start gap-2" style={{ background: `${accent}10`, border: `1px solid ${accent}22` }}>
           <span className="text-[10px] font-black mt-1 shrink-0" style={{ color: accent }}>TIP</span>
-          <p className="text-[13px] font-bold leading-relaxed break-keep" style={{ color: 'rgba(245,238,242,0.86)' }}>{item.tip}</p>
+          <p className="text-[13px] font-bold leading-relaxed break-keep" style={{ color: 'rgba(45,27,30,0.86)' }}>{item.tip}</p>
         </div>
       )}
     </article>
@@ -290,16 +290,16 @@ function ItemCard({ label, item, icon, accent }: { label: string; item: SajuItem
 function ShinsalPanel({ shinsal }: { shinsal: SajuShinsalReading[] }) {
   if (!shinsal.length) return null;
   return (
-    <section className="rounded-[2rem] p-6 md:p-8 space-y-4" style={{ background: 'rgba(232,130,154,0.05)', border: '1px solid rgba(232,130,154,0.16)' }}>
+    <section className="rounded-[2rem] p-6 md:p-8 space-y-4" style={{ background: 'rgba(212,104,138,0.05)', border: '1px solid rgba(212,104,138,0.16)' }}>
       <div className="flex items-center gap-2">
-        <Star className="w-5 h-5" style={{ color: '#e8829a', fill: '#e8829a' }} />
-        <h3 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>길흉성 풀이</h3>
+        <Star className="w-5 h-5" style={{ color: '#d4688a', fill: '#d4688a' }} />
+        <h3 className="text-xl font-bold" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>길흉성 풀이</h3>
       </div>
       <div className="space-y-3">
         {shinsal.map((s) => (
-          <div key={s.name} className="rounded-2xl px-4 py-3.5 space-y-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <span className="inline-block px-3 py-1 rounded-full text-[12px] font-black" style={{ background: 'rgba(232,130,154,0.12)', color: '#e8829a', border: '1px solid rgba(232,130,154,0.22)' }}>#{s.name}</span>
-            <p className="text-sm font-medium leading-relaxed break-keep whitespace-pre-wrap" style={{ color: 'rgba(240,232,238,0.74)' }}>{s.meaning}</p>
+          <div key={s.name} className="rounded-2xl px-4 py-3.5 space-y-2" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(45,27,30,0.08)' }}>
+            <span className="inline-block px-3 py-1 rounded-full text-[12px] font-black" style={{ background: 'rgba(212,104,138,0.12)', color: '#d4688a', border: '1px solid rgba(212,104,138,0.22)' }}>#{s.name}</span>
+            <p className="text-sm font-medium leading-relaxed break-keep whitespace-pre-wrap" style={{ color: 'rgba(45,27,30,0.74)' }}>{s.meaning}</p>
           </div>
         ))}
       </div>
@@ -310,9 +310,9 @@ function ShinsalPanel({ shinsal }: { shinsal: SajuShinsalReading[] }) {
 // ── 생애 흐름 패널 (초년/중년/말년 + 전성기) ─────────────────────
 function LifeArcPanel({ stages }: { stages: SajuLifeStages }) {
   const items = [
-    { label: '초년', sub: '~20대', text: stages.early, accent: '#9d8fff' },
-    { label: '중년', sub: '30~40대', text: stages.middle, accent: '#e8829a' },
-    { label: '말년', sub: '50대~', text: stages.late, accent: '#00d18f' },
+    { label: '초년', sub: '~20대', text: stages.early, accent: '#7c6fd6' },
+    { label: '중년', sub: '30~40대', text: stages.middle, accent: '#d4688a' },
+    { label: '말년', sub: '50대~', text: stages.late, accent: '#0e9f73' },
   ].filter((it) => it.text);
 
   if (!stages.peak && items.length === 0) return null;
@@ -320,12 +320,12 @@ function LifeArcPanel({ stages }: { stages: SajuLifeStages }) {
   return (
     <section className="space-y-5">
       {stages.peak && (
-        <div className="rounded-[2rem] p-6 md:p-8 space-y-3" style={{ background: 'rgba(157,143,255,0.07)', border: '1px solid rgba(157,143,255,0.18)', boxShadow: '0 8px 40px rgba(157,143,255,0.08)' }}>
-          <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: '#9d8fff' }}>
+        <div className="rounded-[2rem] p-6 md:p-8 space-y-3" style={{ background: 'rgba(124,111,214,0.07)', border: '1px solid rgba(124,111,214,0.18)', boxShadow: '0 8px 40px rgba(124,111,214,0.08)' }}>
+          <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: '#7c6fd6' }}>
             <History className="w-4 h-4" />
             생애 흐름 · 전성기
           </div>
-          <p className="text-xl md:text-2xl font-bold leading-snug break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>
+          <p className="text-xl md:text-2xl font-bold leading-snug break-keep" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>
             {stages.peak}
           </p>
         </div>
@@ -333,12 +333,12 @@ function LifeArcPanel({ stages }: { stages: SajuLifeStages }) {
       {items.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {items.map((it) => (
-            <article key={it.label} className="rounded-[2rem] p-5 md:p-6 space-y-3" style={{ background: 'rgba(255,255,255,0.025)', border: `1px solid ${it.accent}33`, boxShadow: `0 8px 32px ${it.accent}12, 0 1px 0 rgba(255,255,255,0.04) inset` }}>
+            <article key={it.label} className="rounded-[2rem] p-5 md:p-6 space-y-3" style={{ background: 'rgba(255,255,255,0.92)', border: `1px solid ${it.accent}33`, boxShadow: `0 8px 32px ${it.accent}12` }}>
               <div className="flex items-baseline gap-2">
                 <span className="text-base font-black" style={{ color: it.accent }}>{it.label}</span>
-                <span className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: 'rgba(240,232,238,0.4)' }}>{it.sub}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: 'rgba(45,27,30,0.4)' }}>{it.sub}</span>
               </div>
-              <p className="text-[13px] md:text-sm font-medium leading-relaxed break-keep whitespace-pre-wrap" style={{ color: 'rgba(240,232,238,0.72)' }}>{it.text}</p>
+              <p className="text-[13px] md:text-sm font-medium leading-relaxed break-keep whitespace-pre-wrap" style={{ color: 'rgba(45,27,30,0.72)' }}>{it.text}</p>
             </article>
           ))}
         </div>
@@ -356,35 +356,35 @@ function SajuReportView({ report }: { report: SajuReport }) {
   return (
     <div className="space-y-12">
       {/* 평생 총운 히어로 */}
-      <section className="rounded-[2rem] p-6 md:p-8 space-y-5" style={{ background: 'rgba(232,130,154,0.06)', border: '1px solid rgba(232,130,154,0.16)', boxShadow: '0 8px 40px rgba(232,130,154,0.08)' }}>
-        <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: '#e8829a' }}>
-          <Star className="w-4 h-4" style={{ fill: '#e8829a' }} />
+      <section className="rounded-[2rem] p-6 md:p-8 space-y-5" style={{ background: 'rgba(212,104,138,0.06)', border: '1px solid rgba(212,104,138,0.16)', boxShadow: '0 8px 40px rgba(212,104,138,0.08)' }}>
+        <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: '#d4688a' }}>
+          <Star className="w-4 h-4" style={{ fill: '#d4688a' }} />
           평생 총운
         </div>
         {headline && (
-          <p className="text-xl md:text-2xl font-bold leading-snug break-keep" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>{headline}</p>
+          <p className="text-xl md:text-2xl font-bold leading-snug break-keep" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>{headline}</p>
         )}
         <div className="flex items-center gap-3">
           <Stars score={overallScore} size={22} />
-          <span className="text-lg font-black" style={{ color: '#e8829a' }}>{overallScore.toFixed(1)}</span>
+          <span className="text-lg font-black" style={{ color: '#d4688a' }}>{overallScore.toFixed(1)}</span>
         </div>
         {keywords.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {keywords.map((kw) => (
-              <span key={kw} className="px-3 py-1.5 rounded-full text-[12px] font-black" style={{ background: 'rgba(232,130,154,0.12)', color: '#e8829a', border: '1px solid rgba(232,130,154,0.22)' }}>#{kw}</span>
+              <span key={kw} className="px-3 py-1.5 rounded-full text-[12px] font-black" style={{ background: 'rgba(212,104,138,0.12)', color: '#d4688a', border: '1px solid rgba(212,104,138,0.22)' }}>#{kw}</span>
             ))}
           </div>
         )}
         {overall && (
-          <p className="text-[14px] md:text-[15px] font-medium leading-[1.9] break-keep whitespace-pre-wrap pt-1" style={{ color: 'rgba(240,232,238,0.78)' }}>{overall}</p>
+          <p className="text-[14px] md:text-[15px] font-medium leading-[1.9] break-keep whitespace-pre-wrap pt-1" style={{ color: 'rgba(45,27,30,0.78)' }}>{overall}</p>
         )}
       </section>
 
       {/* 종합 레이더 */}
-      <section className="rounded-[2rem] p-6 md:p-8 space-y-5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(157,143,255,0.14)' }}>
+      <section className="rounded-[2rem] p-6 md:p-8 space-y-5" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(124,111,214,0.14)' }}>
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5" style={{ color: '#9d8fff' }} />
-          <h3 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>운세 종합 점수</h3>
+          <BarChart3 className="w-5 h-5" style={{ color: '#7c6fd6' }} />
+          <h3 className="text-xl font-bold" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>운세 종합 점수</h3>
         </div>
         <Radar entries={radarEntries} />
       </section>
@@ -392,8 +392,8 @@ function SajuReportView({ report }: { report: SajuReport }) {
       {/* 항목별 정통사주 */}
       <section className="space-y-5">
         <div className="flex items-center gap-3 ml-1">
-          <Moon className="w-6 h-6" style={{ color: '#e8829a', fill: '#e8829a' }} />
-          <h3 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>항목별 정통사주</h3>
+          <Moon className="w-6 h-6" style={{ color: '#d4688a', fill: '#d4688a' }} />
+          <h3 className="text-2xl font-bold" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>항목별 정통사주</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {ITEM_META.map((m) => (
@@ -410,45 +410,45 @@ function SajuReportView({ report }: { report: SajuReport }) {
 
       {/* 개운법 */}
       {hasLucky && (
-        <section className="rounded-[2rem] p-6 md:p-8 space-y-4" style={{ background: 'rgba(0,209,143,0.05)', border: '1px solid rgba(0,209,143,0.18)' }}>
+        <section className="rounded-[2rem] p-6 md:p-8 space-y-4" style={{ background: 'rgba(14,159,115,0.05)', border: '1px solid rgba(14,159,115,0.18)' }}>
           <div className="flex items-center gap-2">
-            <Star className="w-5 h-5" style={{ color: '#00d18f', fill: '#00d18f' }} />
-            <h3 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>개운법 · 행운 포인트</h3>
+            <Star className="w-5 h-5" style={{ color: '#0e9f73', fill: '#0e9f73' }} />
+            <h3 className="text-xl font-bold" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>개운법 · 행운 포인트</h3>
           </div>
           <div className="flex flex-wrap gap-3">
             {lucky!.numbers.length > 0 && (
-              <div className="px-4 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(0,209,143,0.2)' }}>
-                <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: 'rgba(0,209,143,0.7)' }}>숫자</span>
-                <span className="text-sm font-black" style={{ color: '#f5eef2' }}>{lucky!.numbers.join(', ')}</span>
+              <div className="px-4 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(14,159,115,0.2)' }}>
+                <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: 'rgba(14,159,115,0.7)' }}>숫자</span>
+                <span className="text-sm font-black" style={{ color: '#2D1B1E' }}>{lucky!.numbers.join(', ')}</span>
               </div>
             )}
             {lucky!.color && (
-              <div className="px-4 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(0,209,143,0.2)' }}>
-                <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: 'rgba(0,209,143,0.7)' }}>색</span>
-                <span className="text-sm font-black" style={{ color: '#f5eef2' }}>{lucky!.color}</span>
+              <div className="px-4 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(14,159,115,0.2)' }}>
+                <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: 'rgba(14,159,115,0.7)' }}>색</span>
+                <span className="text-sm font-black" style={{ color: '#2D1B1E' }}>{lucky!.color}</span>
               </div>
             )}
             {lucky!.direction && (
-              <div className="px-4 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(0,209,143,0.2)' }}>
-                <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: 'rgba(0,209,143,0.7)' }}>방향</span>
-                <span className="text-sm font-black" style={{ color: '#f5eef2' }}>{lucky!.direction}</span>
+              <div className="px-4 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(14,159,115,0.2)' }}>
+                <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: 'rgba(14,159,115,0.7)' }}>방향</span>
+                <span className="text-sm font-black" style={{ color: '#2D1B1E' }}>{lucky!.direction}</span>
               </div>
             )}
           </div>
           {lucky!.advice && (
-            <p className="text-sm font-medium leading-relaxed break-keep" style={{ color: 'rgba(240,232,238,0.66)' }}>{lucky!.advice}</p>
+            <p className="text-sm font-medium leading-relaxed break-keep" style={{ color: 'rgba(45,27,30,0.66)' }}>{lucky!.advice}</p>
           )}
         </section>
       )}
 
       {/* 냉정하게 짚는 약점 */}
       {caution && (
-        <section className="rounded-[2rem] p-6 md:p-8 space-y-2" style={{ background: 'rgba(255,184,107,0.05)', border: '1px solid rgba(255,184,107,0.2)' }}>
+        <section className="rounded-[2rem] p-6 md:p-8 space-y-2" style={{ background: 'rgba(194,136,58,0.05)', border: '1px solid rgba(194,136,58,0.2)' }}>
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" style={{ color: '#ffb86b' }} />
-            <h3 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>냉정하게 짚는 약점</h3>
+            <AlertTriangle className="w-5 h-5" style={{ color: '#c2883a' }} />
+            <h3 className="text-xl font-bold" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>냉정하게 짚는 약점</h3>
           </div>
-          <p className="text-sm md:text-[15px] font-medium leading-relaxed break-keep whitespace-pre-wrap" style={{ color: 'rgba(240,232,238,0.7)' }}>{caution}</p>
+          <p className="text-sm md:text-[15px] font-medium leading-relaxed break-keep whitespace-pre-wrap" style={{ color: 'rgba(45,27,30,0.7)' }}>{caution}</p>
         </section>
       )}
     </div>
@@ -505,9 +505,9 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   }, [id, router]);
 
   if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ background: '#0d0710' }}>
-      <Loader2 className="w-12 h-12 animate-spin stroke-[3]" style={{ color: '#e8829a' }} />
-      <p className="mt-4 font-bold" style={{ color: 'rgba(232,130,154,0.7)' }}>운명의 속삭임을 듣는 중...</p>
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ background: '#FBF7F2' }}>
+      <Loader2 className="w-12 h-12 animate-spin stroke-[3]" style={{ color: '#d4688a' }} />
+      <p className="mt-4 font-bold" style={{ color: 'rgba(212,104,138,0.7)' }}>운명의 속삭임을 듣는 중...</p>
     </div>
   );
 
@@ -553,9 +553,9 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden pt-24 pb-32 px-3 sm:px-4 md:px-6" style={{ background: '#0d0710' }}>
-      <CosmicBackground />
-      <Navbar dark />
+    <div className="relative min-h-screen overflow-x-hidden pt-24 pb-32 px-3 sm:px-4 md:px-6" style={{ background: '#FBF7F2' }}>
+      <AuroraBackground />
+      <Navbar />
       <div className="relative z-10 max-w-4xl mx-auto space-y-12">
         {isCompatibility ? (
           <GungHapPreview data={{ ...data, isPaid: true }} resultId={id} />
@@ -566,26 +566,26 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             <div className="text-center space-y-5">
               <div
                 className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold"
-                style={{ background: 'rgba(232,130,154,0.10)', border: '1px solid rgba(232,130,154,0.20)', color: '#e8829a' }}
+                style={{ background: 'rgba(212,104,138,0.10)', border: '1px solid rgba(212,104,138,0.20)', color: '#d4688a' }}
               >
-                <Moon className="w-4 h-4" style={{ fill: '#e8829a', color: '#e8829a' }} />
+                <Moon className="w-4 h-4" style={{ fill: '#d4688a', color: '#d4688a' }} />
                 신비로운 영혼의 리포트
               </div>
               <div className="space-y-3">
                 <h1 className="font-bold tracking-tight break-keep leading-tight text-3xl md:text-5xl" style={{ fontFamily: '"Noto Serif KR", serif' }}>
-                  <span style={{ background: 'linear-gradient(135deg, #e8829a 0%, #c49fff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{data.userName}</span>
-                  <span style={{ color: 'rgba(245,238,242,0.92)' }}>, 당신이 아직 모르는</span>
+                  <span style={{ background: 'linear-gradient(135deg, #d4688a 0%, #7c6fd6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{data.userName}</span>
+                  <span style={{ color: 'rgba(45,27,30,0.92)' }}>, 당신이 아직 모르는</span>
                   <br />
-                  <span style={{ color: '#f5eef2' }}>진짜 자신</span>
+                  <span style={{ color: '#2D1B1E' }}>진짜 자신</span>
                 </h1>
                 {dominantElementInfo && (
-                  <p className="font-bold text-sm md:text-base" style={{ color: 'rgba(232,130,154,0.8)' }}>
+                  <p className="font-bold text-sm md:text-base" style={{ color: 'rgba(212,104,138,0.8)' }}>
                     {dominantElementInfo.emoji} 핵심 기운 ·{' '}
-                    <span className="font-black" style={{ color: '#e8829a' }}>{dominantElementInfo.keyword}</span>
+                    <span className="font-black" style={{ color: '#d4688a' }}>{dominantElementInfo.keyword}</span>
                     {' '}— {dominantElementInfo.desc}
                   </p>
                 )}
-                <p className="text-xs font-bold italic" style={{ color: 'rgba(240,232,238,0.34)' }}>
+                <p className="text-xs font-bold italic" style={{ color: 'rgba(45,27,30,0.34)' }}>
                   {data.birthDate}
                   {data.birthTime && data.birthTime !== 'unknown' ? ` ${data.birthTime}` : ''}
                 </p>
@@ -596,35 +596,35 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             <div
               className="p-5 sm:p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] space-y-10 relative overflow-hidden"
               style={{
-                background: 'rgba(255,255,255,0.025)',
+                background: 'rgba(255,255,255,0.92)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(232,130,154,0.14)',
-                boxShadow: '0 8px 40px rgba(232,130,154,0.08), 0 1px 0 rgba(255,255,255,0.04) inset',
+                border: '1px solid rgba(212,104,138,0.14)',
+                boxShadow: '0 8px 40px rgba(212,104,138,0.08)',
               }}
             >
-              <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -mr-32 -mt-32" style={{ background: 'rgba(232,130,154,0.10)' }} />
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -mr-32 -mt-32" style={{ background: 'rgba(212,104,138,0.10)' }} />
               <div className="text-center space-y-1 relative z-10">
-                <h3 className="text-2xl font-bold tracking-tight" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>인생 설계도 (만세력)</h3>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(232,130,154,0.4)' }}>Manseyrok INFOGRAPHIC</p>
+                <h3 className="text-2xl font-bold tracking-tight" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>인생 설계도 (만세력)</h3>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(212,104,138,0.4)' }}>Manseyrok INFOGRAPHIC</p>
               </div>
               {saju && <PillarChart pillars={saju.pillars} isTimeUnknown={isTimeUnknown} />}
-              <div className="pt-8 grid grid-cols-1 md:grid-cols-2 gap-8" style={{ borderTop: '1px solid rgba(232,130,154,0.10)' }}>
+              <div className="pt-8 grid grid-cols-1 md:grid-cols-2 gap-8" style={{ borderTop: '1px solid rgba(212,104,138,0.10)' }}>
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 ml-1">
-                    <BarChart3 className="w-4 h-4" style={{ color: '#e8829a' }} />
-                    <span className="text-sm font-bold" style={{ color: 'rgba(240,232,238,0.8)' }}>오행 분포</span>
+                    <BarChart3 className="w-4 h-4" style={{ color: '#d4688a' }} />
+                    <span className="text-sm font-bold" style={{ color: 'rgba(45,27,30,0.8)' }}>오행 분포</span>
                   </div>
                   {filteredElements && <ElementsChart counts={filteredElements} />}
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 ml-1">
-                    <Star className="w-4 h-4" style={{ color: '#e8829a' }} />
-                    <span className="text-sm font-bold" style={{ color: 'rgba(240,232,238,0.8)' }}>핵심 귀인 & 신살</span>
+                    <Star className="w-4 h-4" style={{ color: '#d4688a' }} />
+                    <span className="text-sm font-bold" style={{ color: 'rgba(45,27,30,0.8)' }}>핵심 귀인 & 신살</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {saju?.keyShinsal?.map((s: string) => (
-                      <div key={s} className="px-4 py-2 rounded-2xl text-[11px] font-black" style={{ background: 'rgba(232,130,154,0.12)', color: '#e8829a', border: '1px solid rgba(232,130,154,0.22)' }}>
+                      <div key={s} className="px-4 py-2 rounded-2xl text-[11px] font-black" style={{ background: 'rgba(212,104,138,0.12)', color: '#d4688a', border: '1px solid rgba(212,104,138,0.22)' }}>
                         #{s}
                       </div>
                     ))}
@@ -637,26 +637,26 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             <div
               className="p-5 sm:p-8 md:p-10 rounded-[2rem] md:rounded-[3rem] space-y-8 relative overflow-hidden"
               style={{
-                background: 'rgba(255,255,255,0.025)',
+                background: 'rgba(255,255,255,0.92)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(157,143,255,0.12)',
-                boxShadow: '0 8px 40px rgba(157,143,255,0.06), 0 1px 0 rgba(255,255,255,0.04) inset',
+                border: '1px solid rgba(124,111,214,0.12)',
+                boxShadow: '0 8px 40px rgba(124,111,214,0.06)',
               }}
             >
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <History className="w-5 h-5" style={{ color: '#9d8fff' }} />
-                  <h3 className="text-xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>대운 (10년 주기의 흐름)</h3>
+                  <History className="w-5 h-5" style={{ color: '#7c6fd6' }} />
+                  <h3 className="text-xl font-bold" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>대운 (10년 주기의 흐름)</h3>
                 </div>
-                <p className="text-[13px] font-medium leading-relaxed ml-7 break-keep" style={{ color: 'rgba(240,232,238,0.42)' }}>
+                <p className="text-[13px] font-medium leading-relaxed ml-7 break-keep" style={{ color: 'rgba(45,27,30,0.42)' }}>
                   대운(大運)은 내 인생의 계절이 바뀌는 시점입니다. 각 시기를 눌러 에너지를 확인해보세요.
                 </p>
               </div>
 
               <div className="relative space-y-2">
                 {/* 세로 타임라인 선 */}
-                <div className="absolute left-[1.2rem] top-5 bottom-5 w-0.5 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(157,143,255,0.05), rgba(157,143,255,0.4), rgba(157,143,255,0.05))' }} />
+                <div className="absolute left-[1.2rem] top-5 bottom-5 w-0.5 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(124,111,214,0.05), rgba(124,111,214,0.4), rgba(124,111,214,0.05))' }} />
 
                 {daeunList.map((dy: any, idx: number) => {
                   const isCurrent = currentDaeunIdx === idx;
@@ -673,11 +673,11 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                       <div className={cn(
                         'relative z-10 mt-3.5 w-10 h-10 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all duration-300',
                         isCurrent
-                          ? 'border-[#9d8fff] shadow-lg shadow-[#9d8fff]/40 scale-110'
+                          ? 'border-[#7c6fd6] shadow-lg shadow-[#7c6fd6]/40 scale-110'
                           : 'border-white/15'
                       )} style={{ background: '#160c1a' }}>
                         {isCurrent ? (
-                          <div className="w-4 h-4 rounded-full" style={{ background: '#9d8fff' }} />
+                          <div className="w-4 h-4 rounded-full" style={{ background: '#7c6fd6' }} />
                         ) : (
                           <span className="text-[10px] font-black text-white/30">{idx + 1}</span>
                         )}
@@ -689,52 +689,52 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                         className="flex-1 text-left rounded-[1.5rem] border p-4 transition-all duration-300 mb-2"
                         style={
                           isCurrent
-                            ? { borderColor: 'rgba(157,143,255,0.4)', background: 'linear-gradient(135deg, rgba(157,143,255,0.14), rgba(255,255,255,0.02))', boxShadow: '0 4px 20px rgba(157,143,255,0.12)' }
+                            ? { borderColor: 'rgba(124,111,214,0.4)', background: 'linear-gradient(135deg, rgba(124,111,214,0.14), rgba(255,255,255,0.6))', boxShadow: '0 4px 20px rgba(124,111,214,0.12)' }
                             : isSelected
-                            ? { borderColor: 'rgba(157,143,255,0.28)', background: 'rgba(255,255,255,0.04)' }
-                            : { borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }
+                            ? { borderColor: 'rgba(124,111,214,0.28)', background: 'rgba(255,255,255,0.85)' }
+                            : { borderColor: 'rgba(45,27,30,0.10)', background: 'rgba(255,255,255,0.6)' }
                         }
                       >
                         {/* 카드 상단 행 */}
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0 space-y-1">
-                            <span className="text-sm font-black" style={{ color: isCurrent ? '#9d8fff' : 'rgba(240,232,238,0.42)' }}>
+                            <span className="text-sm font-black" style={{ color: isCurrent ? '#7c6fd6' : 'rgba(45,27,30,0.42)' }}>
                               {startYear}년 시작
                             </span>
                             {isCurrent && (
-                              <span className="ml-2 px-2 py-0.5 text-[10px] font-black rounded-full leading-none" style={{ background: 'rgba(157,143,255,0.18)', color: '#9d8fff' }}>
+                              <span className="ml-2 px-2 py-0.5 text-[10px] font-black rounded-full leading-none" style={{ background: 'rgba(124,111,214,0.18)', color: '#7c6fd6' }}>
                                 현재
                               </span>
                             )}
-                            <p className="text-base font-black leading-snug break-keep" style={{ color: '#f5eef2' }}>
+                            <p className="text-base font-black leading-snug break-keep" style={{ color: '#2D1B1E' }}>
                               {daeunGuide.title}
                             </p>
                           </div>
-                          <span className="shrink-0 rounded-full px-3 py-1 text-[11px] font-black" style={{ background: 'rgba(157,143,255,0.14)', color: '#c8bdff', border: '1px solid rgba(157,143,255,0.22)' }}>
+                          <span className="shrink-0 rounded-full px-3 py-1 text-[11px] font-black" style={{ background: 'rgba(124,111,214,0.14)', color: '#7c6fd6', border: '1px solid rgba(124,111,214,0.22)' }}>
                             {daeunGuide.badge}
                           </span>
                         </div>
 
                         {/* 실전 포인트 */}
                         <div className="mt-2 space-y-1.5">
-                          <p className="text-xs font-medium break-keep leading-relaxed" style={{ color: 'rgba(240,232,238,0.56)' }}>
+                          <p className="text-xs font-medium break-keep leading-relaxed" style={{ color: 'rgba(45,27,30,0.56)' }}>
                             하면 좋은 것: {daeunGuide.focus}
                           </p>
-                          <p className="text-xs font-medium break-keep leading-relaxed" style={{ color: 'rgba(240,232,238,0.46)' }}>
+                          <p className="text-xs font-medium break-keep leading-relaxed" style={{ color: 'rgba(45,27,30,0.46)' }}>
                             대표 체크: {startYear}년, {midYear}년, {endYear}년
                           </p>
-                          <p className="text-xs font-medium break-keep leading-relaxed" style={{ color: 'rgba(240,232,238,0.38)' }}>
+                          <p className="text-xs font-medium break-keep leading-relaxed" style={{ color: 'rgba(45,27,30,0.38)' }}>
                             조심할 것: {daeunGuide.caution}
                           </p>
                         </div>
 
                         {/* 선택 시 상세 설명 (툴팁 패널) */}
                         {isSelected && (
-                          <div className="mt-3 pt-3 space-y-1.5" style={{ borderTop: '1px solid rgba(157,143,255,0.16)' }}>
-                            <p className="text-sm font-bold break-keep leading-relaxed" style={{ color: 'rgba(245,238,242,0.82)' }}>
-                              이 구간은 <span style={{ color: '#9d8fff' }}>{daeunGuide.focus}</span>에 힘을 쓰면 결과가 잘 쌓이는 흐름이에요.
+                          <div className="mt-3 pt-3 space-y-1.5" style={{ borderTop: '1px solid rgba(124,111,214,0.16)' }}>
+                            <p className="text-sm font-bold break-keep leading-relaxed" style={{ color: 'rgba(45,27,30,0.82)' }}>
+                              이 구간은 <span style={{ color: '#7c6fd6' }}>{daeunGuide.focus}</span>에 힘을 쓰면 결과가 잘 쌓이는 흐름이에요.
                             </p>
-                            <p className="text-xs break-keep leading-relaxed" style={{ color: 'rgba(240,232,238,0.4)' }}>
+                            <p className="text-xs break-keep leading-relaxed" style={{ color: 'rgba(45,27,30,0.4)' }}>
                               나이보다 중요한 건 실제 선택의 해예요. 좋은 해와 조심할 해는 위 브리핑과 상세 리포트에서 연도별로 확인하세요.
                             </p>
                           </div>
@@ -759,8 +759,8 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                   return (
                     <div className="space-y-8">
                       <div className="flex items-center gap-3 ml-2">
-                        <Moon className="w-6 h-6" style={{ color: '#e8829a', fill: '#e8829a' }} />
-                        <h3 className="text-2xl font-bold" style={{ color: '#f5eef2', fontFamily: '"Noto Serif KR", serif' }}>상세 리포트</h3>
+                        <Moon className="w-6 h-6" style={{ color: '#d4688a', fill: '#d4688a' }} />
+                        <h3 className="text-2xl font-bold" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>상세 리포트</h3>
                       </div>
                       <AnalysisAccordion data={sections} />
                     </div>
@@ -773,20 +773,20 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
             <div
               className="p-8 rounded-[2.5rem] space-y-8"
               style={{
-                background: 'rgba(255,255,255,0.025)',
+                background: 'rgba(255,255,255,0.92)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(232,130,154,0.12)',
-                boxShadow: '0 4px 32px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.04) inset',
+                border: '1px solid rgba(212,104,138,0.12)',
+                boxShadow: '0 4px 32px rgba(45,27,30,0.10)',
               }}
             >
               {/* 친구 궁합 보기 CTA */}
               <div className="text-center space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(232,130,154,0.5)' }}>더 알아보기</p>
-                <h4 className="text-xl font-bold break-keep" style={{ color: '#f5eef2' }}>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(212,104,138,0.5)' }}>더 알아보기</p>
+                <h4 className="text-xl font-bold break-keep" style={{ color: '#2D1B1E' }}>
                   소중한 인연과의 궁합도 확인해보세요
                 </h4>
-                <p className="text-sm break-keep max-w-sm mx-auto" style={{ color: 'rgba(240,232,238,0.42)' }}>
+                <p className="text-sm break-keep max-w-sm mx-auto" style={{ color: 'rgba(45,27,30,0.42)' }}>
                   나의 사주를 확인했다면, 운명의 파트너와의 에너지 궁합을 함께 살펴보세요.
                 </p>
                 <button
@@ -799,15 +799,15 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                 </button>
               </div>
 
-              <div style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent)' }} />
+              <div style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(45,27,30,0.12), transparent)' }} />
 
               {/* 타로 리딩 CTA */}
               <div className="text-center space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(157,143,255,0.6)' }}>타로 리딩</p>
-                <h4 className="text-xl font-bold break-keep" style={{ color: '#f5eef2' }}>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(124,111,214,0.6)' }}>타로 리딩</p>
+                <h4 className="text-xl font-bold break-keep" style={{ color: '#2D1B1E' }}>
                   지금 이 순간, 카드가 건네는 메시지
                 </h4>
-                <p className="text-sm break-keep max-w-sm mx-auto" style={{ color: 'rgba(240,232,238,0.42)' }}>
+                <p className="text-sm break-keep max-w-sm mx-auto" style={{ color: 'rgba(45,27,30,0.42)' }}>
                   사주로 운명의 흐름을 알았다면, 타로로 오늘의 에너지를 읽어보세요.
                 </p>
                 <button
@@ -819,7 +819,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                 </button>
               </div>
 
-              <div style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent)' }} />
+              <div style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(45,27,30,0.12), transparent)' }} />
 
               {/* 내 사주 공유하기 */}
               <ShareButtons name={data.userName} />
