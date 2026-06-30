@@ -13,9 +13,17 @@ type Tab = {
   action: () => void;
 };
 
+// 라이트(웜 아이보리)로 이미 이행된 라우트. 테마 이행이 진행되면 여기에 추가한다.
+// 전부 라이트가 되면 이 분기와 다크 스타일을 제거.
+function isLightRoute(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return pathname.startsWith('/result') || pathname === '/unse' || pathname.startsWith('/unse/');
+}
+
 export default function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
+  const light = isLightRoute(pathname);
 
   const tabs: Tab[] = [
     {
@@ -23,8 +31,8 @@ export default function BottomNav() {
       label: '사주',
       subLabel: '운세 분석',
       emoji: '🔮',
-      accent: '#e8829a',
-      accentSoft: 'rgba(232,130,154,0.16)',
+      accent: '#d4688a',
+      accentSoft: 'rgba(212,104,138,0.16)',
       active: pathname === '/saju' || pathname?.startsWith('/result'),
       action: () => router.push('/saju'),
     },
@@ -43,8 +51,8 @@ export default function BottomNav() {
       label: '타로',
       subLabel: '오늘의 카드',
       emoji: '🌙',
-      accent: '#9d8fff',
-      accentSoft: 'rgba(157,143,255,0.16)',
+      accent: '#7c6fd6',
+      accentSoft: 'rgba(124,111,214,0.16)',
       active: pathname === '/tarot' || pathname?.startsWith('/tarot/'),
       action: () => router.push('/tarot'),
     },
@@ -53,24 +61,32 @@ export default function BottomNav() {
       label: 'MBTI',
       subLabel: '성향 테스트',
       emoji: '🧠',
-      accent: '#00e5a0',
-      accentSoft: 'rgba(0,229,160,0.16)',
+      accent: '#0e9f73',
+      accentSoft: 'rgba(14,159,115,0.16)',
       active: pathname === '/mbti' || pathname?.startsWith('/mbti/'),
       action: () => router.push('/mbti'),
     },
   ];
 
+  // 경로별 컨테이너/비활성 텍스트 색 (라이트 이행 라우트 vs 다크)
+  const containerStyle = light
+    ? {
+        background: 'rgba(255,255,255,0.9)',
+        border: '1px solid rgba(45,27,30,0.08)',
+        boxShadow: '0 -4px 24px rgba(45,27,30,0.08), 0 8px 40px rgba(212,104,138,0.08)',
+      }
+    : {
+        background: 'rgba(13,7,16,0.82)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        boxShadow: '0 -4px 24px rgba(0,0,0,0.4), 0 8px 40px rgba(212,104,138,0.06), 0 1px 0 rgba(255,255,255,0.04) inset',
+      };
+  const labelIdle = light ? 'rgba(45,27,30,0.55)' : 'rgba(255,238,245,0.50)';
+  const subLabelIdle = light ? 'rgba(45,27,30,0.4)' : 'rgba(255,238,245,0.26)';
+
   return (
     <nav className="fixed bottom-0 left-0 z-50 w-full pb-safe">
       <div className="mx-4 mb-4 max-w-2xl md:mx-auto">
-        <div
-          className="rounded-[2rem] backdrop-blur-xl"
-          style={{
-            background: 'rgba(13,7,16,0.82)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            boxShadow: '0 -4px 24px rgba(0,0,0,0.4), 0 8px 40px rgba(232,130,154,0.06), 0 1px 0 rgba(255,255,255,0.04) inset',
-          }}
-        >
+        <div className="rounded-[2rem] backdrop-blur-xl" style={containerStyle}>
           <div className="flex min-h-20 items-stretch px-3">
             {tabs.map((tab) => (
               <button
@@ -94,11 +110,11 @@ export default function BottomNav() {
                   <div className="text-center leading-tight">
                     <p
                       className="text-[12px] font-black tracking-tight"
-                      style={{ color: tab.active ? tab.accent : 'rgba(255,238,245,0.50)', textShadow: tab.active ? `0 0 10px ${tab.accent}55` : 'none' }}
+                      style={{ color: tab.active ? tab.accent : labelIdle, textShadow: tab.active ? `0 0 10px ${tab.accent}55` : 'none' }}
                     >
                       {tab.label}
                     </p>
-                    <p className="text-[9px] font-bold" style={{ color: tab.active ? tab.accent : 'rgba(255,238,245,0.26)' }}>
+                    <p className="text-[9px] font-bold" style={{ color: tab.active ? tab.accent : subLabelIdle }}>
                       {tab.subLabel}
                     </p>
                   </div>
