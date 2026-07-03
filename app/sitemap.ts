@@ -12,6 +12,7 @@ const SITEMAP_ROUTES = [
   { path: '/', changeFrequency: 'weekly' as const, priority: 1 },
 
   { path: '/saju', changeFrequency: 'weekly' as const, priority: 0.9 },
+  { path: '/unse', changeFrequency: 'daily' as const, priority: 0.9 },
   { path: '/gunghap', changeFrequency: 'weekly' as const, priority: 0.9 },
 
   { path: '/tarot', changeFrequency: 'weekly' as const, priority: 0.9 },
@@ -51,7 +52,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const guideRoutes = guides.map((guide) => ({
     url: new URL(`/guide/${guide.slug}`, SITE_URL).toString(),
-    lastModified,
+    lastModified: new Date(guide.dateModified),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }))

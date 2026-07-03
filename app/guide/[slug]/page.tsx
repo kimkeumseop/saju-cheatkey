@@ -4,7 +4,11 @@ import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AuroraBackground from '@/components/AuroraBackground';
-import { createMetadata, guideMap, guides, SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE } from '@/lib/site';
+import { createMetadata, guideMap, guides, SITE_URL, SITE_NAME, SITE_TEAM, DEFAULT_OG_IMAGE } from '@/lib/site';
+
+function formatDate(date: string) {
+  return date.replace(/-/g, '.');
+}
 
 export async function generateStaticParams() {
   return guides.map((guide) => ({ slug: guide.slug }));
@@ -47,6 +51,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         description: guide.description,
         articleBody: guide.intro,
         image: DEFAULT_OG_IMAGE,
+        datePublished: guide.datePublished,
+        dateModified: guide.dateModified,
         inLanguage: 'ko-KR',
         mainEntityOfPage: guideUrl,
         author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
@@ -79,6 +85,9 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(212,104,138,0.7)' }}>Guide</p>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight break-keep" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>{guide.title}</h1>
           <p className="leading-relaxed break-keep text-base md:text-lg" style={{ color: 'rgba(45,27,30,0.6)' }}>{guide.intro}</p>
+          <p className="text-sm font-bold" style={{ color: 'rgba(45,27,30,0.42)' }}>
+            {SITE_TEAM} · 발행 {formatDate(guide.datePublished)} · 최종 수정 {formatDate(guide.dateModified)}
+          </p>
           <div className="flex flex-wrap gap-3 text-sm font-bold">
             <Link href="/" className="px-4 py-2 rounded-full transition-colors" style={{ background: 'rgba(212,104,138,0.1)', border: '1px solid rgba(212,104,138,0.2)', color: '#d4688a' }}>
               홈으로

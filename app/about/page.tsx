@@ -54,6 +54,18 @@ export default function AboutPage() {
           </article>
         </section>
 
+        <section className="rounded-[2.5rem] p-8 md:p-10 space-y-5" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(212,104,138,0.12)' }}>
+          <h2 className="text-2xl font-bold" style={{ color: '#2D1B1E' }}>콘텐츠는 이렇게 만듭니다</h2>
+          <div className="space-y-4 leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.6)' }}>
+            <p>
+              가이드와 칼럼은 천간지지, 오행, 십성, 대운 같은 전통 명리학의 표준 개념 체계를 근거로 작성하며, 유파에 따라 견해가 갈리는 주제는 특정 견해를 단정하지 않고 여러 관점이 있음을 함께 밝힙니다. 발행 후에도 내용을 계속 다듬으며, 각 글에는 발행일과 최종 수정일을 표기합니다.
+            </p>
+            <p>
+              사주 분석 결과는 만세력 기반의 명식 계산 위에 AI 해석을 결합해 제공합니다. 계산 단계(사주 원국, 오행 분포, 대운 산출)는 정해진 명리학 규칙을 따르고, 해석 단계는 그 구조를 읽기 쉬운 언어로 풀어내는 역할을 합니다. 모든 결과물은 미래를 단정하는 예언이 아닌 자기 이해를 돕는 참고 정보이며, 건강·법률·재정 등 중요한 결정은 반드시 해당 분야 전문가와 상의하시기 바랍니다.
+            </p>
+          </div>
+        </section>
+
         <section className="rounded-[2.5rem] p-8 md:p-10 space-y-4" style={{ background: 'radial-gradient(ellipse at 0% 0%, rgba(124,111,214,0.12), rgba(255,255,255,0.85) 60%)', border: '1px solid rgba(124,111,214,0.16)' }}>
           <h2 className="text-2xl font-bold" style={{ color: '#2D1B1E' }}>함께 읽으면 좋은 페이지</h2>
           <div className="flex flex-wrap gap-3">

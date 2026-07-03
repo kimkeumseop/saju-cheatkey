@@ -4,7 +4,7 @@ import BottomNav from "@/components/BottomNav";
 import { AuthProvider } from "@/lib/auth";
 import type { Metadata } from "next";
 import { SITE_NAME, SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/site";
-import Script from "next/script";
+import AdSenseScript from "@/components/AdSenseScript";
 
 const pretendard = localFont({
   src: [
@@ -94,12 +94,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
       </head>
       <body className={`${pretendard.className} antialiased min-h-screen relative pb-20`}>
-        <Script
-          id="adsbygoogle-init"
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1059415497859090"
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
+        <AdSenseScript />
         <AuthProvider>
           <div className="fixed inset-0 bg-texture z-[-1]" />
           {children}

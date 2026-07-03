@@ -55,6 +55,8 @@ export function createMetadata({
 
 export type GuideEntry = {
   slug: string;
+  datePublished: string;
+  dateModified: string;
   title: string;
   description: string;
   intro: string;
@@ -69,6 +71,8 @@ export type GuideEntry = {
 export const guides: GuideEntry[] = [
   {
     slug: "what-is-saju",
+    datePublished: "2026-03-10",
+    dateModified: "2026-07-03",
     title: "사주란 무엇인가",
     description:
       "사주의 기본 개념과 왜 생년월일시를 바탕으로 해석하는지 초보자 관점에서 정리한 안내입니다.",
@@ -114,6 +118,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "heavenly-stems-earthly-branches",
+    datePublished: "2026-03-14",
+    dateModified: "2026-07-03",
     title: "천간과 지지 기초",
     description:
       "천간과 지지가 무엇을 뜻하는지, 사주에서 각각 어떤 역할을 하는지 기초 개념부터 설명합니다.",
@@ -155,6 +161,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "five-elements",
+    datePublished: "2026-03-18",
+    dateModified: "2026-07-03",
     title: "오행의 의미",
     description:
       "목·화·토·금·수 오행이 각각 어떤 성향을 상징하는지, 부족하거나 강할 때 어떻게 해석하는지 설명합니다.",
@@ -200,6 +208,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "how-to-read-yearly-fortune",
+    datePublished: "2026-03-22",
+    dateModified: "2026-07-03",
     title: "운세 해석 가이드",
     description:
       "연운이나 월운을 볼 때 무엇을 참고하고 어디까지 참고해야 하는지, 초보자용 기준을 정리합니다.",
@@ -241,6 +251,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "common-misunderstandings",
+    datePublished: "2026-03-26",
+    dateModified: "2026-07-03",
     title: "사주에 대한 흔한 오해",
     description:
       "사주를 처음 접할 때 자주 생기는 오해와, 참고용 정보로 활용하기 위해 필요한 기준을 정리했습니다.",
@@ -282,6 +294,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "birth-time-unknown",
+    datePublished: "2026-03-30",
+    dateModified: "2026-07-03",
     title: "출생시간을 모를 때는 어떻게 볼까",
     description:
       "출생시간을 모를 때 사주를 어디까지 해석할 수 있는지, 어떤 부분은 보수적으로 봐야 하는지 설명합니다.",
@@ -323,6 +337,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "what-is-ilju",
+    datePublished: "2026-04-03",
+    dateModified: "2026-07-03",
     title: "일주란 무엇인가",
     description: "사주에서 일주가 왜 가장 중요한 기둥인지, 일간과 일지가 각각 무엇을 나타내는지 설명합니다.",
     intro: "사주의 네 기둥 중 일주(日柱)는 태어난 날의 천간과 지지를 묶은 것입니다. 명리학에서는 일주를 자기 자신을 대표하는 기둥으로 봅니다. 연주는 사회적 환경, 월주는 성장 배경, 시주는 노년과 자녀 영역과 연결하는 반면, 일주는 본인의 기질과 내면을 가장 직접적으로 반영한다고 봅니다.",
@@ -357,6 +373,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "what-is-sipsin",
+    datePublished: "2026-04-07",
+    dateModified: "2026-07-03",
     title: "십신이란 무엇인가",
     description: "사주의 십신(식신, 상관, 편재, 정재, 편관, 정관, 편인, 정인, 비견, 겁재)이 각각 무엇을 나타내는지 기초부터 설명합니다.",
     intro: "십신(十神)은 일간을 기준으로 나머지 일곱 글자의 관계를 분류하는 명리학의 개념입니다. 나(일간)와 다른 글자가 오행 상 어떤 관계인지, 음양이 같은지 다른지에 따라 열 가지 이름이 붙습니다.",
@@ -391,6 +409,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "what-is-yongshin",
+    datePublished: "2026-04-11",
+    dateModified: "2026-07-03",
     title: "용신이란 무엇인가",
     description: "사주에서 용신이 무엇인지, 왜 중요하게 여기는지, 어떻게 찾는지 기초 개념부터 정리합니다.",
     intro: "용신(用神)은 사주 전체의 균형을 잡아주는 핵심 오행을 말합니다. 사주 여덟 글자 안에서 어떤 오행이 과하거나 부족한지를 파악한 뒤, 그 균형을 맞춰주는 역할을 하는 글자나 오행을 용신으로 봅니다.",
@@ -425,6 +445,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "what-is-daeun",
+    datePublished: "2026-04-15",
+    dateModified: "2026-07-03",
     title: "대운이란 무엇인가",
     description: "사주에서 대운이 무엇인지, 세운과 어떻게 다른지, 내 대운을 어떻게 확인하는지 설명합니다.",
     intro: "사주팔자가 태어날 때 고정되는 여덟 글자라면, 대운(大運)은 10년 단위로 바뀌는 흐름의 글자입니다. 사주가 타고난 기질과 성향을 보여준다면, 대운은 그 사람이 어떤 시기에 어떤 환경과 에너지 속에 놓이는지를 보여줍니다.",
@@ -459,6 +481,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "reading-wealth-luck",
+    datePublished: "2026-04-19",
+    dateModified: "2026-07-03",
     title: "사주에서 재물운 보는 법",
     description: "사주에서 재물운과 관련된 글자, 편재와 정재의 차이, 재물운이 강한 사주의 특징을 설명합니다.",
     intro: "사주에서 재물과 관련된 십신은 편재(偏財)와 정재(正財)입니다. 일간이 극하는 오행 중 음양이 같으면 편재, 다르면 정재입니다. 두 재성은 모두 재물과 연결되지만 에너지 방식이 다릅니다.",
@@ -493,6 +517,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "reading-love-marriage",
+    datePublished: "2026-04-23",
+    dateModified: "2026-07-03",
     title: "사주에서 연애운·결혼운 보는 법",
     description: "사주에서 연애와 결혼 관련 글자, 배우자 자리, 관성과 재성의 역할을 설명합니다.",
     intro: "사주에서 연애와 결혼은 특정 글자 하나로 판단하기보다 일지, 관성, 재성의 전체적인 흐름으로 읽습니다. 성별에 따라 연결되는 십신이 다르고, 배우자와 관련된 자리도 다르게 해석합니다.",
@@ -527,6 +553,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "how-to-read-gunghap",
+    datePublished: "2026-04-27",
+    dateModified: "2026-07-03",
     title: "궁합 보는 법 기초",
     description: "사주 궁합을 어떻게 보는지, 일주 궁합·오행 궁합·천간합·지지합의 기초 개념을 설명합니다.",
     intro: "궁합(宮合)은 두 사람의 사주를 함께 놓고 에너지가 어떻게 어우러지는지 보는 방식입니다. 단순히 띠가 맞는지 아닌지를 보는 것보다 훨씬 복잡하고 다층적인 해석이 가능합니다.",
@@ -561,6 +589,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "twelve-zodiac-traits",
+    datePublished: "2026-05-01",
+    dateModified: "2026-07-03",
     title: "띠별 기본 성향 (12지지)",
     description: "12간지(자·축·인·묘·진·사·오·미·신·유·술·해) 각 띠의 기본 성향과 특징을 사주 명리학 관점에서 설명합니다.",
     intro: "12지지는 쥐(자)·소(축)·호랑이(인)·토끼(묘)·용(진)·뱀(사)·말(오)·양(미)·원숭이(신)·닭(유)·개(술)·돼지(해)의 순서로 이어집니다. 태어난 해의 지지가 띠가 되며, 사주에서는 단순한 상징보다 오행 에너지로 읽습니다.",
@@ -598,6 +628,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "saju-vs-mbti",
+    datePublished: "2026-05-05",
+    dateModified: "2026-07-03",
     title: "사주와 MBTI, 무엇이 다를까",
     description: "사주와 MBTI는 둘 다 나를 설명하는 도구지만 원리와 접근이 다릅니다. 두 시스템의 공통점과 차이를 정리합니다.",
     intro: "MBTI와 사주는 모두 '나는 어떤 사람인가'를 탐색하는 도구입니다. 20~30대 사이에서 두 가지를 함께 활용하는 경우가 많아졌는데, 원리와 한계를 알고 쓰면 더 유용합니다.",
@@ -632,6 +664,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "lunar-solar-calendar-saju",
+    datePublished: "2026-05-09",
+    dateModified: "2026-07-03",
     title: "음력과 양력, 사주는 어느 기준으로 볼까",
     description: "사주를 볼 때 생일을 음력으로 입력해야 하는지 양력으로 입력해야 하는지, 절기력 기준이 무엇인지 설명합니다.",
     intro: "사주를 처음 볼 때 가장 많이 혼란스러워하는 것 중 하나가 생일 기준입니다. 부모님한테 들은 생일이 음력인지 양력인지 헷갈리는 경우도 많고, 어느 쪽으로 입력해야 맞는지 모르는 경우도 많습니다.",
@@ -666,6 +700,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "ilgan-gap-wood",
+    datePublished: "2026-05-13",
+    dateModified: "2026-07-03",
     title: "일간별 기본 성향 — 갑(甲)목",
     description: "사주 일간이 갑(甲)인 사람의 기본 성향, 강점, 에너지 방식, 주의할 점을 설명합니다.",
     intro: "갑(甲)은 십천간의 첫 번째로 양목(陽木) 에너지입니다. 큰 나무, 곧게 자라는 줄기의 이미지로 표현합니다. 일간이 갑인 사람은 이 에너지를 기본 기질로 타고납니다.",
@@ -700,6 +736,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "ilgan-byeong-fire",
+    datePublished: "2026-05-17",
+    dateModified: "2026-07-03",
     title: "일간별 기본 성향 — 병(丙)화",
     description: "사주 일간이 병(丙)인 사람의 기본 성향, 강점, 에너지 방식, 주의할 점을 설명합니다.",
     intro: "병(丙)은 양화(陽火) 에너지입니다. 태양, 빛, 따뜻함의 이미지로 표현합니다. 일간이 병인 사람은 주변을 밝히는 에너지를 타고납니다.",
@@ -734,6 +772,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "ilgan-gyeong-metal",
+    datePublished: "2026-05-21",
+    dateModified: "2026-07-03",
     title: "일간별 기본 성향 — 경(庚)금",
     description: "사주 일간이 경(庚)인 사람의 기본 성향, 강점, 에너지 방식, 주의할 점을 설명합니다.",
     intro: "경(庚)은 양금(陽金) 에너지입니다. 날이 선 금속, 도끼, 단단한 광석의 이미지로 표현합니다. 결단력과 실행력이 특징입니다.",
@@ -768,6 +808,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "siksin-vs-sanggwan",
+    datePublished: "2026-05-25",
+    dateModified: "2026-07-03",
     title: "식신과 상관, 어떻게 다를까",
     description: "사주에서 식신과 상관이 각각 무엇을 나타내는지, 두 십신의 에너지 차이와 각각의 강점을 설명합니다.",
     intro: "식신(食神)과 상관(傷官)은 모두 내가 생(生)하는 오행, 즉 일간이 에너지를 주는 방향의 십신입니다. 두 가지 모두 표현력, 활동성, 창의성과 연결되지만 에너지의 결이 다릅니다.",
@@ -802,6 +844,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "pyeonggwan-vs-jeonggwan",
+    datePublished: "2026-05-29",
+    dateModified: "2026-07-03",
     title: "편관과 정관, 어떻게 다를까",
     description: "사주에서 편관과 정관이 각각 무엇을 나타내는지, 직업·조직·관계와 어떻게 연결되는지 설명합니다.",
     intro: "편관(偏官)과 정관(正官)은 나를 극(剋)하는 오행의 십신입니다. 일간을 눌러오는 에너지이기 때문에 긴장감, 압박, 책임감과 연결됩니다. 음양이 같으면 편관, 다르면 정관입니다.",
@@ -836,6 +880,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "reading-career-luck",
+    datePublished: "2026-06-02",
+    dateModified: "2026-07-03",
     title: "사주에서 직업운 보는 법",
     description: "사주에서 직업 성향과 맞는 일의 방향을 어떻게 읽는지, 관성·식상·재성의 역할을 설명합니다.",
     intro: "사주로 특정 직업을 단정 짓는 것은 어렵습니다. 하지만 어떤 방식으로 일할 때 에너지가 살아나는지, 어떤 환경에서 잘 맞는지를 사주로 읽는 것은 의미가 있습니다.",
@@ -870,6 +916,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "reading-health-in-saju",
+    datePublished: "2026-06-06",
+    dateModified: "2026-07-03",
     title: "사주에서 건강 신호 읽는 법",
     description: "사주 오행의 과부족이 신체 어느 부위와 연결되는지, 건강 취약점을 어떻게 참고하는지 설명합니다.",
     intro: "사주의 오행은 신체 기관과 연결됩니다. 오행이 과하거나 부족할 때 해당 기관이 스트레스를 받기 쉽다고 봅니다. 이것은 진단이 아닌 참고 정보로, 실제 건강 문제는 의료 전문가와 상담해야 합니다.",
@@ -904,6 +952,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "reading-2026-fortune",
+    datePublished: "2026-06-10",
+    dateModified: "2026-07-03",
     title: "2026년 운세를 사주로 읽는 법",
     description: "2026년 병오년(丙午年)의 기운이 무엇인지, 각 일간별로 2026년을 어떻게 읽으면 좋은지 설명합니다.",
     intro: "2026년은 병오년(丙午年)입니다. 천간 병(丙)은 양화(陽火) 에너지이고, 지지 오(午)도 화(火) 기운입니다. 두 글자 모두 화(火)로 이루어져 있어 2026년은 강한 화의 기운이 흐르는 해입니다.",
@@ -940,6 +990,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "saju-and-tarot-together",
+    datePublished: "2026-06-14",
+    dateModified: "2026-07-03",
     title: "사주와 타로, 함께 보면 좋은 이유",
     description: "사주와 타로가 각각 무엇을 보는 도구인지, 함께 활용하면 어떤 보완 효과가 있는지 설명합니다.",
     intro: "사주와 타로는 다른 방식으로 나를 읽는 도구입니다. 사주가 타고난 흐름을 보는 지도라면, 타로는 지금 이 순간의 에너지를 보는 나침반에 가깝습니다.",
@@ -974,6 +1026,8 @@ export const guides: GuideEntry[] = [
   },
   {
     slug: "saju-beginners-guide",
+    datePublished: "2026-06-18",
+    dateModified: "2026-07-03",
     title: "사주를 처음 볼 때 알아두면 좋은 것들",
     description: "사주를 처음 접하는 분들이 알아두면 좋은 기본 태도, 흔한 오해, 사주 활용법을 정리합니다.",
     intro: "사주를 처음 접하면 어디서부터 시작해야 할지 막막할 수 있습니다. 복잡한 용어보다 먼저 사주를 대하는 태도와 기본 방향을 잡는 것이 더 중요합니다.",
@@ -1065,6 +1119,54 @@ export const columns: ColumnEntry[] = [
     description:
       "사주 해석이 나와 다르게 느껴지는 이유를 일간·일지·대운 등 해석의 여러 층위로 풀어 설명합니다.",
     date: "2026-04-06",
+    readMinutes: 8,
+  },
+  {
+    id: "7",
+    title: "이직 타이밍, 사주로 어떻게 읽을까 — 직장인을 위한 명리학",
+    description:
+      "관성과 식상, 대운의 흐름을 통해 이직을 고민할 때 명리학이 실제로 참고가 되는 지점과 되지 않는 지점을 구분해 설명합니다.",
+    date: "2026-04-20",
+    readMinutes: 8,
+  },
+  {
+    id: "8",
+    title: "궁합에서 정말 봐야 하는 것 — 겉궁합과 속궁합의 차이",
+    description:
+      "띠 궁합 같은 겉궁합의 한계와, 일간의 관계·오행 보완·십성 구조로 읽는 속궁합의 실제 해석 포인트를 정리했습니다.",
+    date: "2026-05-04",
+    readMinutes: 8,
+  },
+  {
+    id: "9",
+    title: "신강과 신약 — 내 사주의 힘을 판단하는 첫 기준",
+    description:
+      "사주 해석의 출발점인 신강·신약 개념을 풀어 설명하고, 강한 사주와 약한 사주가 각각 어떤 방식으로 힘을 쓰는지 안내합니다.",
+    date: "2026-05-18",
+    readMinutes: 8,
+  },
+  {
+    id: "10",
+    title: "AI 사주 서비스는 어떻게 사주를 풀이할까 — 원리와 한계",
+    description:
+      "만세력 계산부터 AI 해석 생성까지, AI 사주 서비스가 작동하는 실제 과정과 전통 상담 대비 잘하는 것·못하는 것을 투명하게 설명합니다.",
+    date: "2026-06-01",
+    readMinutes: 9,
+  },
+  {
+    id: "11",
+    title: "일주론 열풍, 어떻게 읽어야 할까 — 60일주를 보는 올바른 관점",
+    description:
+      "SNS에서 유행하는 일주론 콘텐츠의 매력과 한계를 짚고, 일주를 사주 전체 구조 안에서 읽는 방법을 안내합니다.",
+    date: "2026-06-15",
+    readMinutes: 7,
+  },
+  {
+    id: "12",
+    title: "2026년 하반기, 오행별로 준비하면 좋은 것들",
+    description:
+      "병오년 하반기의 기운 변화를 짚고, 내 사주에서 강한 오행과 약한 오행에 따라 하반기를 준비하는 실용적인 방법을 정리했습니다.",
+    date: "2026-06-29",
     readMinutes: 8,
   },
 ];
