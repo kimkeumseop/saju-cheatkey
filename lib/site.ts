@@ -248,6 +248,7 @@ export const faqEntries = [
 
 export const footerLinks = {
   service: { href: "/about", label: "서비스 소개" },
+  unse: { href: "/unse", label: "오늘의 운세" },
   guide: { href: "/guide", label: "사주 기초 가이드" },
   column: { href: "/column", label: "명리 칼럼" },
   faq: { href: "/faq", label: "FAQ" },
