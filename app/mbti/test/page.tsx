@@ -1,218 +1,130 @@
-'use client';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { createMetadata, SITE_URL } from '@/lib/site';
+import MbtiTestClient from './MbtiTestClient';
 
-import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { Brain, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import AuroraBackground from '@/components/AuroraBackground';
-import { MBTI_QUESTIONS } from '@/src/data/mbtiQuestions';
-import { calculateMbtiResult, MBTI_RESULT_STORAGE_KEY } from '@/lib/mbti';
-import { MBTI_TYPES } from '@/src/data/mbtiTypes';
-import { db } from '@/lib/firebase';
-import { useAuth } from '@/lib/auth';
+export const metadata: Metadata = createMetadata({
+  title: '무료 MBTI 검사 20문항 | 사주 치트키',
+  description:
+    '20문항으로 3~4분 만에 끝나는 무료 MBTI 성격유형 검사. 네 가지 지표가 무엇을 측정하는지, 결과를 어떻게 읽어야 하는지까지 함께 안내합니다.',
+  path: '/mbti/test',
+  keywords: ['MBTI 검사', '무료 MBTI 테스트', 'MBTI 20문항', '성격유형 검사', 'MBTI 결과 해석'],
+});
 
-const OPTIONS = [
-  { value: 4, short: '매우 동의' },
-  { value: 3, short: '동의' },
-  { value: 2, short: '보통' },
-  { value: 1, short: '비동의' },
-  { value: 0, short: '매우 비동의' },
+const DIMENSIONS = [
+  {
+    code: 'E / I',
+    title: '에너지의 방향',
+    body:
+      '외향(E)과 내향(I)은 사교성의 크기가 아니라 에너지를 회복하는 방식의 차이입니다. 사람들과 있을 때 충전되는 쪽이 E, 혼자 있는 시간에 충전되는 쪽이 I입니다. 그래서 말수가 많은 I도, 조용한 E도 흔합니다.',
+  },
+  {
+    code: 'S / N',
+    title: '정보를 받아들이는 방식',
+    body:
+      '감각(S)은 지금 확인 가능한 사실과 경험에서 출발하고, 직관(N)은 그 너머의 가능성과 패턴에서 출발합니다. 같은 상황을 설명할 때 S는 구체적인 사실을 나열하고 N은 의미와 연결을 먼저 말하는 경향이 있습니다.',
+  },
+  {
+    code: 'T / F',
+    title: '판단의 기준',
+    body:
+      '사고(T)는 일관된 원칙과 논리를, 감정(F)은 사람과 상황의 조화를 우선합니다. T가 냉정하고 F가 감정적이라는 뜻이 아니라, 결정을 내릴 때 먼저 확인하는 항목이 다르다는 의미입니다.',
+  },
+  {
+    code: 'J / P',
+    title: '생활을 다루는 방식',
+    body:
+      '판단(J)은 미리 정해두고 진행하는 것을 편하게 느끼고, 인식(P)은 상황을 열어두고 조정하는 것을 편하게 느낍니다. 계획성의 유무가 아니라 언제 결정을 확정하느냐의 차이입니다.',
+  },
 ];
 
+const FAQ = [
+  {
+    question: '검사 결과가 예전과 다르게 나왔는데 왜 그런가요?',
+    answer:
+      'MBTI는 응답 시점의 자기 인식을 반영합니다. 환경이나 역할이 바뀌면 응답이 달라지고 지표도 함께 바뀔 수 있습니다. 특히 각 지표의 점수가 중간에 가까웠다면 작은 차이로도 결과가 뒤집힙니다.',
+  },
+  {
+    question: '20문항으로 정확한 결과가 나오나요?',
+    answer:
+      '간이 검사이므로 정식 진단 도구를 대체하지 않습니다. 대략적인 성향의 방향을 확인하는 용도로 활용하시고, 결과에 어긋나는 부분이 있다면 그대로 두셔도 됩니다.',
+  },
+  {
+    question: 'MBTI 결과를 채용이나 평가에 써도 되나요?',
+    answer:
+      '권하지 않습니다. MBTI는 신뢰도와 타당도에 대한 비판이 꾸준히 제기되어 온 분류 도구입니다. 자기 이해와 대화를 위한 언어로 쓰는 것이 적절한 사용 범위입니다.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  '@id': `${SITE_URL}/mbti/test#faq`,
+  mainEntity: FAQ.map((item) => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: { '@type': 'Answer', text: item.answer },
+  })),
+};
+
 export default function MbtiTestPage() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [submitting, setSubmitting] = useState(false);
-
-  const question = MBTI_QUESTIONS[currentIndex];
-  const progress = Math.round((Object.keys(answers).length / MBTI_QUESTIONS.length) * 100);
-  const currentValue = answers[question.id];
-  const canGoNext = currentValue !== undefined;
-
-  const axisSummary = useMemo(() => {
-    const map: Record<string, number> = { EI: 0, SN: 0, TF: 0, JP: 0 };
-    MBTI_QUESTIONS.forEach((item) => {
-      if (answers[item.id] !== undefined) map[item.axis] += 1;
-    });
-    return map;
-  }, [answers]);
-
-  const handleSelect = (value: number) => {
-    setAnswers((prev) => ({ ...prev, [question.id]: value }));
-  };
-
-  const handleNext = async () => {
-    if (!canGoNext || submitting) return;
-
-    if (currentIndex < MBTI_QUESTIONS.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      const { type, scores } = calculateMbtiResult(answers);
-      const typeInfo = MBTI_TYPES[type as keyof typeof MBTI_TYPES];
-
-      let profile = null;
-      try {
-        const response = await fetch('/api/mbti', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type, scores }),
-        });
-        const data = await response.json();
-        profile = data?.profile ?? null;
-      } catch {
-        profile = null;
-      }
-
-      const payload = {
-        userId: user?.uid || 'anonymous',
-        mbtiType: type,
-        scores,
-        createdAt: new Date().toISOString(),
-        typeInfo,
-        profile,
-      };
-
-      sessionStorage.setItem(MBTI_RESULT_STORAGE_KEY, JSON.stringify(payload));
-
-      if (db) {
-        try {
-          await addDoc(collection(db, 'mbtiResults'), {
-            userId: payload.userId,
-            mbtiType: type,
-            scores,
-            createdAt: serverTimestamp(),
-          });
-        } catch (error) {
-          console.error('Failed to save mbtiResults:', error);
-        }
-      }
-
-      router.push(`/mbti/result/${type}`);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return (
-    <main className="relative min-h-screen overflow-x-hidden px-6 pb-28 pt-24" style={{ background: '#FBF7F2' }}>
-      <AuroraBackground />
-      <div className="relative z-10 mx-auto max-w-3xl">
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black tracking-[0.18em]" style={{ background: 'rgba(14,159,115,0.10)', border: '1px solid rgba(14,159,115,0.25)', color: '#0e9f73' }}>
-              <Brain className="h-3.5 w-3.5" />
-              MBTI TEST
-            </div>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>당신의 성향을 확인해보세요</h1>
-          </div>
-          <div className="rounded-2xl px-4 py-3 text-right" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.16)' }}>
-            <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: '#0e9f73' }}>Progress</p>
-            <p className="mt-1 text-lg font-black" style={{ color: '#2D1B1E' }}>{currentIndex + 1} / {MBTI_QUESTIONS.length}</p>
-          </div>
-        </div>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <MbtiTestClient />
 
-        <div className="mb-6 h-3 overflow-hidden rounded-full" style={{ background: 'rgba(14,159,115,0.12)' }}>
-          <motion.div
-            className="h-full rounded-full bg-[linear-gradient(90deg,#0e9f73,#34D399)]"
-            initial={false}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-          />
-        </div>
+      <section className="relative px-6 pb-24" style={{ background: '#FBF7F2' }}>
+        <div className="mx-auto max-w-3xl space-y-8">
+          <header className="space-y-4">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight break-keep" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>
+              이 검사는 무엇을 측정하나요
+            </h2>
+            <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>
+              MBTI는 성격을 네 가지 축으로 나누어 살펴보는 분류 체계입니다. 각 축은 좋고 나쁨을 가르는 것이 아니라, 같은 상황에서 무엇을 먼저 보고 어떻게 반응하는지의 차이를 설명합니다. 이 검사는 20문항으로 네 축의 방향을 확인하는 간이 버전입니다.
+            </p>
+          </header>
 
-        <div className="mb-6 grid gap-3 rounded-[2rem] p-5 md:grid-cols-4" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.14)', boxShadow: '0 4px 24px rgba(45,27,30,0.22)' }}>
-          {Object.entries(axisSummary).map(([axis, count]) => (
-            <div key={axis} className="rounded-2xl px-4 py-3" style={{ background: 'rgba(14,159,115,0.07)', border: '1px solid rgba(14,159,115,0.12)' }}>
-              <p className="text-xs font-black tracking-[0.18em]" style={{ color: '#0e9f73' }}>{axis}</p>
-              <p className="mt-1 text-sm font-bold" style={{ color: 'rgba(45,27,30,0.7)' }}>{count} / 5 답변</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="overflow-hidden rounded-[2.2rem]" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.14)', boxShadow: '0 8px 40px rgba(14,159,115,0.08)' }}>
-          <AnimatePresence mode="wait">
-            <motion.section
-              key={question.id}
-              initial={{ opacity: 0, x: 48 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -48 }}
-              transition={{ duration: 0.28, ease: 'easeOut' }}
-              className="p-7 md:p-10"
-            >
-              <div className="mb-8 flex items-center justify-between gap-4">
-                <div className="rounded-full px-4 py-2 text-sm font-black" style={{ background: 'rgba(14,159,115,0.12)', color: '#0e9f73' }}>
-                  {question.axis} 척도
-                </div>
-                <p className="text-sm font-bold" style={{ color: 'rgba(45,27,30,0.4)' }}>문항 {question.id}</p>
+          <div className="grid gap-5 md:grid-cols-2">
+            {DIMENSIONS.map((item) => (
+              <div key={item.code} className="rounded-[1.75rem] p-6 space-y-2" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.14)' }}>
+                <p className="text-xs font-black tracking-[0.28em]" style={{ color: '#0e9f73' }}>{item.code}</p>
+                <h3 className="font-bold break-keep" style={{ color: '#2D1B1E' }}>{item.title}</h3>
+                <p className="text-sm leading-7 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>{item.body}</p>
               </div>
+            ))}
+          </div>
 
-              <h2 className="text-lg font-bold leading-relaxed tracking-tight md:text-2xl break-keep" style={{ color: '#2D1B1E' }}>
-                {question.statement}
-              </h2>
+          <div className="rounded-[2.5rem] p-8 md:p-10 space-y-4" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.14)' }}>
+            <h3 className="text-xl font-bold" style={{ color: '#2D1B1E' }}>결과를 읽을 때 기억하면 좋은 것</h3>
+            <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>
+              결과로 나온 네 글자는 정체성이 아니라 지금의 경향을 요약한 표현입니다. 각 지표의 점수가 중간에 가까울수록 두 방향의 특성이 함께 나타나므로, 유형 이름보다 개별 지표의 기울기를 보시는 편이 정확합니다.
+            </p>
+            <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>
+              또한 &ldquo;나는 I라서 못 한다&rdquo;처럼 유형을 한계의 근거로 삼는 사용은 피하시는 것이 좋습니다. 유형은 지금 편한 방식을 알려줄 뿐, 할 수 있는 일의 범위를 정하지 않습니다.
+            </p>
+          </div>
 
-              <div className="mt-10">
-                <div className="mb-4 flex items-center justify-between text-sm font-bold" style={{ color: 'rgba(45,27,30,0.5)' }}>
-                  <span>매우 동의</span>
-                  <span>매우 비동의</span>
+          <div className="rounded-[2.5rem] p-8 md:p-10 space-y-5" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.14)' }}>
+            <h3 className="text-xl font-bold" style={{ color: '#2D1B1E' }}>자주 묻는 질문</h3>
+            <div className="space-y-4">
+              {FAQ.map((item) => (
+                <div key={item.question} className="rounded-[1.75rem] p-6 space-y-2" style={{ background: 'rgba(251,247,242,0.85)', border: '1px solid rgba(14,159,115,0.12)' }}>
+                  <h4 className="font-bold break-keep" style={{ color: '#2D1B1E' }}>Q. {item.question}</h4>
+                  <p className="leading-7 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>{item.answer}</p>
                 </div>
-                <div className="grid gap-3 md:grid-cols-5">
-                  {OPTIONS.map((option) => {
-                    const selected = currentValue === option.value;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleSelect(option.value)}
-                        className="rounded-[1.6rem] border px-4 py-5 text-center transition"
-                        style={
-                          selected
-                            ? { borderColor: 'transparent', background: 'linear-gradient(135deg, #0e9f73, #059669)', color: 'white', boxShadow: '0 14px 30px rgba(14,159,115,0.25)' }
-                            : { borderColor: 'rgba(14,159,115,0.16)', background: 'rgba(14,159,115,0.05)', color: 'rgba(45,27,30,0.7)' }
-                        }
-                      >
-                        <div className="mx-auto mb-3 h-4 rounded-full" style={{ width: `${12 + option.value * 5}px`, background: selected ? 'rgba(255,255,255,0.7)' : 'rgba(14,159,115,0.35)' }} />
-                        <p className="text-sm font-black">{option.short}</p>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.section>
-          </AnimatePresence>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-3 pt-1 text-sm font-bold">
+              <Link href="/mbti" className="rounded-full px-4 py-2" style={{ background: 'rgba(14,159,115,0.1)', border: '1px solid rgba(14,159,115,0.2)', color: '#0e9f73' }}>
+                16가지 유형 살펴보기
+              </Link>
+              <Link href="/guide/saju-vs-mbti" className="rounded-full px-4 py-2" style={{ background: 'rgba(212,104,138,0.1)', border: '1px solid rgba(212,104,138,0.2)', color: '#d4688a' }}>
+                사주와 MBTI 차이
+              </Link>
+            </div>
+          </div>
         </div>
-
-        <div className="mt-6 flex items-center justify-between gap-4">
-          <button
-            type="button"
-            onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
-            disabled={currentIndex === 0 || submitting}
-            className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-45 hover:bg-black/5"
-            style={{ border: '1px solid rgba(14,159,115,0.2)', color: 'rgba(14,159,115,0.85)' }}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            이전 문항
-          </button>
-
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={!canGoNext || submitting}
-            className="inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-45 hover:brightness-110"
-            style={{ background: 'linear-gradient(135deg, #0e9f73, #059669)', boxShadow: '0 8px 32px rgba(14,159,115,0.24)' }}
-          >
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            {currentIndex === MBTI_QUESTIONS.length - 1 ? '결과 보기' : '다음 문항'}
-            {!submitting ? <ChevronRight className="h-4 w-4" /> : null}
-          </button>
-        </div>
-      </div>
-    </main>
+      </section>
+    </>
   );
 }

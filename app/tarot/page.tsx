@@ -128,6 +128,44 @@ export default function TarotPage() {
         </div>
       </section>
 
+      {/* 타로 기초 해설 */}
+      <section className="relative z-10 px-4 max-w-3xl mx-auto pb-20 space-y-6">
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold tracking-tight break-keep" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>
+            타로는 무엇을 보는 도구인가
+          </h2>
+          <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>
+            타로 덱은 78장으로 이루어져 있습니다. 인생의 큰 주제를 다루는 대아르카나 22장과, 일상의 구체적인 국면을 다루는 소아르카나 56장입니다. 소아르카나는 다시 완드·컵·소드·펜타클 네 개의 슈트로 나뉘며 각각 불·물·공기·흙의 원소에 대응합니다. 완드는 열정과 추진, 컵은 감정과 관계, 소드는 생각과 갈등, 펜타클은 현실적인 결과를 담당합니다.
+          </p>
+          <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>
+            타로가 잘 하는 일은 미래를 맞히는 것이 아니라 지금 상황을 다른 각도에서 비추는 것입니다. 같은 카드가 나와도 질문이 다르면 해석이 달라지는 이유가 여기 있습니다. 그래서 카드를 뽑기 전에 질문을 얼마나 구체적으로 좁혔는지가 결과의 쓸모를 크게 좌우합니다.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          {[
+            { title: '대아르카나 22장', body: '바보에서 세계까지, 인생의 전환점과 큰 주제를 다룹니다. 리딩에 많이 등장하면 개인의 선택보다 큰 흐름이 움직이는 국면으로 봅니다.' },
+            { title: '소아르카나 56장', body: '네 슈트 각 14장으로, 일상에서 벌어지는 구체적인 상황을 다룹니다. 지금 무엇을 하면 좋을지에 대한 힌트가 여기서 나옵니다.' },
+            { title: '정방향과 역방향', body: '역방향은 반대의 의미가 아니라 같은 에너지가 막히거나 과해진 상태입니다. 좋고 나쁨이 아니라 상태의 차이로 읽습니다.' },
+          ].map((item) => (
+            <div key={item.title} className="p-6 rounded-2xl space-y-2" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(124,111,214,0.16)' }}>
+              <h3 className="font-bold break-keep" style={{ color: '#2D1B1E' }}>{item.title}</h3>
+              <p className="text-sm leading-7 break-keep" style={{ color: 'rgba(45,27,30,0.6)' }}>{item.body}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-7 rounded-[2rem] space-y-3" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(124,111,214,0.16)' }}>
+          <h3 className="text-lg font-bold" style={{ color: '#2D1B1E' }}>이렇게 쓰시면 도움이 됩니다</h3>
+          <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>
+            &ldquo;잘 될까요&rdquo;처럼 예/아니오로 끝나는 질문보다, &ldquo;지금 무엇을 준비하면 좋을까요&rdquo;처럼 답을 행동으로 옮길 수 있는 질문이 훨씬 유용한 결과를 만듭니다. 또한 같은 질문을 짧은 간격으로 반복해 뽑는 것은 권하지 않습니다. 원하는 답이 나올 때까지 묻는 형태가 되면 생각을 정리하는 도구가 아니라 불안을 달래는 반복 행동이 되기 때문입니다.
+          </p>
+          <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>
+            타로는 검증된 예측 체계가 아닙니다. 이직이나 계약, 이별처럼 되돌리기 어려운 결정은 현실 정보와 대화로 판단하시고, 타로는 그 과정에서 놓친 관점을 점검하는 보조 자료로 쓰시는 것이 안전합니다.
+          </p>
+        </div>
+      </section>
+
       <section className="relative z-10 px-4 max-w-3xl mx-auto pb-24">
         <RelatedReads
           title="명리 칼럼으로 더 깊이"

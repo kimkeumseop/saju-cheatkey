@@ -117,6 +117,44 @@ export default function MbtiHomePage() {
         </div>
       </section>
 
+      <section className="relative z-10 mt-14 px-6">
+        <div className="mx-auto max-w-3xl space-y-6">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold tracking-tight break-keep" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>
+              MBTI 네 가지 지표는 무엇을 나누는가
+            </h2>
+            <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>
+              MBTI는 성격을 네 개의 축으로 나누어 살펴보는 분류 체계입니다. 각 축은 우열을 가르는 것이 아니라, 같은 상황에서 무엇을 먼저 보고 어떻게 반응하는지의 차이를 설명합니다. 네 축의 조합으로 열여섯 가지 유형이 만들어집니다.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {[
+              { code: 'E / I', title: '에너지의 방향', body: '사교성의 크기가 아니라 회복 방식의 차이입니다. 사람들과 있을 때 충전되면 E, 혼자일 때 충전되면 I입니다. 말수가 많은 I도 조용한 E도 흔합니다.' },
+              { code: 'S / N', title: '정보를 받는 방식', body: '감각(S)은 확인 가능한 사실에서, 직관(N)은 그 너머의 가능성과 패턴에서 출발합니다. 같은 상황도 S는 사실로, N은 의미로 먼저 설명합니다.' },
+              { code: 'T / F', title: '판단의 기준', body: '사고(T)는 일관된 원칙을, 감정(F)은 사람과 상황의 조화를 우선합니다. T가 냉정하다는 뜻이 아니라 먼저 확인하는 항목이 다르다는 의미입니다.' },
+              { code: 'J / P', title: '생활을 다루는 방식', body: '판단(J)은 미리 정해두고 진행하는 쪽, 인식(P)은 열어두고 조정하는 쪽입니다. 계획성의 유무가 아니라 결정을 확정하는 시점의 차이입니다.' },
+            ].map((item) => (
+              <div key={item.code} className="rounded-[1.8rem] p-6 space-y-2" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.14)' }}>
+                <p className="text-xs font-black tracking-[0.28em]" style={{ color: '#0e9f73' }}>{item.code}</p>
+                <h3 className="font-bold break-keep" style={{ color: '#2D1B1E' }}>{item.title}</h3>
+                <p className="text-sm leading-7 break-keep" style={{ color: 'rgba(45,27,30,0.6)' }}>{item.body}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-[2rem] p-7 space-y-3" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.14)' }}>
+            <h3 className="text-lg font-bold" style={{ color: '#2D1B1E' }}>결과를 읽을 때의 기준</h3>
+            <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>
+              네 글자로 나온 유형은 정체성이 아니라 지금의 경향을 요약한 표현입니다. 지표 점수가 중간에 가까울수록 두 방향의 특성이 함께 나타나므로, 유형 이름보다 개별 지표의 기울기를 보시는 편이 정확합니다. 시기를 두고 다시 검사했을 때 결과가 바뀌는 것도 이 때문이며, 오류라기보다 자기 인식이 달라졌다는 신호에 가깝습니다.
+            </p>
+            <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>
+              MBTI는 심리학계에서 신뢰도와 타당도에 대한 비판이 꾸준히 제기되어 온 도구이기도 합니다. 자기 이해와 대화를 위한 언어로 쓰시고, 채용이나 진단처럼 무게가 큰 판단의 근거로는 사용하지 않으시길 권합니다.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="relative z-10 mt-12 px-6">
         <div className="mx-auto max-w-5xl">
           <RelatedReads

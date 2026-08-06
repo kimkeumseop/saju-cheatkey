@@ -1,6 +1,7 @@
 // src/app/tarot/dictionary/page.tsx
 import { Metadata } from 'next'
 import TarotDictionaryClient from '@/components/tarot/TarotDictionaryClient'
+import TarotCardReference from '@/components/tarot/TarotCardReference'
 
 export const metadata: Metadata = {
   title: '타로 카드 사전 78장 정·역방향 해석 | 사주 치트키',
@@ -20,5 +21,10 @@ export const metadata: Metadata = {
 }
 
 export default function TarotDictionaryPage() {
-  return <TarotDictionaryClient />
+  return (
+    <>
+      <TarotDictionaryClient />
+      <TarotCardReference />
+    </>
+  )
 }

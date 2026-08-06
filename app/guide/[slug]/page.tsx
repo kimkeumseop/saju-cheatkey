@@ -41,6 +41,13 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   const relatedGuides = guide.relatedSlugs.map((relatedSlug) => guideMap[relatedSlug]).filter(Boolean);
 
   const guideUrl = `${SITE_URL}/guide/${guide.slug}`;
+  const articleBody = [
+    guide.intro,
+    ...guide.sections.flatMap((section) => [section.title, ...section.body]),
+    guide.closing,
+  ].join('\n\n');
+  const wordCount = articleBody.replace(/\s+/g, '').length;
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -49,7 +56,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         '@id': `${guideUrl}#article`,
         headline: guide.title,
         description: guide.description,
-        articleBody: guide.intro,
+        articleBody,
+        wordCount,
         image: DEFAULT_OG_IMAGE,
         datePublished: guide.datePublished,
         dateModified: guide.dateModified,
@@ -70,6 +78,15 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           { '@type': 'ListItem', position: 2, name: '사주 가이드', item: `${SITE_URL}/guide` },
           { '@type': 'ListItem', position: 3, name: guide.title, item: guideUrl },
         ],
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': `${guideUrl}#faq`,
+        mainEntity: guide.faq.map((item) => ({
+          '@type': 'Question',
+          name: item.question,
+          acceptedAnswer: { '@type': 'Answer', text: item.answer },
+        })),
       },
     ],
   };
@@ -101,6 +118,21 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           </div>
         </header>
 
+        <section className="rounded-[2.5rem] p-8 md:p-10 space-y-5" style={{ background: 'radial-gradient(ellipse at 100% 0%, rgba(212,104,138,0.1), rgba(255,255,255,0.9) 60%)', border: '1px solid rgba(212,104,138,0.16)' }}>
+          <div className="space-y-2">
+            <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(212,104,138,0.7)' }}>Summary</p>
+            <h2 className="text-2xl font-bold" style={{ color: '#2D1B1E' }}>3분 요약</h2>
+          </div>
+          <ul className="space-y-3">
+            {guide.keyPoints.map((point) => (
+              <li key={point} className="flex gap-3 leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.68)' }}>
+                <span aria-hidden className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: '#d4688a' }} />
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         <div className="space-y-6">
           {guide.sections.map((section) => (
             <section key={section.title} className="rounded-[2.5rem] p-8 md:p-10 space-y-5" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(212,104,138,0.12)' }}>
@@ -118,6 +150,21 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(124,111,214,0.7)' }}>정리</p>
           <h2 className="text-2xl font-bold" style={{ color: '#2D1B1E' }}>읽고 나서 기억하면 좋은 점</h2>
           <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.6)' }}>{guide.closing}</p>
+        </section>
+
+        <section className="rounded-[2.5rem] p-8 md:p-10 space-y-6" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(212,104,138,0.12)' }}>
+          <div className="space-y-2">
+            <p className="text-xs font-black tracking-[0.25em] uppercase" style={{ color: 'rgba(212,104,138,0.7)' }}>FAQ</p>
+            <h2 className="text-2xl font-bold" style={{ color: '#2D1B1E' }}>자주 묻는 질문</h2>
+          </div>
+          <div className="space-y-5">
+            {guide.faq.map((item) => (
+              <div key={item.question} className="rounded-[1.75rem] p-6 space-y-3" style={{ background: 'rgba(251,247,242,0.8)', border: '1px solid rgba(212,104,138,0.1)' }}>
+                <h3 className="font-bold break-keep text-lg" style={{ color: '#2D1B1E' }}>Q. {item.question}</h3>
+                <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.62)' }}>{item.answer}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className="rounded-[2.5rem] p-8 md:p-10 space-y-6" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(212,104,138,0.12)' }}>
