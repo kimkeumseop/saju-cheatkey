@@ -5,6 +5,7 @@ import AuroraBackground from '@/components/AuroraBackground';
 import Footer from '@/components/Footer';
 import RelatedReads from '@/components/RelatedReads';
 import { createMetadata } from '@/lib/site';
+import { MBTI_TYPES, MBTI_TYPE_CODES } from '@/src/data/mbtiTypes';
 
 export const metadata: Metadata = createMetadata({
   title: '무료 MBTI 테스트 16가지 성격유형 | 사주 치트키',
@@ -114,6 +115,40 @@ export default function MbtiHomePage() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      {/* 16가지 유형 전체 목록 */}
+      <section className="relative z-10 mt-14 px-6">
+        <div className="mx-auto max-w-5xl space-y-6">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold tracking-tight break-keep" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>
+              16가지 유형 살펴보기
+            </h2>
+            <p className="leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.6)' }}>
+              검사를 하지 않아도 각 유형의 강점과 주의할 점, 궁합, 그리고 사주 관점의 해석까지 바로 확인하실 수 있습니다.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {MBTI_TYPE_CODES.map((code) => {
+              const info = MBTI_TYPES[code];
+              return (
+                <Link
+                  key={code}
+                  href={`/mbti/result/${code.toLowerCase()}`}
+                  className="rounded-[1.6rem] p-5 transition hover:-translate-y-1 space-y-2"
+                  style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(14,159,115,0.14)' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl" aria-hidden>{info.emoji}</span>
+                    <span className="font-black tracking-tight" style={{ color: info.color }}>{code}</span>
+                  </div>
+                  <p className="font-bold text-sm" style={{ color: '#2D1B1E' }}>{info.name}</p>
+                  <p className="text-xs leading-6 break-keep" style={{ color: 'rgba(45,27,30,0.5)' }}>{info.desc}</p>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </section>
 

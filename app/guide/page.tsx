@@ -25,7 +25,7 @@ const CATEGORIES = [
       'what-is-sipsin',
       'what-is-yongshin',
       'what-is-daeun',
-      'lunar-solar-calendar',
+      'lunar-solar-calendar-saju',
     ],
   },
   {
@@ -34,11 +34,11 @@ const CATEGORIES = [
     accent: '#7c6fd6',
     slugs: [
       'how-to-read-yearly-fortune',
-      'wealth-in-saju',
-      'love-marriage-in-saju',
-      'gunghap-guide',
-      'career-in-saju',
-      'health-in-saju',
+      'reading-wealth-luck',
+      'reading-love-marriage',
+      'how-to-read-gunghap',
+      'reading-career-luck',
+      'reading-health-in-saju',
       'reading-2026-fortune',
     ],
   },
@@ -55,17 +55,34 @@ const CATEGORIES = [
     slugs: [
       'common-misunderstandings',
       'birth-time-unknown',
-      'zodiac-traits',
+      'twelve-zodiac-traits',
       'saju-vs-mbti',
-      'sipsin-siksin-sanggwan',
-      'sipsin-pyeonggwan-jeonggwan',
-      'saju-and-tarot',
-      'saju-beginners',
+      'siksin-vs-sanggwan',
+      'pyeonggwan-vs-jeonggwan',
+      'saju-and-tarot-together',
+      'saju-beginners-guide',
     ],
   },
 ];
 
 const guideMap = Object.fromEntries(guides.map((g) => [g.slug, g]));
+
+// 카테고리에 배정되지 않은 가이드는 링크가 사라져 고아 페이지가 된다.
+// 남는 글이 있으면 마지막 섹션으로 묶어 항상 링크가 걸리게 한다.
+const categorizedSlugs = new Set(CATEGORIES.flatMap((cat) => cat.slugs));
+const uncategorized = guides.filter((guide) => !categorizedSlugs.has(guide.slug));
+
+const SECTIONS = uncategorized.length
+  ? [
+      ...CATEGORIES,
+      {
+        label: '그 밖의 글',
+        description: '위 분류에 담기지 않은 가이드',
+        accent: '#7c6fd6',
+        slugs: uncategorized.map((guide) => guide.slug),
+      },
+    ]
+  : CATEGORIES;
 
 export default function GuidePage() {
   return (
@@ -102,7 +119,7 @@ export default function GuidePage() {
         </header>
 
         {/* Categories */}
-        {CATEGORIES.map((cat) => {
+        {SECTIONS.map((cat) => {
           const catGuides = cat.slugs.map((s) => guideMap[s]).filter(Boolean);
           if (catGuides.length === 0) return null;
           return (
