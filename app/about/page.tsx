@@ -54,15 +54,22 @@ export default function AboutPage() {
           </article>
         </section>
 
-        <section className="rounded-[2.5rem] p-8 md:p-10 space-y-5" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(212,104,138,0.12)' }}>
+        <section id="editorial" className="scroll-mt-24 rounded-[2.5rem] p-8 md:p-10 space-y-5" style={{ background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(212,104,138,0.12)' }}>
           <h2 className="text-2xl font-bold" style={{ color: '#2D1B1E' }}>콘텐츠는 이렇게 만듭니다</h2>
           <div className="space-y-4 leading-8 break-keep" style={{ color: 'rgba(45,27,30,0.6)' }}>
             <p>
-              가이드와 칼럼은 천간지지, 오행, 십성, 대운 같은 전통 명리학의 표준 개념 체계를 근거로 작성하며, 유파에 따라 견해가 갈리는 주제는 특정 견해를 단정하지 않고 여러 관점이 있음을 함께 밝힙니다. 발행 후에도 내용을 계속 다듬으며, 각 글에는 발행일과 최종 수정일을 표기합니다.
+              공개 가이드와 칼럼의 게시·수정 책임은 사주 치트키 운영팀에 있습니다. 이 서비스는 전통 명리학을 처음 접하는 이용자를 위한 설명과 계산 예시를 제공합니다. 운영팀 명의가 전문 자격이나 임상 검수 이력을 뜻하지는 않습니다. 별도 검토자를 표시하지 않은 글을 전문가가 개별 검수한 자료로 소개하지 않습니다.
             </p>
             <p>
-              사주 분석 결과는 만세력 기반의 명식 계산 위에 AI 해석을 결합해 제공합니다. 계산 단계(사주 원국, 오행 분포, 대운 산출)는 정해진 명리학 규칙을 따르고, 해석 단계는 그 구조를 읽기 쉬운 언어로 풀어내는 역할을 합니다. 모든 결과물은 미래를 단정하는 예언이 아닌 자기 이해를 돕는 참고 정보이며, 건강·법률·재정 등 중요한 결정은 반드시 해당 분야 전문가와 상의하시기 바랍니다.
+              개인화 사주 해설의 문장 생성에는 AI를 사용합니다. 먼저 명식과 오행 등을 계산하고 그 값을 해설에 전달합니다. AI 결과는 사람이 매 건 확인한 상담 결과가 아니며 사실 오류나 과도한 해석이 있을 수 있습니다. 공개 예시는 가상 입력임을 표시하고 실제 서비스 계산으로 비교할 수 있게 구성합니다.
             </p>
+            <h3 className="text-lg font-bold text-[#2D1B1E]">자료를 읽는 기준</h3>
+            <p>달력과 간지 계산은 <a href="https://github.com/6tail/lunar-javascript" className="underline underline-offset-4">lunar-javascript</a>를 사용합니다. 이 자료는 계산 방식을 확인하기 위한 것으로 성격·건강·미래 예측의 검증 근거가 아닙니다. 전통적 상징과 서비스가 택한 계산 규칙을 구분하고, 참고 자료가 뒷받침하지 않는 통계나 임상적 효과를 주장하지 않습니다.</p>
+            <p>MBTI 메뉴는 자체 20문항을 사용하는 간이 성향 테스트입니다. 공식 MBTI 검사를 제공하거나 성격·능력을 진단하는 서비스는 아닙니다. 사주 및 테스트 점수를 의학적 판단, 투자 결정, 채용 평가의 근거로 사용하지 않습니다.</p>
+            <h3 className="text-lg font-bold text-[#2D1B1E]">수정과 오류 제보</h3>
+            <p>본문을 실제로 수정한 경우 해당 글의 수정일을 갱신합니다. 문장 생성에 사용된 AI나 운영팀 명의만으로 정확성을 보장하지 않습니다. 글의 오류는 <a href={`mailto:${SITE_EMAIL}`} className="underline underline-offset-4">{SITE_EMAIL}</a>로 페이지 주소, 문제가 되는 문장과 이유를 보내주세요. 개인 병력이나 신분증 같은 자료는 필요하지 않습니다.</p>
+            <p>계산 예시와 한계는 <Link href="/guide/what-is-saju#calculation-example" className="underline underline-offset-4">가상 명식 비교표</Link>, <Link href="/guide/lunar-solar-calendar-saju" className="underline underline-offset-4">달력·시간 보정 기준</Link>, <Link href="/guide/birth-time-unknown" className="underline underline-offset-4">출생시간 미상 안내</Link>에서 확인할 수 있습니다.</p>
+            <p className="text-sm">2026년 9월 15일 수정. 과학·건강 관련 표현의 범위를 정리하고, 가상 계산 예시와 출생시간 미상 처리 기준을 추가했습니다.</p>
           </div>
         </section>
 

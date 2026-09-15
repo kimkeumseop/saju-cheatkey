@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* 칼럼의 제목 계층과 문단 간격을 명시해 본문 가독성을 유지한다. */
+.column-body { color: #58464d; font-size: 1.0625rem; line-height: 1.9; overflow-wrap: anywhere; }
+.column-body h2 { color: #2d1b1e; font-size: 1.5rem; font-weight: 700; line-height: 1.5; margin: 2.5rem 0 1rem; word-break: keep-all; }
+.column-body h2:first-child { margin-top: 0; }
+.column-body p { margin: 0 0 1.25rem; }
+.column-body strong { color: #9f3158; font-weight: 700; }
+.column-body a { color: #9f3158; text-decoration: underline; text-underline-offset: 3px; }
+.column-body ul, .column-body ol { padding-left: 1.5rem; margin-bottom: 1.25rem; }
+.column-body ul { list-style: disc; }
+.column-body ol { list-style: decimal; }
+.column-body li { margin-bottom: 0.5rem; }
+
 @theme {
   --font-serif: "Noto Serif KR", serif;
   

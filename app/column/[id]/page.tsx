@@ -53,10 +53,10 @@ export default async function ColumnPage({ params }: { params: Promise<{ id: str
         description: column.description,
         image: DEFAULT_OG_IMAGE,
         datePublished: column.date,
-        dateModified: column.date,
+        dateModified: column.dateModified || column.date,
         inLanguage: 'ko-KR',
         mainEntityOfPage: columnUrl,
-        author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+        author: { '@type': 'Organization', name: SITE_NAME, url: `${SITE_URL}/about#editorial` },
         publisher: {
           '@type': 'Organization',
           name: SITE_NAME,
@@ -83,21 +83,34 @@ export default async function ColumnPage({ params }: { params: Promise<{ id: str
       <article className="relative z-10 max-w-4xl mx-auto">
         <header className="mb-12 text-center">
           <Link href="/column" className="font-black mb-4 uppercase tracking-widest text-sm inline-block transition-colors hover:brightness-125" style={{ color: '#7c6fd6' }}>Myeongri Column</Link>
-          <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-6" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>
+          <h1 className="break-keep text-3xl md:text-5xl font-bold leading-tight mb-6" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>
             {column.title}
           </h1>
-          <div className="flex items-center justify-center gap-4 text-sm font-medium" style={{ color: 'rgba(45,27,30,0.42)' }}>
-            <span>사주 치트키 편집팀</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-medium" style={{ color: 'rgba(45,27,30,0.65)' }}>
+            <Link href="/about#editorial" className="underline underline-offset-4">사주 치트키 편집팀</Link>
             <span className="w-1 h-1 rounded-full" style={{ background: 'rgba(45,27,30,0.16)' }}></span>
             <span>{formatDate(column.date)}</span>
+            {column.dateModified && <span>수정 {formatDate(column.dateModified)}</span>}
             <span className="w-1 h-1 rounded-full" style={{ background: 'rgba(45,27,30,0.16)' }}></span>
             <span>읽기 시간 {column.readMinutes}분</span>
           </div>
         </header>
 
-        <div className="prose prose-invert lg:prose-xl mx-auto prose-headings:text-[#2D1B1E] prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-12 prose-h2:mb-6 prose-strong:text-[#d4688a] prose-p:leading-relaxed prose-p:mb-6" style={{ ['--tw-prose-body' as any]: 'rgba(45,27,30,0.66)' }}>
+        <p className="mb-8 rounded-2xl bg-white p-5 text-sm leading-7 text-[#665159]">
+          이 글은 전통 명리학의 상징을 자기 이해와 대화에 활용하는 해설입니다. 성격·건강·재산이나 미래 사건을 측정하거나 예측하는 자료는 아닙니다.
+        </p>
+        <div className="column-body mx-auto">
           {content}
         </div>
+        <aside className="mt-10 rounded-2xl bg-white p-6 text-sm leading-7 text-[#665159]">
+          <h2 className="mb-3 text-lg font-bold text-[#2D1B1E]">계산과 해석을 직접 확인하기</h2>
+          <p>본문의 성향 표현은 전통적 해석이며 실제 인물의 상담 기록이나 통계 연구 결과가 아닙니다. 사주 치트키의 계산 예시와 한계를 함께 확인해 주세요.</p>
+          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+            <Link href="/guide/what-is-saju#calculation-example" className="underline underline-offset-4">가상 명식 계산 예시</Link>
+            <Link href="/guide/birth-time-unknown" className="underline underline-offset-4">출생시간 미상 비교</Link>
+            <Link href="/about#editorial" className="underline underline-offset-4">제작 기준과 오류 제보</Link>
+          </div>
+        </aside>
 
         <section className="mt-16 space-y-6">
           <div className="space-y-2 text-center">

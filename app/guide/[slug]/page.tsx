@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AuroraBackground from '@/components/AuroraBackground';
+import GuideCalculationExample from '@/components/GuideCalculationExample';
 import { createMetadata, guideMap, guides, SITE_URL, SITE_NAME, SITE_TEAM, DEFAULT_OG_IMAGE } from '@/lib/site';
 
 function formatDate(date: string) {
@@ -46,7 +47,6 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
     ...guide.sections.flatMap((section) => [section.title, ...section.body]),
     guide.closing,
   ].join('\n\n');
-  const wordCount = articleBody.replace(/\s+/g, '').length;
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -57,13 +57,12 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         headline: guide.title,
         description: guide.description,
         articleBody,
-        wordCount,
         image: DEFAULT_OG_IMAGE,
         datePublished: guide.datePublished,
         dateModified: guide.dateModified,
         inLanguage: 'ko-KR',
         mainEntityOfPage: guideUrl,
-        author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+        author: { '@type': 'Organization', name: SITE_NAME, url: `${SITE_URL}/about#editorial` },
         publisher: {
           '@type': 'Organization',
           name: SITE_NAME,
@@ -103,7 +102,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight break-keep" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>{guide.title}</h1>
           <p className="leading-relaxed break-keep text-base md:text-lg" style={{ color: 'rgba(45,27,30,0.6)' }}>{guide.intro}</p>
           <p className="text-sm font-bold" style={{ color: 'rgba(45,27,30,0.42)' }}>
-            {SITE_TEAM} · 발행 {formatDate(guide.datePublished)} · 최종 수정 {formatDate(guide.dateModified)}
+            <Link href="/about#editorial" className="underline underline-offset-4">{SITE_TEAM}</Link> · 발행 {formatDate(guide.datePublished)} · 최종 수정 {formatDate(guide.dateModified)}
           </p>
           <div className="flex flex-wrap gap-3 text-sm font-bold">
             <Link href="/" className="px-4 py-2 rounded-full transition-colors" style={{ background: 'rgba(212,104,138,0.1)', border: '1px solid rgba(212,104,138,0.2)', color: '#d4688a' }}>
@@ -132,6 +131,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             ))}
           </ul>
         </section>
+
+        <GuideCalculationExample slug={guide.slug} />
 
         <div className="space-y-6">
           {guide.sections.map((section) => (
@@ -188,6 +189,10 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         </section>
       </article>
 
+      <aside className="relative z-10 mx-auto mt-8 max-w-4xl px-6 text-sm leading-7 text-[#665159]">
+        <p>이 가이드는 전통 명리학의 개념을 설명합니다. 본문의 성향·운세 해석은 실제 개인의 성격·건강·미래를 측정하거나 보장하지 않습니다.</p>
+        <Link href="/about#editorial" className="underline underline-offset-4">제작 방식·참고 자료의 범위·오류 제보 안내</Link>
+      </aside>
       <Footer />
     </main>
   );

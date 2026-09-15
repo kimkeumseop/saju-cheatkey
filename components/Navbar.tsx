@@ -14,7 +14,7 @@ const serviceLinks = [
 ];
 
 const infoLinks = [
-  { href: '/guide/what-is-saju', label: 'Guide' },
+  { href: '/guide', label: 'Guide' },
   { href: '/column',             label: 'Column' },
   { href: '/faq',                label: 'FAQ' },
   { href: '/privacy',            label: 'Privacy' },
