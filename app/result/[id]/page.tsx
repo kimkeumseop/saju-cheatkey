@@ -541,7 +541,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
 
   // 현재 대운 인덱스 (스타일 강조용)
   const userAge = data.birthDate ? calcAge(data.birthDate) : 25;
-  const daeunList: any[] = saju?.daYun || [];
+  const daeunList: any[] = isTimeUnknown ? [] : saju?.daYun || [];
   const currentDaeunIdx = daeunList.findIndex((dy: any, i: number) => {
     const nextAge = daeunList[i + 1]?.age ?? 100;
     return userAge >= dy.age && userAge < nextAge;
@@ -609,6 +609,11 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                 <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(212,104,138,0.4)' }}>Manseyrok INFOGRAPHIC</p>
               </div>
               {saju && <PillarChart pillars={saju.pillars} isTimeUnknown={isTimeUnknown} />}
+              {isTimeUnknown && (
+                <p className="relative z-10 text-sm leading-7 text-[#665159]">
+                  출생시간이 없어 시주는 비우고 오행 집계에서 제외했습니다. 대운 시작 나이와 시주에 의존하는 해석은 제공하지 않습니다. 절기·날짜 경계에서는 나머지 기둥도 잠정값일 수 있습니다.
+                </p>
+              )}
               <div className="pt-8 grid grid-cols-1 md:grid-cols-2 gap-8" style={{ borderTop: '1px solid rgba(212,104,138,0.10)' }}>
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 ml-1">
@@ -650,7 +655,7 @@ export default function SajuResultPage({ params }: { params: Promise<{ id: strin
                   <h3 className="text-xl font-bold" style={{ color: '#2D1B1E', fontFamily: '"Noto Serif KR", serif' }}>대운 (10년 주기의 흐름)</h3>
                 </div>
                 <p className="text-[13px] font-medium leading-relaxed ml-7 break-keep" style={{ color: 'rgba(45,27,30,0.42)' }}>
-                  대운(大運)은 내 인생의 계절이 바뀌는 시점입니다. 각 시기를 눌러 에너지를 확인해보세요.
+                  {isTimeUnknown ? '출생시간 미상으로 정확한 대운 시작 나이 표시는 생략합니다.' : '대운은 전통 명리학에서 10년 단위의 흐름을 읽는 분류입니다. 각 시기의 설명을 참고해 보세요.'}
                 </p>
               </div>
 

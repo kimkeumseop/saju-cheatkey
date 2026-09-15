@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { calculateSaju } from '@/lib/saju';
+import { calculateSaju, normalizeBirthTime } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { Solar } from 'lunar-javascript';
 import { generateText } from '@/lib/ai';
@@ -13,7 +13,7 @@ export const maxDuration = 60;
 const apiKey = process.env.GEMINI_API_KEY;
 
 // 데일리 운세 스키마/프롬프트가 바뀌면 올려 그날 이전 캐시를 무효화한다.
-const UNSE_DAILY_VERSION = 'v1';
+const UNSE_DAILY_VERSION = 'v2';
 const UNSE_DAILY_COLLECTION = 'unseCache';
 
 function dayPillar(solar: any): string {
@@ -40,7 +40,8 @@ function scrubDaily(json: string): string {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, birthDate, birthTime, calendarType, gender, isLite } = body;
+    const { name, birthDate, calendarType, gender, isLite } = body;
+    const birthTime = normalizeBirthTime(body.birthTime, body.isTimeUnknown);
     
     // 2. 프론트엔드 Payload(데이터) 검증 방어 로직
     if (!name || !birthDate || !calendarType || !gender) {
@@ -102,6 +103,8 @@ export async function POST(req: Request) {
       }
 
       const prompt = `
+        전통적인 상징 해설임을 전제로 작성해라. 실제 건강 상태, 질병, 투자 수익을 예측하지 마라. 점수는 측정된 확률이 아니다.
+        출생시간 미상: ${userSaju.isUnknownTime}. 미상이면 시주에 근거한 해석을 만들지 마라.
         너는 정통 사주 도사다. 아래 사람의 사주와 오늘/내일 일진을 보고 '오늘의 운세'를 써라.
         말투는 해라체(점쟁이 단정 어투, "~다/~해라/~봐라"). 다정 경어체 금지.
 
@@ -162,6 +165,8 @@ export async function POST(req: Request) {
     // 초경량 무료 운세 모드
     if (isLite) {
       const prompt = `
+        전통적인 상징 해설임을 전제로 작성해라. 실제 건강 상태, 질병, 투자 수익을 예측하지 마라. 점수는 측정된 확률이 아니다.
+        출생시간 미상: ${userSaju.isUnknownTime}. 미상이면 시주에 근거한 해석을 만들지 마라.
         너는 유저의 영혼을 어루만지는 '오늘의 속삭임' 가이드야. 
         아래 유저의 사주와 오늘 일진을 보고, 오직 긍정적이고 다정한 내용으로만 짧은 하루 운세를 작성해줘.
 
@@ -199,6 +204,8 @@ export async function POST(req: Request) {
 
     // 기존 프리미엄 로직 (생략 - 이전 코드 유지)
     const prompt = `
+        전통적인 상징 해설임을 전제로 작성해라. 실제 건강 상태, 질병, 투자 수익을 예측하지 마라. 점수는 측정된 확률이 아니다.
+        출생시간 미상: ${userSaju.isUnknownTime}. 미상이면 시주에 근거한 해석을 만들지 마라.
       너는 유저의 영혼을 어루만지는 신비롭고 다정한 '오늘의 속삭임' 가이드야. 
       아래 유저의 사주와 오늘 일진 데이터를 보고, 유저의 마음이 살살 녹아내릴 정도로 간질간질하고 다정한 하루 운세 리포트를 작성해줘.
 

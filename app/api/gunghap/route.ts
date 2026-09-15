@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { calculateSaju, GROUP_TRAIT } from '@/lib/saju';
+import { calculateSaju, normalizeBirthTime, GROUP_TRAIT } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { streamReport, streamPrebuilt } from '@/lib/ai';
 import { buildReportCacheKey, getCachedReport, saveCachedReport } from '@/lib/saju-cache';
@@ -13,7 +13,7 @@ const apiKey = process.env.GEMINI_API_KEY;
 // 프롬프트/스키마가 바뀌면 이 버전을 올려 기존 캐시를 무효화한다.
 // v2: JSON 구조화 출력 도입. v3: few-shot 톤 예시 + 한자/전문용어 후필터.
 // v4: 두 사람 십성·신강약 grounding 비교 주입. v5: compatibilityScore를 구조에 근거.
-const GUNGHAP_CACHE_VERSION = 'v5';
+const GUNGHAP_CACHE_VERSION = 'v6';
 const GUNGHAP_CACHE_COLLECTION = 'gunghapCache';
 
 const STREAM_HEADERS = {
@@ -178,7 +178,9 @@ function finalizeGunghapJson(full: string) {
 export async function POST(req: Request) {
   let responseText = '';
   try {
-    const { user1, user2, relationship } = await req.json();
+    const { user1: rawUser1, user2: rawUser2, relationship } = await req.json();
+    const user1 = { ...rawUser1, birthTime: normalizeBirthTime(rawUser1?.birthTime, rawUser1?.isTimeUnknown) };
+    const user2 = { ...rawUser2, birthTime: normalizeBirthTime(rawUser2?.birthTime, rawUser2?.isTimeUnknown) };
     const relationLabel = relationLabels[relationship] || '인연';
     const currentYear = getCurrentYear();
 
@@ -242,6 +244,10 @@ export async function POST(req: Request) {
     });
 
     const prompt = `
+      이 해석은 전통적인 상징 해설이다. 점수는 관계의 성공 확률이 아니다.
+      첫째 사람 시간 미상: ${saju1.isUnknownTime}, 둘째 사람 시간 미상: ${saju2.isUnknownTime}.
+      미상인 사람의 시주·자녀·말년·대운 시작 나이는 추정하지 마라. 빠진 정보는 빠진 채로 설명해라.
+      실제 상담 경력이나 과학적·임상적 근거를 주장하지 마라. 질병이나 투자 수익을 예측하지 마라.
       너는 두 사람의 사주를 쉽게 번역해서 관계의 장점, 약점, 타이밍을 현실적으로 짚어주는 프리미엄 궁합 상담가야.
       결과는 "돈 주고 본 궁합 리포트"처럼 구체적이어야 하지만, 화면에서는 한눈에 읽혀야 해.
       결과는 JSON 하나로만 출력한다. JSON 밖의 어떤 텍스트도, 코드블록(\`\`\`)도, 설명도 쓰지 마라.

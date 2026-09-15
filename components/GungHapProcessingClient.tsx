@@ -6,7 +6,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Heart, Loader2, Sparkles } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { db } from '@/lib/firebase';
-import { calculateSaju } from '@/lib/saju';
+import { calculateSaju, normalizeBirthTime } from '@/lib/saju';
 import { streamAnalysis, cleanPreview } from '@/lib/streamAnalysis';
 
 function normalizeCalendarType(value: string | null): 'solar' | 'lunar' {
@@ -42,16 +42,16 @@ function GungHapProcessingContent() {
     const user1 = {
       name: searchParams.get('u1_name') || '인물1',
       birthDate: searchParams.get('u1_date') || '',
-      birthTime: searchParams.get('u1_time') === 'unknown' ? '12:00' : searchParams.get('u1_time') || '12:00',
-      isTimeUnknown: searchParams.get('u1_time') === 'unknown',
+      birthTime: normalizeBirthTime(searchParams.get('u1_time')),
+      isTimeUnknown: normalizeBirthTime(searchParams.get('u1_time')) === 'unknown',
       calendarType: normalizeCalendarType(searchParams.get('u1_cal')),
       gender: searchParams.get('u1_gen') || 'female',
     };
     const user2 = {
       name: searchParams.get('u2_name') || '인물2',
       birthDate: searchParams.get('u2_date') || '',
-      birthTime: searchParams.get('u2_time') === 'unknown' ? '12:00' : searchParams.get('u2_time') || '12:00',
-      isTimeUnknown: searchParams.get('u2_time') === 'unknown',
+      birthTime: normalizeBirthTime(searchParams.get('u2_time')),
+      isTimeUnknown: normalizeBirthTime(searchParams.get('u2_time')) === 'unknown',
       calendarType: normalizeCalendarType(searchParams.get('u2_cal')),
       gender: searchParams.get('u2_gen') || 'male',
     };

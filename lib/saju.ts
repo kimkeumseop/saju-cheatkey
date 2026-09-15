@@ -148,6 +148,10 @@ function calculateKeyShinsal(dayGan: string, pillars: any[]) {
   return Array.from(shinsal);
 }
 
+export function normalizeBirthTime(value?: string | null, isTimeUnknown = false): string {
+  return isTimeUnknown || !value?.trim() || value === 'unknown' ? 'unknown' : value;
+}
+
 export function calculateSaju(
   birthDate: string, 
   birthTime: string, 
@@ -155,15 +159,19 @@ export function calculateSaju(
   gender: string = 'male'
 ) {
   const [year, month, day] = birthDate.split('-').map(Number);
-  const isUnknownTime = birthTime === 'unknown';
-  const [hour, minute] = (isUnknownTime ? "12:00" : (birthTime || "00:00")).split(':').map(Number);
+  const normalizedTime = normalizeBirthTime(birthTime);
+  const isUnknownTime = normalizedTime === 'unknown';
+  const [hour, minute] = (isUnknownTime ? '12:00' : normalizedTime).split(':').map(Number);
 
-  let adjustedDate = new Date(year, month - 1, day, hour, minute);
-  adjustedDate.setMinutes(adjustedDate.getMinutes() - 30);
-
-  const solar = calendarType === 'lunar' 
-    ? Lunar.fromYmdHms(adjustedDate.getFullYear(), adjustedDate.getMonth() + 1, adjustedDate.getDate(), adjustedDate.getHours(), adjustedDate.getMinutes(), 0).getSolar()
-    : Solar.fromYmdHms(adjustedDate.getFullYear(), adjustedDate.getMonth() + 1, adjustedDate.getDate(), adjustedDate.getHours(), adjustedDate.getMinutes(), 0);
+  // 음력 변환을 먼저 한 뒤 보정해야 초하루에도 실제 전날로 이동한다.
+  const inputSolar = calendarType === 'lunar'
+    ? Lunar.fromYmdHms(year, month, day, hour, minute, 0).getSolar()
+    : Solar.fromYmdHms(year, month, day, hour, minute, 0);
+  // UTC는 날짜 연산용으로만 사용해 실행 환경의 시간대·서머타임 영향을 배제한다.
+  const adjustedDate = new Date(0);
+  adjustedDate.setUTCFullYear(inputSolar.getYear(), inputSolar.getMonth() - 1, inputSolar.getDay());
+  adjustedDate.setUTCHours(hour, minute - 30, 0, 0);
+  const solar = Solar.fromYmdHms(adjustedDate.getUTCFullYear(), adjustedDate.getUTCMonth() + 1, adjustedDate.getUTCDate(), adjustedDate.getUTCHours(), adjustedDate.getUTCMinutes(), 0);
 
   const lunar = solar.getLunar();
   const eightChar = lunar.getEightChar();
@@ -248,8 +256,8 @@ export function calculateSaju(
 
   const daYunList: any[] = [];
   try {
-    const yun = eightChar.getYun(gender === 'male' ? 1 : 0);
-    const dys = yun.getDaYun();
+    const yun = !isUnknownTime ? eightChar.getYun(gender === 'male' ? 1 : 0) : null;
+    const dys = yun?.getDaYun() || [];
     dys.slice(1, 9).forEach(dy => {
       const gz = dy.getGanZhi();
       const gan = gz.substring(0, 1);

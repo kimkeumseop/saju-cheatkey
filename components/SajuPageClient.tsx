@@ -7,7 +7,7 @@ import { Heart, Loader2, Moon, Sparkles } from 'lucide-react';
 import SajuModal from '@/components/SajuModal';
 import { useAuth } from '@/lib/auth';
 import { db } from '@/lib/firebase';
-import { calculateSaju } from '@/lib/saju';
+import { calculateSaju, normalizeBirthTime } from '@/lib/saju';
 import { streamAnalysis, cleanPreview } from '@/lib/streamAnalysis';
 
 function SajuProcessingContent() {
@@ -31,16 +31,16 @@ function SajuProcessingContent() {
       const user1 = {
         name: searchParams.get('u1_name') || '인물1',
         birthDate: searchParams.get('u1_date'),
-        birthTime: searchParams.get('u1_time') === 'unknown' ? '12:00' : searchParams.get('u1_time') || '12:00',
-        isTimeUnknown: searchParams.get('u1_time') === 'unknown',
+        birthTime: normalizeBirthTime(searchParams.get('u1_time')),
+        isTimeUnknown: normalizeBirthTime(searchParams.get('u1_time')) === 'unknown',
         calendarType: searchParams.get('u1_cal') || 'solar',
         gender: searchParams.get('u1_gen') || 'female',
       };
       const user2 = {
         name: searchParams.get('u2_name') || '인물2',
         birthDate: searchParams.get('u2_date'),
-        birthTime: searchParams.get('u2_time') === 'unknown' ? '12:00' : searchParams.get('u2_time') || '12:00',
-        isTimeUnknown: searchParams.get('u2_time') === 'unknown',
+        birthTime: normalizeBirthTime(searchParams.get('u2_time')),
+        isTimeUnknown: normalizeBirthTime(searchParams.get('u2_time')) === 'unknown',
         calendarType: searchParams.get('u2_cal') || 'solar',
         gender: searchParams.get('u2_gen') || 'male',
       };
@@ -56,8 +56,8 @@ function SajuProcessingContent() {
     const name = searchParams.get('name') || '방문자';
     const birthDate = searchParams.get('birthDate');
     const rawTime = searchParams.get('birthTime');
-    const isTimeUnknown = rawTime === 'unknown';
-    const birthTime = isTimeUnknown ? '12:00' : rawTime || '12:00';
+    const birthTime = normalizeBirthTime(rawTime);
+    const isTimeUnknown = birthTime === 'unknown';
     const calendarType = (searchParams.get('calendarType') as 'solar' | 'lunar') || 'solar';
     const gender = searchParams.get('gender') || 'female';
 

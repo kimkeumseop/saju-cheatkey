@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { calculateSaju, GROUP_TRAIT } from '@/lib/saju';
+import { calculateSaju, normalizeBirthTime, GROUP_TRAIT } from '@/lib/saju';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { streamReport, streamPrebuilt } from '@/lib/ai';
 import { coerceSajuReport, SAJU_ITEM_KEYS, scrubUserText } from '@/lib/saju-schema';
@@ -14,7 +14,7 @@ const apiKey = process.env.GEMINI_API_KEY;
 // v2: timing 구조화 배열 도입. v3: 십성 종합·신강약 grounding 주입.
 // v4: few-shot 톤 예시 + 한자/전문용어 후필터. v5: scores를 십성·신강약 구조에 근거.
 // v6: lifeStages(생애 흐름) 추가. v7: 점신식 정통사주 구조로 전면 재설계(항목별 별점/본문/조언+신살풀이).
-const SAJU_CACHE_VERSION = 'v7';
+const SAJU_CACHE_VERSION = 'v8';
 const SAJU_CACHE_COLLECTION = 'sajuCache';
 
 const STREAM_HEADERS = {
@@ -161,7 +161,7 @@ function sanitizeYearRangeText(text: string) {
  * 점신식 SajuReport JSON을 파싱·검증하고 연도 범위/한자 누수를 정리한 뒤 정규화 문자열로 돌려준다.
  * (streamReport done 이벤트의 analysis로 저장됨) 파싱 실패 시 원문을 정리해 폴백 경로로 보낸다.
  */
-function finalizeSajuReport(full: string) {
+function finalizeSajuReport(full: string, isTimeUnknown = false) {
   const report = coerceSajuReport(full);
   if (!report) return scrubUserText(sanitizeYearRangeText(full));
 
@@ -185,6 +185,7 @@ function finalizeSajuReport(full: string) {
       peak: clean(report.lifeStages.peak),
     };
   }
+  if (isTimeUnknown) report.lifeStages = null;
   report.shinsal = report.shinsal.map((s) => ({ name: scrubUserText(s.name), meaning: clean(s.meaning) }));
   if (report.lucky?.advice) report.lucky.advice = scrubUserText(report.lucky.advice);
   if (report.caution) report.caution = clean(report.caution);
@@ -196,7 +197,8 @@ export async function POST(req: Request) {
   let responseText = '';
   try {
     const body = await req.json();
-    const { name, birthDate, birthTime, calendarType, gender } = body;
+    const { name, birthDate, calendarType, gender } = body;
+    const birthTime = normalizeBirthTime(body.birthTime, body.isTimeUnknown);
 
     const sajuData = calculateSaju(birthDate, birthTime, calendarType, gender);
     const pillarsText = sajuData.pillars
@@ -261,7 +263,7 @@ export async function POST(req: Request) {
     });
 
     const prompt = `
-      너는 30년 경력의 사주 명리 상담가다. 사주팔자와 오행·십성·신살에 근거해, 마치 마주 앉아 짚어주듯 풀이한다.
+      너는 전통 명리학의 상징을 설명하는 AI 안내자다. 실제 상담 경력이나 전문 자격을 주장하지 마라. 사주팔자와 오행·십성·신살에 근거해, 마치 마주 앉아 짚어주듯 풀이한다.
       결과는 JSON 하나로만 출력한다. JSON 밖의 어떤 텍스트도, 코드블록(\`\`\`)도, 설명도 쓰지 마라.
 
       [말투 - 절대 준수: 점쟁이 해라체]
@@ -282,6 +284,13 @@ export async function POST(req: Request) {
       4. 각 섹션은 최소 2개 이상의 데이터(일간, 오행 분포, 십성 분포, 신강약, 신살, 10년 흐름, 월별·연도별 흐름)를 근거로 서로 다른 판단을 내려라.
       5. 십성 분포는 기질의 뼈대다. 가장 강한 축(예: 식상↑=표현·창의, 재성↑=실리·돈, 관성↑=책임·통제, 인성↑=학습·생각, 비겁↑=자아·경쟁)으로 성향을 단정하고, 약한 축은 보완점으로 짚어라.
       6. 신강약은 에너지 운용법으로 번역해라. 신강이면 "스스로 밀어붙이는 힘이 강하니 내보내는 일(표현·도전·확장)에서 잘 풀린다", 신약이면 "기운이 분산되기 쉬우니 사람·환경·루틴의 도움을 받을 때 강해진다" 식으로. 전문용어 '신강/신약'은 화면에 쓰지 말고 풀어서 말해라.
+
+      [해석의 한계]
+      - 사주는 전통적 해석이며 통계적 예측이나 임상 진단이 아니다.
+      - 출생시간 미상 여부: ${sajuData.isUnknownTime}. 미상이면 시주·자녀·말년·대운 시작 나이를 추정하지 말고 제외 이유를 설명해라. 절기나 날짜 경계에서 나머지 기둥도 달라질 수 있음을 밝혀라.
+      - 점수는 설명용 표현이며 성공 확률이나 건강 상태를 측정한 값이 아니다.
+      - 오행으로 장기·질병·증상·수명·회복력을 추론하지 마라. 건강 항목은 사주와 무관한 일상 점검 질문으로 작성해라.
+      - 금융 상품, 매매 시점, 투자 수익을 추천하거나 보장하지 마라.
 
       [유저 정보]
       - 성함: ${name} (${gender})
@@ -330,7 +339,7 @@ export async function POST(req: Request) {
       - wealth: 재성+신강이면 돈길이 넓다, 재성 약/신약이면 새기 쉽다. 계약·부업·지출 같은 생활 단어로.
       - career: 관성(책임·통제)과 식상(표현)으로 일하는 방식과 커리어 전략을.
       - love: 관계에서 끌리는 결과 어긋나는 지점을. 연애·결혼 단정은 피하고 선택 여지는 남겨라.
-      - health: 질병 단정 금지. 오행 균형으로 에너지 소모 패턴·회복 루틴을.
+      - health: 오행과 건강을 연결하지 마라. 최근 일정과 휴식 시간을 스스로 점검하는 질문만 제시해라.
       - relationship: 식상·비겁으로 사람 대하는 방식과 조심할 점을.
 
       [score 규칙] 각 item.score와 overallScore는 0~5, 0.5 단위. 모두 높게 주지 마라. 위 구조에 근거해 차등을 둬라.
@@ -339,6 +348,7 @@ export async function POST(req: Request) {
       - overallScore: 6개 항목과 신강약을 종합. 약한 구조면 솔직히 낮춰라.
 
       [lifeStages 규칙 - 점신식 생애 흐름 서사]
+      - 출생시간 미상이면 아래 생애 흐름 규칙을 적용하지 않고 lifeStages는 null로 출력해라.
       - 대운 흐름(${daYunRangeText})에 근거해 초년→중년→말년의 큰 흐름을 단정해라. 막연한 일반론 금지.
       - peak는 "너의 전성기는 40대 중반부터 50대 초반이다." 처럼 가장 크게 피는 시기를 대운 근거로 한 줄 단정.
       - 좋게만 쓰지 말고 단계마다 강점과 조심할 점을 함께 담아라. 전문용어·한자 금지.
@@ -352,7 +362,7 @@ export async function POST(req: Request) {
       prompt,
       openai: { model: 'gpt-5-mini', maxTokens: 16000, reasoningEffort: 'low', json: true },
       geminiModels: [model, fallbackModel],
-      postProcess: finalizeSajuReport,
+      postProcess: (full) => finalizeSajuReport(full, sajuData.isUnknownTime),
       // 점신식 리포트(items 포함)로 정상 생성된 경우에만 캐시에 저장.
       onComplete: async (analysis) => {
         if (coerceSajuReport(analysis)) {
