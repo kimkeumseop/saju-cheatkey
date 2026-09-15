@@ -3,13 +3,16 @@ import Link from 'next/link';
 import { createMetadata, SITE_URL } from '@/lib/site';
 import MbtiTestClient from './MbtiTestClient';
 
-export const metadata: Metadata = createMetadata({
+export const metadata: Metadata = {
+  ...createMetadata({
   title: '무료 MBTI 검사 20문항 | 사주 치트키',
   description:
     '20문항으로 3~4분 만에 끝나는 무료 MBTI 성격유형 검사. 네 가지 지표가 무엇을 측정하는지, 결과를 어떻게 읽어야 하는지까지 함께 안내합니다.',
   path: '/mbti/test',
   keywords: ['MBTI 검사', '무료 MBTI 테스트', 'MBTI 20문항', '성격유형 검사', 'MBTI 결과 해석'],
-});
+  }),
+  robots: { index: false, follow: true, googleBot: { index: false, follow: true } },
+};
 
 const DIMENSIONS = [
   {
