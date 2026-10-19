@@ -360,7 +360,7 @@ export async function POST(req: Request) {
 
     const stream = streamReport({
       prompt,
-      openai: { model: 'gpt-5-mini', maxTokens: 16000, reasoningEffort: 'low', json: true },
+      openai: { model: 'gpt-6-luna', maxTokens: 16000, reasoningEffort: 'low', json: true },
       geminiModels: [model, fallbackModel],
       postProcess: (full) => finalizeSajuReport(full, sajuData.isUnknownTime),
       // 점신식 리포트(items 포함)로 정상 생성된 경우에만 캐시에 저장.

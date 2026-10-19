@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 
 // OpenAI(ChatGPT) 호출 공용 헬퍼.
 // - 일시적 오류(429/5xx/네트워크)는 지수 백오프로 재시도
-// - GPT-5 계열 호환을 위해 max_completion_tokens 사용, temperature는 보내지 않음(기본값 사용)
+// - GPT-6 Luna 호환을 위해 max_completion_tokens 사용, temperature는 보내지 않음(기본값 사용)
 
 let client: OpenAI | null = null;
 
@@ -39,8 +39,8 @@ export interface OpenAIGenerateOptions {
   maxTokens?: number;
   /** true면 JSON 객체 응답 강제 */
   json?: boolean;
-  /** GPT-5 reasoning 강도. 창작/포맷 작업은 'minimal'이 빠르고 토큰 낭비가 적음 */
-  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high';
+  /** 추론 강도. GPT-6 Luna의 빠른 응답은 'none', 분석 작업은 'low' 사용 */
+  reasoningEffort?: 'none' | 'low' | 'medium' | 'high';
   maxRetries?: number;
   baseDelayMs?: number;
   label?: string;
@@ -57,7 +57,7 @@ export async function openaiGenerateMessages(
 ): Promise<OpenAIGenerateResult> {
   const openai = getOpenAI();
 
-  // 신규 GPT-5 파라미터를 타입 마찰 없이 전달하기 위해 any로 구성
+  // 모델별 파라미터를 타입 마찰 없이 전달하기 위해 any로 구성
   const params: any = {
     model,
     messages,

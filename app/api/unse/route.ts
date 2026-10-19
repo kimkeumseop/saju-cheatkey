@@ -141,7 +141,7 @@ export async function POST(req: Request) {
 
       const { text: rawText } = await generateText({
         prompt,
-        openai: { model: 'gpt-5-mini', maxTokens: 2048, json: true, reasoningEffort: 'low' },
+        openai: { model: 'gpt-6-luna', maxTokens: 2048, json: true, reasoningEffort: 'low' },
         geminiModels: [model],
         label: 'UnseDaily',
       });
@@ -184,7 +184,7 @@ export async function POST(req: Request) {
       `;
       const { text: rawText } = await generateText({
         prompt,
-        openai: { model: 'gpt-5-nano', maxTokens: 2048, json: true, reasoningEffort: 'minimal' },
+        openai: { model: 'gpt-6-luna', maxTokens: 2048, json: true, reasoningEffort: 'none' },
         geminiModels: [model],
         label: 'Unse',
       });
@@ -230,7 +230,7 @@ export async function POST(req: Request) {
 
     const { text: rawText } = await generateText({
       prompt,
-      openai: { model: 'gpt-5-nano', maxTokens: 2048, json: true, reasoningEffort: 'minimal' },
+      openai: { model: 'gpt-6-luna', maxTokens: 2048, json: true, reasoningEffort: 'none' },
       geminiModels: [model],
       label: 'Unse',
     });

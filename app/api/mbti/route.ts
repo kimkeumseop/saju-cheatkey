@@ -110,7 +110,7 @@ export async function POST(req: Request) {
       text = await Promise.race([
         generateText({
           prompt,
-          openai: { model: 'gpt-5-nano', maxTokens: 3072, json: true, reasoningEffort: 'minimal', maxRetries: 1 },
+          openai: { model: 'gpt-6-luna', maxTokens: 3072, json: true, reasoningEffort: 'none', maxRetries: 1 },
           geminiModels: [model],
           label: 'Mbti',
         }).then((result) => result.text.trim()),

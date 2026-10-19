@@ -81,7 +81,7 @@ ${question ? `\n## 질문\n${question}` : ''}
 
     const { text } = await generateText({
       prompt,
-      openai: { model: 'gpt-5-nano', maxTokens: 4096, reasoningEffort: 'minimal' },
+      openai: { model: 'gpt-6-luna', maxTokens: 4096, reasoningEffort: 'none' },
       geminiModels: [model],
       label: 'Tarot',
     })

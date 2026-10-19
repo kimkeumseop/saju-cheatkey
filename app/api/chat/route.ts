@@ -60,9 +60,9 @@ export async function POST(req: Request) {
     let responseText = '';
     try {
       const result = await openaiGenerateMessages(chatMessages, {
-        model: 'gpt-5-nano',
+        model: 'gpt-6-luna',
         maxTokens: 1500,
-        reasoningEffort: 'minimal',
+        reasoningEffort: 'none',
         label: 'Chat',
       });
       responseText = result.text;
