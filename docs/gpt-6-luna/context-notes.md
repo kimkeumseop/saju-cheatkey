@@ -10,3 +10,5 @@
 - 최초 코드 변경 시 실제 유료 API 요청과 배포는 실행하지 않았다.
 - 후속 사용자 승인으로 실제 API 호출을 검증했다. 로컬 환경의 기존 API 키로 `gpt-6-luna`의 `none` 추론 JSON 응답과 `low` 추론 JSON 스트리밍 응답이 모두 성공했다. 응답 모델도 `gpt-6-luna`임을 확인했다.
 - Vercel 연결 프로젝트는 `saju-cheatkey`이며 기본 빌드 명령은 `npm run build`다. 실제 사주 해석의 내용 품질은 별도 평가가 필요하다.
+- 코드 및 검증 기록을 `main`에 푸시했고, 해당 배포 `dpl_EpeApTG1xxw3PBXtVpgCqH6oP9A1`의 Production Ready 상태와 `https://saju-cheatkey.kr` 별칭을 확인했다.
+- 운영 홈페이지 HTTP 200, `/api/tarot`에 가상 공부 질문과 별 카드 1장으로 요청한 결과 HTTP 200 및 비어 있지 않은 956자 해석을 확인했다. 해당 API 응답에는 제공자 메타데이터가 없어 운영 요청 자체의 모델을 응답만으로 확인할 수는 없다. 직접 OpenAI 호출에서는 모델을 확인했다.
