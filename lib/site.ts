@@ -71,12 +71,12 @@ export type ColumnEntry = {
 export const columns: ColumnEntry[] = [
   {
     id: "3",
-    title: "2026년 병오년(丙午年), 뜨거운 불의 기운을 내 것으로 만드는 개운법 가이드",
+    title: "2026년 병오년을 읽을 때 알아둘 것 — 상징과 실제 계획 나누기",
     description:
-      "위아래가 모두 불의 기운인 병오년의 의미와, 토·수 기운을 활용해 2026년의 강한 화기를 내 편으로 만드는 개운법을 정리했습니다.",
+      "병오년의 간지와 입춘 기준을 설명하고, 전통적 상징을 산업 전망이나 개인 성과의 예측과 구분하는 방법을 안내합니다.",
     date: "2026-01-05",
-    dateModified: "2026-09-15",
-    readMinutes: 8,
+    dateModified: "2026-10-22",
+    readMinutes: 4,
   },
   {
     id: "1",
@@ -164,12 +164,12 @@ export const columns: ColumnEntry[] = [
   },
   {
     id: "12",
-    title: "2026년 하반기, 오행별로 준비하면 좋은 것들",
+    title: "2026년 하반기 운세를 계획표로 바꾸는 방법",
     description:
-      "병오년 하반기의 기운 변화를 짚고, 내 사주에서 강한 오행과 약한 오행에 따라 하반기를 준비하는 실용적인 방법을 정리했습니다.",
+      "계절과 오행의 전통적 비유를 실제 결과 예측과 구분하고, 남은 해의 일정과 행동을 점검하는 질문을 정리했습니다.",
     date: "2026-06-29",
-    dateModified: "2026-09-15",
-    readMinutes: 8,
+    dateModified: "2026-10-22",
+    readMinutes: 4,
   },
 ];
 
